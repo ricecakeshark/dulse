@@ -1,0 +1,7 @@
+name "kelp-core"
+description "Kelp's core"
+authors "RiceShark"
+copyright "Copyright © 2025, RiceShark"
+license "proprietary"
+
+targetType "sourceLibrary"
