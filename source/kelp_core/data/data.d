@@ -1,4 +1,4 @@
-module source.kelp_core.data.data;
+module kelp_core.data.data;
 
 shared static this()
 {
