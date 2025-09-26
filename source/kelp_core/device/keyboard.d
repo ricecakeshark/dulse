@@ -1,5 +1,65 @@
 module kelp_core.device.keyboard;
 
+class Keyboard
+{
+	KeyboardInputState[2] input_state;
+
+	typeof(this) update(KeyboardInputState keyboard_input_state)
+	{
+		input_state[1] = input_state[0];
+		input_state[0] = keyboard_input_state;
+		return this;
+	}
+
+	bool pressed(Scancode scancode)
+	{
+		return (input_state[0][scancode] == true) ? true : false;
+	}
+
+	bool released(Scancode scancode)
+	{
+		return (input_state[0][scancode] == false) ? true : false;
+	}
+
+	bool pressed_just(Scancode scancode)
+	{
+		return (input_state[0][scancode] == true
+				&& input_state[1][scancode] == false) ? true : false;
+	}
+
+	bool released_just(Scancode scancode)
+	{
+		return (input_state[0][scancode] == false
+				&& input_state[1][scancode] == true) ? true : false;
+	}
+}
+
+struct KeyboardInputState
+{
+	bool[512] key_state;
+
+	this(const bool[] key_state)
+	{
+		this.key_state = key_state.dup;
+		return;
+	}
+
+	inout(bool) opIndex(const size_t index) inout pure nothrow @nogc @safe
+	{
+		return key_state[index];
+	}
+
+	bool pressed(const Scancode scancode) const pure nothrow @nogc @safe
+	{
+		return (this.key_state[scancode] == true);
+	}
+
+	bool released(const Scancode scancode) const pure nothrow @nogc @safe
+	{
+		return (this.key_state[scancode] == false);
+	}
+}
+
 enum Scancode
 {
 	none = 0,

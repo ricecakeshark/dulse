@@ -1,10 +1,11 @@
 module kelp_core.timer.timer;
 
+import kelp_api;
 import std.datetime;
 import std.datetime.stopwatch;
 import core.thread;
 
-class Timer
+class TimerSubsystem : Subsystem
 {
 	int target_frame_rate = 60;
 	int min_sleep_dur = 5;
@@ -14,7 +15,23 @@ class Timer
 
 	this()
 	{
+		return;
+	}
+
+	void initialize()
+	{
 		this.sw = StopWatch(AutoStart.yes);
+		return;
+	}
+
+	void finalize()
+	{
+		return;
+	}
+
+	void process()
+	{
+		this.sleep();
 		return;
 	}
 
