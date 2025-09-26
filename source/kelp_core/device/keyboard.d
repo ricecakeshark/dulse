@@ -1,4 +1,4 @@
-module source.kelp_core.device.keyboard;
+module kelp_core.device.keyboard;
 
 enum Scancode
 {
