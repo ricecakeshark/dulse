@@ -1,8 +1,10 @@
 module kelp_core.core.subsystem;
 
 import kelp_api;
+import kelp_core.core;
+import std.array, std.algorithm;
 
-class SubsystemPool
+class SubsystemPool : InterfacedPool!(SubsystemPool, Subsystem)
 {
 	Subsystem[] pool;
 
@@ -32,7 +34,7 @@ class SubsystemPool
 		}
 		return this;
 	}
-
+	/+
 	typeof(this) append(Subsystem[] subsystem_list...)
 	{
 		foreach (subsystem; subsystem_list)
@@ -42,4 +44,10 @@ class SubsystemPool
 		}
 		return this;
 	}
+
+	Subsystem[] opIndex(string id)
+	{
+		return this.pool.filter!(subsystem => subsystem.id == id).array();
+	}
+	+/
 }

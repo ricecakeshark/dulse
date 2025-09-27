@@ -5,3 +5,5 @@ copyright "Copyright © 2025, RiceShark"
 license "proprietary"
 
 targetType "sourceLibrary"
+
+dependency "kelp-api" path="..\\kelp_api"

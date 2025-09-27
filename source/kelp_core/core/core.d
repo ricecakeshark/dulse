@@ -10,7 +10,7 @@ final class Kelp
 	this()
 	{
 		this.subsystem = new SubsystemPool();
-		this.subsystem.append(new TimerSubsystem());
+		this.subsystem.register(new TimerSubsystem());
 		return;
 	}
 
