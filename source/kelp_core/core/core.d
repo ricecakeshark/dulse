@@ -6,6 +6,7 @@ import kelp_api;
 final class Kelp
 {
 	SubsystemPool subsystem;
+	bool continuable = true;
 
 	this()
 	{

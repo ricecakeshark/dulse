@@ -6,7 +6,7 @@ import std.array, std.algorithm;
 
 class SubsystemPool : InterfacedPool!(SubsystemPool, Subsystem)
 {
-	Subsystem[] pool;
+	//Subsystem[] pool;
 
 	typeof(this) initialize()
 	{

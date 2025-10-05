@@ -2,7 +2,6 @@ module kelp_core.timer.timer;
 
 import kelp_api;
 import std.datetime;
-import std.datetime.stopwatch;
 import core.thread;
 
 class TimerSubsystem : Subsystem
@@ -11,7 +10,9 @@ class TimerSubsystem : Subsystem
 	int min_sleep_dur = 5;
 	int max_sleep_dur = 1000;
 
-	StopWatch sw;
+	SysTime measure_begin;
+	Duration last_past_dur;
+	long last_past;
 
 	this()
 	{
@@ -20,7 +21,7 @@ class TimerSubsystem : Subsystem
 
 	void initialize()
 	{
-		this.sw = StopWatch(AutoStart.yes);
+		measure_begin = Clock.currTime();
 		return;
 	}
 
@@ -43,19 +44,16 @@ class TimerSubsystem : Subsystem
 
 	typeof(this) sleep()
 	{
-		Duration past_dur;
-		long past_time;
+		last_past_dur = Clock.currTime() - measure_begin;
+		last_past = last_past_dur.total!("msecs");
 
-		sw.stop();
-		past_dur = sw.peek();
-		past_time = past_dur.total!("msecs");
-		if (past_time < (1_000 / target_frame_rate) - min_sleep_dur && past_time > 0)
+		if (last_past < (1_000 / target_frame_rate) - min_sleep_dur && last_past >= 0)
 		{
-			sleep((1_000 / target_frame_rate) - past_time);
+			sleep((1_000 / target_frame_rate) - last_past);
 		}
 		else
 		{
-			if (past_dur.total!("msecs") < 0)
+			if (last_past < 0)
 			{
 				sleep(1_000 / target_frame_rate);
 			}
@@ -64,8 +62,7 @@ class TimerSubsystem : Subsystem
 				sleep(5);
 			}
 		}
-		sw.reset();
-		sw.start();
+		measure_begin = Clock.currTime();
 		return this;
 	}
 
@@ -82,3 +79,20 @@ protected:
 		return;
 	}
 }
+
+/+
+import std.array : appender;
+
+struct Measure
+{
+	Appender!(long[]) active_time_list;
+	Appender!(long[]) idle_time_list;
+
+	this()
+	{
+		return;
+	}
+
+
+}
++/
