@@ -32,4 +32,10 @@ final class Kelp
 		this.subsystem.process();
 		return;
 	}
+
+	void quit()
+	{
+		this.continuable = false;
+		return;
+	}
 }
