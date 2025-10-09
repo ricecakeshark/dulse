@@ -12,7 +12,7 @@ class Pool(TItem)
 		return;
 	}
 
-	size_t count() const pure nothrow @nogc @safe
+	@property size_t count() const pure nothrow @nogc @safe
 	{
 		return this.item_list.length;
 	}
@@ -32,7 +32,7 @@ class Pool(TItem)
 		return search_list.all!(item => item_list.canFind(item))();
 	}
 
-	@property inout(TItem[]) list() inout pure nothrow @nogc @safe
+	@property inout(TItem[]) all() inout pure nothrow @nogc @safe
 	{
 		return this.item_list;
 	}

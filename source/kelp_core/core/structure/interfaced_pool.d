@@ -2,7 +2,7 @@ module kelp_core.core.structure.interfaced_pool;
 
 import std.array, std.algorithm;
 
-abstract class InterfacedPool(Pool, Interface)
+class InterfacedPool(Interface)
 {
 	Interface[] pool;
 
@@ -10,6 +10,11 @@ abstract class InterfacedPool(Pool, Interface)
 	{
 		return this.pool.length;
 	}
+
+	@property inout(Interface[]) all() inout pure nothrow @nogc @safe
+	{
+		return this.pool;
+	} 
 
 	bool contain(Type)() pure nothrow @nogc @safe
 	{
@@ -59,7 +64,7 @@ unittest
 	{
 	}
 
-	class TestPool : InterfacedPool!(TestPool, IC)
+	class TestPool : InterfacedPool!(IC)
 	{
 	}
 
