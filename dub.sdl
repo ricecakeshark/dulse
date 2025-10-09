@@ -6,4 +6,4 @@ license "proprietary"
 
 targetType "sourceLibrary"
 
-dependency "kelp-api" path="..\\kelp_api"
+//dependency "kelp-api" path="..\\kelp_api"

@@ -1,11 +1,13 @@
 module kelp_core.timer.timer;
 
-import kelp_api;
+import kelp_core.core;
+//import kelp_api;
 import std.datetime;
 import core.thread;
 
 class TimerSubsystem : Subsystem
 {
+	protected MessageBus bus;
 	int target_frame_rate = 60;
 	int min_sleep_dur = 5;
 	int max_sleep_dur = 1000;
@@ -14,8 +16,9 @@ class TimerSubsystem : Subsystem
 	Duration last_past_dur;
 	long last_past;
 
-	this()
+	this(MessageBus bus)
 	{
+		this.bus = bus;
 		return;
 	}
 

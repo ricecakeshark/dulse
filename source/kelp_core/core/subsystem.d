@@ -1,10 +1,10 @@
 module kelp_core.core.subsystem;
 
-import kelp_api;
+//import kelp_api;
 import kelp_core.core;
 import std.array, std.algorithm;
 
-class SubsystemPool : InterfacedPool!(SubsystemPool, Subsystem)
+class SubsystemPool : InterfacedPool!(Subsystem)
 {
 	//Subsystem[] pool;
 
@@ -50,4 +50,11 @@ class SubsystemPool : InterfacedPool!(SubsystemPool, Subsystem)
 		return this.pool.filter!(subsystem => subsystem.id == id).array();
 	}
 	+/
+}
+
+interface Subsystem
+{
+	void initialize();
+	void finalize();
+	void process();
 }
