@@ -1,10 +1,12 @@
 module kelp_core.event.desc;
 
+struct Event
+{
+	EventType type;
+}
 
-
-enum Event : int
+enum EventType : int
 {
 	none = 0,
 	quit,
-	
 }

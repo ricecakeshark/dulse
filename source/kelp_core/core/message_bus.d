@@ -7,7 +7,7 @@ class MessageBus : InterfacedPool!(Message)
 {
 	typeof(this) send(Message message)
 	{
-		this.register(message);
+		this.append(message);
 		return this;
 	}
 
@@ -22,7 +22,7 @@ interface Message
 
 }
 
-class QuitRequest : Message
+class QuitMessage : Message
 {
 
 }

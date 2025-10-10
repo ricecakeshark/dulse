@@ -13,8 +13,8 @@ final class Kelp
 	{
 		this.bus = new MessageBus();
 		this.subsystem = new SubsystemPool();
-		this.subsystem.register(new TimerSubsystem(this.bus));
-		this.subsystem.register(new EventSubsystem(this.bus));
+		this.subsystem.append(new TimerSubsystem(this.bus));
+		this.subsystem.append(new EventSubsystem(this.bus));
 		return;
 	}
 
@@ -33,6 +33,10 @@ final class Kelp
 	void process()
 	{
 		this.subsystem.process();
+		if( this.bus.have!(QuitMessage) )
+		{
+			this.continuable = false;
+		}
 		return;
 	}
 

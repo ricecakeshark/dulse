@@ -1,8 +1,9 @@
 module kelp_core.core.structure.interfaced_pool;
 
+import kelp_core.core.structure.pool;
 import std.array, std.algorithm;
 
-class InterfacedPool(Interface)
+class InterfacedPool(Interface) : Pool!(InterfacedPool, Interface)
 {
 	Interface[] pool;
 
@@ -14,20 +15,31 @@ class InterfacedPool(Interface)
 	@property inout(Interface[]) all() inout pure nothrow @nogc @safe
 	{
 		return this.pool;
-	} 
+	}
 
-	bool contain(Type)() pure nothrow @nogc @safe
+	bool have(Type)() pure nothrow @nogc @safe
 	{
 		return this.pool.any!(item => cast(Type) item !is null);
 	}
 
-	bool contain(Type)(Type target) pure nothrow @nogc @safe
+	bool have(Type)(Type target) pure nothrow @nogc @safe
 	{
 		return this.pool
 			.filter!(item => cast(Type) item !is null)()
 			.map!(item => cast(Type) item)
 			.any!(item => item is target);
 	}
+
+	//@disable bool have_any(Args...)() pure nothrow @nogc @safe; 
+	/+bool have_any(Args...)() pure nothrow @nogc @safe
+	{
+		return this.pool.any!(item => item.isAnyTypeOf!(Args));
+	}+/
+	//@disable bool have_all(Args...)() pure nothrow @nogc @safe; 
+	/+bool have_all(Args...)(Args args) pure nothrow @nogc @safe
+	{
+		return this.pool.any!(item => item.isAnyTypeOf!(Args));
+	}+/
 
 	Type[] query(Type)() pure nothrow
 	{
@@ -37,12 +49,24 @@ class InterfacedPool(Interface)
 			.array();
 	}
 
-	typeof(this) register(Args...)(Args args)
+	typeof(this) clear() pure nothrow @safe
+	{
+		this.pool = [];
+		return this;
+	}
+
+	typeof(this) append(Args...)(Args args) pure nothrow @safe
 	{
 		foreach (item; args)
 		{
 			this.pool ~= item;
 		}
+		return this;
+	}
+
+	typeof(this) remove(RemoveList...)(RemoveList remove_list) pure nothrow @safe
+	{
+		this.pool.filter!(item=>item.isAnyTypeOf!(RemoveList)==false);
 		return this;
 	}
 }
@@ -86,4 +110,14 @@ unittest
 	assert(pool.contain!(C2)() == true);
 	assert(pool.query!(C2)() == [b]);
 
+}
+
+bool isAnyTypeOf(Types...)(target) pure nothrow @safe
+{
+	bool found = false;
+	static foreach (Type; Types)
+	{
+		found |= cast(Type) target !is null;
+	}
+	return found;
 }

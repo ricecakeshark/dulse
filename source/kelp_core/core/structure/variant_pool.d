@@ -1,10 +1,11 @@
 module kelp_core.core.structure.variant_pool;
 
+import kelp_core.core.structure.pool;
 import std.array;
 import std.algorithm;
 import std.sumtype;
 
-class VariantPool(TypeList)
+class VariantPool(TypeList) : Pool!(VariantPool,TypeList)
 {
 	TypeList[] item_list;
 
