@@ -100,14 +100,14 @@ unittest
 	pool = new TestPool();
 
 	assert(pool.count == 0);
-	assert(pool.contain!(C1)() == false);
+	assert(pool.have!(C1)() == false);
 	assert(pool.query!(C1)() == []);
-	assert(pool.contain!(C2)() == false);
+	assert(pool.have!(C2)() == false);
 	assert(pool.query!(C2)() == []);
-	pool.register(a, b, c);
-	assert(pool.contain!(C1)() == true);
+	pool.append(a, b, c);
+	assert(pool.have!(C1)() == true);
 	assert(pool.query!(C1)() == [a, c]);
-	assert(pool.contain!(C2)() == true);
+	assert(pool.have!(C2)() == true);
 	assert(pool.query!(C2)() == [b]);
 
 }

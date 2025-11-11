@@ -36,6 +36,12 @@ class VariantPool(TypeList) : Pool!(VariantPool,TypeList)
 			.any!(item => item is search_item);
 	}
 
+	typeof(this) clear() pure nothrow @safe
+	{
+		this.item_list = [];
+		return this;
+	}
+
 	Type[] query(Type)() pure nothrow @safe
 	{
 		return item_list.filter!(item => item.has!(Type))

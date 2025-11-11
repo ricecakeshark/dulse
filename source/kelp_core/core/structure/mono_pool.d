@@ -69,7 +69,7 @@ unittest
 		d,
 	}
 
-	Pool!(E) pool = new Pool!(E);
+	MonoPool!(E) pool = new MonoPool!(E);
 
 	assert(pool.count == 0);
 	assert(!pool.have_any(E.a, E.b, E.c));
