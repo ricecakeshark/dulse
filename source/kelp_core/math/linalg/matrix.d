@@ -1,4 +1,4 @@
-module source.kelp_core.math.matrix;
+module kelp_core.math.linalg.matrix;
 
 struct Matrix(size_t Row, size_t Col, Type = float)
 {
