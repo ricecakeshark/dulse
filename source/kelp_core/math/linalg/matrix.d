@@ -4,7 +4,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 {
 	Type[Col][Row] data;
 
-	this(Type default_value)
+	this(in Type default_value) pure nothrow @nogc @safe
 	{
 		//this.data = new Type[Row][Col]();
 		foreach (row; 0 .. Row)
@@ -17,7 +17,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return;
 	}
 
-	this(Type[][] new_matrix)
+	this(in Type[Col][Row] new_matrix) pure nothrow @nogc @safe
 	in (new_matrix.length == Row)
 	in (new_matrix[0].length == Col)
 	{
@@ -31,13 +31,13 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return;
 	}
 
-	Type[Col][Row] opAssign(Type[Col][Row] assign_matrix) pure nothrow @safe
+	Type[Col][Row] opAssign(in Type[Col][Row] assign_matrix) pure nothrow @safe
 	{
 		this.data = assign_matrix;
 		return assign_matrix;
 	}
 
-	inout(Type) opIndex(const size_t row, const size_t col) inout pure nothrow @nogc @safe
+	inout(Type) opIndex(in size_t row, in size_t col) inout pure nothrow @nogc @safe
 	{
 		return this.data[row][col];
 	}
@@ -66,22 +66,53 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return return_str;
 	}
 
-	Matrix!(Row, K, Type) opBinary(string op : "*", size_t K)(Matrix!(Col, K, Type) rhs) const pure nothrow @safe
+	Matrix!(Row, Col, Type) opBinary(string op : "+", size_t RhsRow, size_t RhsCol, RhsType)(
+		in Matrix!(RhsRow, RhsCol, RhsType) rhs) const pure nothrow @nogc @safe
+	in (RhsRow == Row)
+	in (RhsCol == Col)
 	{
-		Matrix!(Row, K, Type) result_matrix = Matrix!(Row, K, Type)(0.0);
+		return add!(Matrix!(Row, Col, Type))(this, rhs);
+	}
 
-		foreach (row; 0 .. Row)
+	Matrix!(Row, Col2, Type) opBinary(string op : "*", size_t Row2, size_t Col2)(
+		in Matrix!(Row2, Col2, Type) rhs) const pure nothrow @nogc @safe
+	{
+		return multiply!(Matrix!(Row, Col, Type), Matrix!(Row2, Col2, Type))(this, rhs);
+	}
+}
+
+Matrix!(Row, Col, Type) add(M : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type)(
+	in M lhs, in M rhs) pure nothrow @nogc @safe
+{
+	M result_matrix = M(0.0);
+	static foreach (col; 0 .. Col)
+	{
+		static foreach (row; 0 .. Row)
 		{
-			foreach (col; 0 .. K)
+			result_matrix.data[row][col] = lhs[row, col] + rhs[row, col];
+		}
+	}
+	return result_matrix;
+}
+
+Matrix!(Row1, Col2, Type) multiply(M1 : Matrix!(Row1, Col1, Type), M2:
+	Matrix!(Row2, Col2, Type), size_t Row1, size_t Col1, size_t Row2, size_t Col2, Type)(
+	in M1 lhs, in M2 rhs
+) pure nothrow @nogc @safe if (Col1 == Row2)
+{
+	Matrix!(Row1, Col2, Type) result_matrix = Matrix!(Row1, Col2, Type)(0.0);
+
+	foreach (row; 0 .. Row1)
+	{
+		foreach (col; 0 .. Col2)
+		{
+			foreach (count; 0 .. Col1)
 			{
-				foreach (count; 0 .. Col)
-				{
-					result_matrix.data[row][col] += this[row, count] * rhs[count, col];
-				}
+				result_matrix.data[row][col] += lhs[row, count] * rhs[count, col];
 			}
 		}
-		return result_matrix;
 	}
+	return result_matrix;
 }
 
 unittest
@@ -95,11 +126,6 @@ unittest
 	mat_ab = Matrix!(2, 2)([[+13.0, -5.0], [+19.0, +11.0]]);
 	mat_ba = Matrix!(2, 2)([[+18.0, -13.0], [+10.0, +6.0]]);
 
-	writeln(cast(string) mat_a);
-	writeln(cast(string) mat_b);
-	writeln(cast(string)(mat_a * mat_b));
-	writeln(cast(string)(mat_ab));
-
 	assert(mat_a * mat_b == mat_ab);
 	assert(mat_b * mat_a == mat_ba);
 
@@ -107,5 +133,11 @@ unittest
 		Matrix!(2, 3)([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
 			* Matrix!(3, 2)([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
 			== Matrix!(2, 2)([[22.0, 28.0], [49.0, 64.0]])
+	);
+
+	assert(
+		Matrix!(2, 2)([[1.0, 2.0], [3.0, 4.0]])
+			+ Matrix!(2, 2)([[5.0, 6.0], [7.0, 8.0]])
+			== Matrix!(2, 2)([[6.0, 8.0], [10.0, 12.0]])
 	);
 }
