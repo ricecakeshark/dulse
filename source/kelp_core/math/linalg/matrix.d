@@ -71,7 +71,15 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	in (RhsRow == Row)
 	in (RhsCol == Col)
 	{
-		return add!(Matrix!(Row, Col, Type))(this, rhs);
+		return add(this, rhs);
+	}
+
+	Matrix!(Row, Col, Type) opBinary(string op : "-", size_t RhsRow, size_t RhsCol, RhsType)(
+		in Matrix!(RhsRow, RhsCol, RhsType) rhs) const pure nothrow @nogc @safe
+	in (RhsRow == Row)
+	in (RhsCol == Col)
+	{
+		return subtract(this, rhs);
 	}
 
 	Matrix!(Row, Col2, Type) opBinary(string op : "*", size_t Row2, size_t Col2)(
@@ -81,15 +89,49 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	}
 }
 
-Matrix!(Row, Col, Type) add(M : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type)(
-	in M lhs, in M rhs) pure nothrow @nogc @safe
+Matrix!(Row1, Col1, Type1) add(
+M1 : Matrix!(Row1, Col1, Type1), M2:
+	Matrix!(Row2, Col2, Type2),
+	size_t Row1, size_t Col1, Type1,
+	size_t Row2, size_t Col2, Type2
+)(in M1 lhs, in M2 rhs) pure nothrow @nogc @safe
+in
 {
-	M result_matrix = M(0.0);
-	static foreach (col; 0 .. Col)
+	static assert(Row1 == Row2, "lhs row and rhs row are not same");
+	static assert(Col1 == Col2, "lhs col and rhs col are not same");
+}
+do
+{
+	Matrix!(Row1, Col1, Type1) result_matrix = Matrix!(Row1, Col1, Type1)(0.0);
+	static foreach (col; 0 .. Col1)
 	{
-		static foreach (row; 0 .. Row)
+		static foreach (row; 0 .. Row1)
 		{
 			result_matrix.data[row][col] = lhs[row, col] + rhs[row, col];
+		}
+	}
+	return result_matrix;
+}
+
+Matrix!(Row1, Col1, Type1) subtract(
+M1 : Matrix!(Row1, Col1, Type1), M2:
+	Matrix!(Row2, Col2, Type2),
+	size_t Row1, size_t Col1, Type1,
+	size_t Row2, size_t Col2, Type2
+)(in M1 lhs, in M2 rhs) pure nothrow @nogc @safe
+in
+{
+	static assert(Row1 == Row2, "lhs row and rhs row are not same");
+	static assert(Col1 == Col2, "lhs col and rhs col are not same");
+}
+do
+{
+	Matrix!(Row1, Col1, Type1) result_matrix = Matrix!(Row1, Col1, Type1)(0.0);
+	static foreach (col; 0 .. Col1)
+	{
+		static foreach (row; 0 .. Row1)
+		{
+			result_matrix.data[row][col] = lhs[row, col] - rhs[row, col];
 		}
 	}
 	return result_matrix;
@@ -98,7 +140,12 @@ Matrix!(Row, Col, Type) add(M : Matrix!(Row, Col, Type), size_t Row, size_t Col,
 Matrix!(Row1, Col2, Type) multiply(M1 : Matrix!(Row1, Col1, Type), M2:
 	Matrix!(Row2, Col2, Type), size_t Row1, size_t Col1, size_t Row2, size_t Col2, Type)(
 	in M1 lhs, in M2 rhs
-) pure nothrow @nogc @safe if (Col1 == Row2)
+) pure nothrow @nogc @safe
+in
+{
+	static assert(Col1 == Row2, "lhs col and rhs row are NOT same");
+}
+do
 {
 	Matrix!(Row1, Col2, Type) result_matrix = Matrix!(Row1, Col2, Type)(0.0);
 
