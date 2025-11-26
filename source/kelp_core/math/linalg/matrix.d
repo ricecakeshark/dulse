@@ -1,5 +1,8 @@
 module kelp_core.math.linalg.matrix;
 
+import kelp_core.math.linalg.multiply;
+import kelp_core.math.linalg.vector;
+
 struct Matrix(size_t Row, size_t Col, Type = float)
 {
 	Type[Col][Row] data;

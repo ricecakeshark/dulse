@@ -1,7 +1,8 @@
 module kelp_core.math.linalg.vector;
 
+import kelp_core.math.linalg;
 import std.array;
-import std.algorithm, std.math;
+import std.algorithm, std.math, std.range;
 import std.range : zip;
 
 alias Vec3 = Vector!(3, float);
@@ -11,10 +12,21 @@ struct Vector(size_t Length, Type = float)
 {
 	Type[Length] data;
 
-	this(Type[Length] init_value...) const pure nothrow @nogc @safe
+	this(Type[Length] init_value_list...) const pure nothrow @nogc @safe
 	{
-		this.data = init_value;
+		this.data = init_value_list;
 		return;
+	}
+
+	Type[Length] opAssign(in Type[Length] assign_array) pure nothrow @safe
+	in
+	{
+		assert(iota(0, Length).all!(i => assign_array[i].isNaN == false)());
+	}
+	do
+	{
+		this.data = assign_array;
+		return assign_array;
 	}
 
 	Type norm() const pure nothrow @nogc @safe
@@ -68,16 +80,24 @@ struct Vector(size_t Length, Type = float)
 		);
 	}+/
 	// Vector(Length) + Vector(Length)
-	typeof(this) opBinary(string op : "+", size_t Length2, Type2)(in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
+	typeof(this) opBinary(string op : "+", size_t Length2, Type2)(
+		in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
 			if (Length2 == Length)
 	{
 		return add(this, rhs);
 	}
 	// Vector(Length) - Vector(Length)
-	typeof(this) opBinary(string op : "-", size_t Length2, Type2)(in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
+	typeof(this) opBinary(string op : "-", size_t Length2, Type2)(
+		in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
 			if (Length2 == Length)
 	{
 		return subtract(this, rhs);
+	}
+
+	typeof(this) opBinaryRight(string op : "*", M:
+		Matrix!(Row, Col, Type), size_t Row, size_t Col)(in M mat) const pure nothrow @nogc @safe
+	{
+		return multiply(mat, this);
 	}
 
 	bool opEquals(V : Vector!(RhsLength, RhsType), size_t RhsLength, RhsType)(in V rhs) const pure nothrow @nogc @safe
@@ -95,6 +115,18 @@ struct Vector(size_t Length, Type = float)
 	size_t toHash() const pure nothrow @nogc @safe
 	{
 		return sum(this.data[]).hashOf();
+	}
+
+	string opCast(R : string)() const pure @safe
+	{
+		import std.format;
+
+		string result_str;
+		foreach (count; 0 .. Length)
+		{
+			result_str ~= format(" %2d [%2.2f]\n", count, this[count]);
+		}
+		return result_str;
 	}
 }
 
@@ -152,8 +184,9 @@ V1 : Vector!(Length1, Type1), V2:
 }
 
 Vector!(3) crossProduct(
-	V1 : Vector!(Length1, Type1),
-	V2 : Vector!(Length2, Type2),
+V1 : Vector!(Length1, Type1),
+V2:
+	Vector!(Length2, Type2),
 	size_t Length1 : 3, Type1, size_t Length2 : 3, Type2
 )(in V1 lhs, in V2 rhs) pure nothrow @nogc @safe
 {
