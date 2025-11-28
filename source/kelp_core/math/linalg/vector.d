@@ -36,10 +36,17 @@ struct Vector(size_t Length, Type = float)
 
 	typeof(this) unit() const pure nothrow @safe
 	{
-		return Vector!(Length)(
+		Vector!(Length) return_vec;
+		static foreach (i; 0 .. Length)
+		{
+			return_vec.data[i] = this[i] / this.norm();
+		}
+		return return_vec;
+		// cannot @nogc
+		/+return Vector!(Length)(
 			this.data[].map!(x => x / this.norm())
 				.staticArray!(Length)()
-		);
+		);+/
 	}
 
 	typeof(this) opUnary(string op : "+")() const pure nothrow @nogc @safe
@@ -93,7 +100,14 @@ struct Vector(size_t Length, Type = float)
 	{
 		return subtract(this, rhs);
 	}
-
+	// return Vector * Vector
+	typeof(this) opBinary(string op : "*", size_t Length2, Type2)(
+		in Vector!(Length2, Type2) rhs
+	) const pure nothrow @nogc @safe if (Length2 == Length)
+	{
+		return crossProduct(this, rhs);
+	}
+	// return Matrix * Vector
 	typeof(this) opBinaryRight(string op : "*", M:
 		Matrix!(Row, Col, Type), size_t Row, size_t Col)(in M mat) const pure nothrow @nogc @safe
 	{
