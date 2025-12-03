@@ -88,6 +88,11 @@ struct LoopedInt(long Length)
 		return internal_value == rhs;
 	}
 
+	size_t toHash() const pure nothrow @nogc @safe
+	{
+		return this.internal_value.hashOf;
+	}
+
 	//alias this = internal_value;
 }
 
