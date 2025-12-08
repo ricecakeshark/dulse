@@ -12,6 +12,11 @@ struct LoopedInt(long Length)
 		return;
 	}
 
+	@property long value() const pure nothrow @nogc @safe
+	{
+		return internal_value;
+	}
+
 	long opUnary(string op : "++")() pure nothrow @nogc @safe
 	{
 		this.internal_value += 1;
@@ -72,9 +77,9 @@ struct LoopedInt(long Length)
 		}
 		else
 		{
-			static assert(false,"\""~op~ "\" operator is not implemented");
+			static assert(false, "\"" ~ op ~ "\" operator is not implemented");
 		}
-		
+
 	}
 
 	auto opAssign(T)(T value) pure nothrow @safe
@@ -93,7 +98,7 @@ struct LoopedInt(long Length)
 		return this.internal_value.hashOf;
 	}
 
-	//alias this = internal_value;
+	alias value this;
 }
 
 T normalize(T)(in T value, in T len) pure nothrow @nogc @safe
