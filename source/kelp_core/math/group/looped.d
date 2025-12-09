@@ -19,13 +19,13 @@ struct LoopedInt(long Length)
 
 	long opUnary(string op : "++")() pure nothrow @nogc @safe
 	{
-		this.internal_value += 1;
+		this.internal_value = normalize(this.internal_value + 1, Length);
 		return this.internal_value;
 	}
 
 	long opUnary(string op : "--")() pure nothrow @nogc @safe
 	{
-		this.internal_value -= 1;
+		this.internal_value = normalize(this.internal_value - 1, Length);
 		return this.internal_value;
 	}
 
