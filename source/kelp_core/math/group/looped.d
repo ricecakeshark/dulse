@@ -1,14 +1,14 @@
 module kelp_core.math.group.looped;
 
-//import std.bigint;
+import std.math;
 
-struct LoopedInt(long Length)
+struct LoopedInt(long Limit)
 {
 	long internal_value;
 
 	this(int init_value)
 	{
-		this.internal_value = init_value;
+		this.internal_value = init_value.normalize(Limit);
 		return;
 	}
 
@@ -19,13 +19,13 @@ struct LoopedInt(long Length)
 
 	long opUnary(string op : "++")() pure nothrow @nogc @safe
 	{
-		this.internal_value = normalize(this.internal_value + 1, Length);
+		this.internal_value = normalize(this.internal_value + 1, Limit);
 		return this.internal_value;
 	}
 
 	long opUnary(string op : "--")() pure nothrow @nogc @safe
 	{
-		this.internal_value = normalize(this.internal_value - 1, Length);
+		this.internal_value = normalize(this.internal_value - 1, Limit);
 		return this.internal_value;
 	}
 
@@ -84,7 +84,7 @@ struct LoopedInt(long Length)
 
 	auto opAssign(T)(T value) pure nothrow @safe
 	{
-		this.internal_value = value.normalize(Length);
+		this.internal_value = value.normalize(Limit);
 		return value;
 	}
 
@@ -101,19 +101,6 @@ struct LoopedInt(long Length)
 	alias value this;
 }
 
-T normalize(T)(in T value, in T len) pure nothrow @nogc @safe
-{
-	if (value >= len)
-	{
-		return value - len * (value / len);
-	}
-	else if (value < 0)
-	{
-		return value + len * ((-value / len) + 1);
-	}
-	return value;
-}
-
 unittest
 {
 	import std.format : format;
@@ -122,4 +109,101 @@ unittest
 	assert(normalize(0, 10) == 0);
 	assert(normalize(33, 10) == 3);
 	assert(normalize(-17, 10) == 3, format("%d", normalize(-17, 10)));
+}
+
+struct LoopedFloat(real Limit)
+{
+	real internal_value;
+
+	this(real init_value)
+	{
+		this.internal_value = init_value.normalize(Limit);
+		return;
+	}
+
+	@property real value() const pure nothrow @nogc @safe
+	{
+		return this.internal_value;
+	}
+
+	real opBinary(string op, T)(in T rhs) const pure nothrow @nogc @safe
+	{
+		static if (op == "+")
+		{
+			return this.internal_value + rhs;
+		}
+		else static if (op == "-")
+		{
+			return this.internal_value - rhs;
+		}
+		else static if (op == "*")
+		{
+			return this.internal_value * rhs;
+		}
+		else static if (op == "/")
+		{
+			return this.internal_value / rhs;
+		}
+		else static if (op == "^^")
+		{
+			return this.internal_value.pow(rhs);
+		}
+		else
+		{
+			static assert(false, "\"" ~ op ~ "\" operator is not implemented");
+		}
+	}
+
+	auto opAssign(T)(T value) pure nothrow @safe
+	{
+		this.internal_value = value.normalize(Limit);
+		return value;
+	}
+
+	typeof(this) opOpAssign(string op : "+", T)(in T value)
+	{
+		this.internal_value = normalize(this.internal_value + value, Limit);
+		return this;
+	}
+
+	typeof(this) opOpAssign(string op : "-", T)(in T value)
+	{
+		this.internal_value = normalize(this.internal_value + value, Limit);
+		return this;
+	}
+
+	bool opEquals(in real rhs) const pure nothrow @nogc @safe
+	{
+		return isClose(internal_value, rhs);
+	}
+
+	size_t toHash() const pure nothrow @nogc @safe
+	{
+		return this.internal_value.hashOf;
+	}
+
+	alias value this;
+}
+
+long normalize(in long value, in long limit) pure nothrow @nogc @safe
+{
+	return (value % limit + limit) % limit;
+}
+
+real normalize(in real value, in real limit) pure nothrow @nogc @safe
+{
+	return value - floor(value / limit) * limit;
+}
+
+unittest
+{
+	import std.format : format;
+
+	LoopedFloat!(10.0f) looped;
+	looped = 0.0f;
+
+	assert(LoopedFloat!(10.0f)(10.0f).isClose(+0.0f), format("%f", LoopedFloat!(10.0f)(10.0f)));
+	assert(LoopedFloat!(10.0f)(0.0f).isClose(+0.0f));
+	assert(LoopedFloat!(10.0f)(33.0f).isClose(+3.0f));
+	assert(LoopedFloat!(10.0f)(-17.0f).isClose(+3.0f), format("%f", looped - 17.0f));
 }

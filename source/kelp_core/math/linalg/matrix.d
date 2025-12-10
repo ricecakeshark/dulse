@@ -3,19 +3,24 @@ module kelp_core.math.linalg.matrix;
 import kelp_core.math.linalg.multiply;
 import kelp_core.math.linalg.vector;
 
+import std.math;
+
 struct Matrix(size_t Row, size_t Col, Type = float)
 {
 	Type[Col][Row] data;
 
-	this(in Type default_value) pure nothrow @nogc @safe
+	this(in Type value) pure nothrow @nogc @safe
 	{
-		//this.data = new Type[Row][Col]();
-		foreach (row; 0 .. Row)
+		this.fill(value);
+		return;
+	}
+
+	this(in Type[Row] new_vector) pure nothrow @nogc @safe
+	{
+		this.fill(0.0f);
+		foreach (count; 0 .. Row)
 		{
-			foreach (col; 0 .. Col)
-			{
-				this.data[row][col] = default_value;
-			}
+			this.data[count][count] = new_vector[count];
 		}
 		return;
 	}
@@ -32,6 +37,18 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 			}
 		}
 		return;
+	}
+
+	typeof(this) fill(float value = 0.0) pure nothrow @nogc @safe
+	{
+		foreach (col; 0 .. Col)
+		{
+			foreach (row; 0 .. Row)
+			{
+				this.data[row][col] = value;
+			}
+		}
+		return this;
 	}
 
 	Type[Col][Row] opAssign(in Type[Col][Row] assign_matrix) pure nothrow @safe
@@ -190,4 +207,44 @@ unittest
 			+ Matrix!(2, 2)([[5.0, 6.0], [7.0, 8.0]])
 			== Matrix!(2, 2)([[6.0, 8.0], [10.0, 12.0]])
 	);
+}
+
+Matrix!(4, 4, Type) matrix_rot_z(Type = float)(float rad) pure nothrow @nogc @safe
+{
+	Matrix!(4, 4, Type) temp;
+	temp.fill(0.0f);
+	temp.data[0][0] = cos(rad);
+	temp.data[0][1] = sin(rad);
+	temp.data[1][0] = -sin(rad);
+	temp.data[1][1] = cos(rad);
+	temp.data[2][2] = 1.0f;
+	temp.data[3][3] = 1.0f;
+	return temp;
+}
+
+Matrix!(4, 4) matrix_translate(Type = float)(Type[3] value_list) pure nothrow @nogc @safe
+{
+	Matrix!(4, 4) temp;
+	temp.fill(0.0f);
+	foreach (count; 0 .. 4)
+	{
+		temp.data[count][count] = 1.0f;
+	}
+	foreach (count; 0 .. 3)
+	{
+		temp.data[3][count] = value_list[count];
+	}
+	return temp;
+}
+
+Matrix!(4, 4) matrix_scale(Type = float)(Type[3] value_list) pure nothrow @nogc @safe
+{
+	Matrix!(4, 4) temp;
+	temp.fill(0.0f);
+	foreach (count; 0 .. 3)
+	{
+		temp.data[count][count] = value_list[count];
+	}
+	temp.data[3][3] = 1.0f;
+	return temp;
 }

@@ -89,21 +89,22 @@ struct Vector(size_t Length, Type = float)
 	// Vector(Length) + Vector(Length)
 	typeof(this) opBinary(string op : "+", size_t Length2, Type2)(
 		in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
-			if (Length2 == Length)
+	if (Length2 == Length)
 	{
 		return add(this, rhs);
 	}
 	// Vector(Length) - Vector(Length)
 	typeof(this) opBinary(string op : "-", size_t Length2, Type2)(
 		in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
-			if (Length2 == Length)
+	if (Length2 == Length)
 	{
 		return subtract(this, rhs);
 	}
 	// return Vector * Vector
 	typeof(this) opBinary(string op : "*", size_t Length2, Type2)(
 		in Vector!(Length2, Type2) rhs
-	) const pure nothrow @nogc @safe if (Length2 == Length)
+	) const pure nothrow @nogc @safe
+	if (Length2 == Length)
 	{
 		return crossProduct(this, rhs);
 	}
@@ -115,7 +116,7 @@ struct Vector(size_t Length, Type = float)
 	}
 
 	bool opEquals(V : Vector!(RhsLength, RhsType), size_t RhsLength, RhsType)(in V rhs) const pure nothrow @nogc @safe
-			if (RhsLength == Length)
+	if (RhsLength == Length)
 	{
 		return zip(this.data[], rhs.data[]).all!(elm => isClose(elm[0], elm[1], 1e-10, 1e-10));
 	}
@@ -142,13 +143,24 @@ struct Vector(size_t Length, Type = float)
 		}
 		return result_str;
 	}
+
+	R opCast(R : Matrix!(Length, Length, Type))() const pure nothrow @safe
+	{
+		R temp_matrix = Matrix!(Length, Length, Type);
+		foreach (count; 0 .. Length)
+		{
+			temp_matrix.data[count][count] = this.data[count];
+		}
+		return temp_matrix;
+	}
 }
 
 Vector!(Length1, Type1) add(
 V1 : Vector!(Length1, Type1), V2:
 	Vector!(Length2, Type2),
 	size_t Length1, Type1, size_t Length2, Type2
-)(in V1 lhs, in V2 rhs) pure nothrow @nogc @safe if (Length1 == Length2)
+)(in V1 lhs, in V2 rhs) pure nothrow @nogc @safe
+if (Length1 == Length2)
 {
 	return Vector!(Length1, Type1)(
 		zip(lhs.data[], rhs.data[])
@@ -161,7 +173,8 @@ Vector!(Length1, Type1) subtract(
 V1 : Vector!(Length1, Type1), V2:
 	Vector!(Length2, Type2),
 	size_t Length1, Type1, size_t Length2, Type2
-)(in V1 lhs, in V2 rhs) pure nothrow @nogc @safe if (Length1 == Length2)
+)(in V1 lhs, in V2 rhs) pure nothrow @nogc @safe
+if (Length1 == Length2)
 {
 	return Vector!(Length1, Type1)(
 		zip(lhs.data[], rhs.data[])
