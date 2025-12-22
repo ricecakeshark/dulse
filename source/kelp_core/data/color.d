@@ -2,12 +2,30 @@ module kelp_core.data.color;
 
 import std.numeric;
 
-alias Float16 = CustomFloat!(10,5,CustomFloatFlags.ieee);
+//alias Float16 = CustomFloat!(10,5,CustomFloatFlags.ieee);
 
-struct Color
+alias Color = ColorF;
+
+struct ColorF
 {
-	Float16 r;
-	Float16 g;
-	Float16 b;
-	Float16 a;
+	float r;
+	float g;
+	float b;
+	float a;
+
+	this(float r, float g, float b, float a = 1.0f)
+	{
+		this.r = r;
+		this.g = g;
+		this.b = b;
+		this.a = a;
+	}
+}
+
+struct ColorU
+{
+	ubyte r;
+	ubyte g;
+	ubyte b;
+	ubyte a;
 }
