@@ -4,13 +4,13 @@ module kelp_core.core.subsystem;
 import kelp_core.core;
 import std.array, std.algorithm;
 
-class SubsystemPool : InterfacedPool!(Subsystem)
+class SubsystemPool
 {
-	//Subsystem[] pool;
+	InterfacedPool!(Subsystem) pool;
 
 	typeof(this) initialize()
 	{
-		foreach (subsystem; this.pool)
+		foreach (subsystem; this.pool.all)
 		{
 			subsystem.initialize();
 		}
@@ -19,7 +19,7 @@ class SubsystemPool : InterfacedPool!(Subsystem)
 
 	typeof(this) finalize()
 	{
-		foreach_reverse (subsystem; this.pool)
+		foreach_reverse (subsystem; this.pool.all)
 		{
 			subsystem.finalize();
 		}
@@ -28,28 +28,30 @@ class SubsystemPool : InterfacedPool!(Subsystem)
 
 	typeof(this) process()
 	{
-		foreach (subsystem; this.pool)
+		foreach (subsystem; this.pool.all)
 		{
 			subsystem.process();
 		}
 		return this;
 	}
-	/+
+	
+//	alias append = pool.append;
+
 	typeof(this) append(Subsystem[] subsystem_list...)
 	{
 		foreach (subsystem; subsystem_list)
 		{
 			subsystem.initialize();
-			pool ~= subsystem;
+			this.pool.append(subsystem);
 		}
 		return this;
 	}
 
-	Subsystem[] opIndex(string id)
+	/+Subsystem[] opIndex(string id)
 	{
-		return this.pool.filter!(subsystem => subsystem.id == id).array();
-	}
-	+/
+		return this.pool.all.filter!(subsystem => subsystem.id == id).array();
+	}+/
+	
 }
 
 interface Subsystem

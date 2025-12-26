@@ -1,6 +1,7 @@
 module kelp_core.core.core;
 
 import kelp_core;
+
 //import kelp_api;
 
 final class Kelp
@@ -13,27 +14,30 @@ final class Kelp
 	{
 		this.bus = new MessageBus();
 		this.subsystem = new SubsystemPool();
-		this.subsystem.append(new TimerSubsystem(this.bus));
-		this.subsystem.append(new EventSubsystem(this.bus));
+		subsystem.append(new TimerSubsystem(this.bus));
+		subsystem.append(new EventSubsystem(this.bus));
 		return;
 	}
 
 	void initialize()
 	{
 		this.subsystem.initialize();
+		//this.subsystem.apply((item) { item.initialize(); });
 		return;
 	}
 
 	void finalize()
 	{
 		this.subsystem.finalize();
+		//this.subsystem.apply((item) { item.finalize(); });
 		return;
 	}
 
 	void process()
 	{
 		this.subsystem.process();
-		if( this.bus.have!(QuitMessage) )
+		//this.subsystem.apply((item) { item.process(); });
+		if (this.bus.pool.have!(QuitMessage))
 		{
 			this.continuable = false;
 		}

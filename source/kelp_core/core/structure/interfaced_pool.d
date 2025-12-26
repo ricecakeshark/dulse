@@ -1,9 +1,9 @@
 module kelp_core.core.structure.interfaced_pool;
 
 import kelp_core.core.structure.pool;
-import std.array, std.algorithm;
+import std.array, std.algorithm, std.range;
 
-class InterfacedPool(Interface) : Pool!(InterfacedPool, Interface)
+struct InterfacedPool(Interface)
 {
 	Interface[] pool;
 
@@ -41,7 +41,21 @@ class InterfacedPool(Interface) : Pool!(InterfacedPool, Interface)
 		return this.pool.any!(item => item.isAnyTypeOf!(Args));
 	}+/
 
-	Type[] query(Type)() pure nothrow
+	Type query(Type)() pure nothrow
+	in
+	{
+		assert(this.pool.filter!(item => cast(Type) item !is null)().count == 1);
+	}
+	do
+	{
+		return this.pool
+			.filter!(item => cast(Type) item !is null)()
+			.map!(item => cast(Type) item)()
+			.takeOne()
+			.array()[0];
+	}
+
+	Type[] query_all(Type)() pure nothrow
 	{
 		return this.pool
 			.filter!(item => cast(Type) item !is null)()
@@ -66,7 +80,16 @@ class InterfacedPool(Interface) : Pool!(InterfacedPool, Interface)
 
 	typeof(this) remove(RemoveList...)(RemoveList remove_list) pure nothrow @safe
 	{
-		this.pool.filter!(item=>item.isAnyTypeOf!(RemoveList)==false);
+		this.pool.filter!(item => item.isAnyTypeOf!(RemoveList) == false);
+		return this;
+	}
+
+	typeof(this) apply()(void delegate(Interface) dlg)
+	{
+		foreach (item; this.pool)
+		{
+			dlg(item);
+		}
 		return this;
 	}
 }
