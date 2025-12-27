@@ -5,3 +5,5 @@ copyright "Copyright © 2025, RiceShark"
 license "proprietary"
 
 targetType "sourceLibrary"
+targetName "core"
+targetPath "build"
