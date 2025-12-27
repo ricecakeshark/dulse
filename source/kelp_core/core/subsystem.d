@@ -35,7 +35,7 @@ class SubsystemPool
 		return this;
 	}
 	
-//	alias append = pool.append;
+	alias pool this;
 
 	typeof(this) append(Subsystem[] subsystem_list...)
 	{
