@@ -5,11 +5,11 @@ import std.logger;
 
 class LoggerSubsystem : Subsystem
 {
-	MessageBus bus;
+	protected Core core;
 
-	this(MessageBus bus)
+	this(Core core)
 	{
-		this.bus = bus;
+		this.core = core;
 		return;
 	}
 

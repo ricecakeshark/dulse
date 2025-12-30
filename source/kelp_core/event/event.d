@@ -8,14 +8,14 @@ alias Poller = Event[]delegate();
 
 class EventSubsystem : Subsystem
 {
-	protected MessageBus bus;
+	protected Core core;
 	MonoPool!(Event) event_pool;
 	Event[]delegate() poll_dlg;
 	//Handler[] handler_list;
 
-	this(MessageBus bus)
+	this(Core core)
 	{
-		this.bus = bus;
+		this.core = core;
 		this.event_pool = new MonoPool!(Event);
 		return;
 	}
@@ -41,7 +41,8 @@ class EventSubsystem : Subsystem
 			switch (event.type)
 			{
 			case EventType.quit:
-				this.bus.send(new QuitMessage());
+				core.continuable = false;
+				//core.bus.send(new QuitMessage());
 				break;
 			default:
 				break;

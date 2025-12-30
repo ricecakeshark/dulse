@@ -7,7 +7,7 @@ import core.thread;
 
 class TimerSubsystem : Subsystem
 {
-	protected MessageBus bus;
+	protected Core core;
 	int target_frame_rate = 60;
 	int min_sleep_dur = 5;
 	int max_sleep_dur = 1000;
@@ -16,14 +16,18 @@ class TimerSubsystem : Subsystem
 	Duration last_past_dur;
 	long last_past;
 
-	this(MessageBus bus)
+	public SysTime begin, end;
+
+
+	this(Core core)
 	{
-		this.bus = bus;
+		this.core = core;
 		return;
 	}
 
 	void initialize()
 	{
+		begin = Clock.currTime();
 		measure_begin = Clock.currTime();
 		return;
 	}
@@ -37,6 +41,11 @@ class TimerSubsystem : Subsystem
 	{
 		this.sleep();
 		return;
+	}
+
+	@property inout(long) past() inout @safe
+	{
+		return (Clock.currTime() - begin).total!("msecs");
 	}
 
 	typeof(this) setFrameRate(int target_frame_rate)

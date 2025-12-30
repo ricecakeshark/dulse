@@ -4,7 +4,7 @@ import kelp_core;
 
 //import kelp_api;
 
-final class Kelp
+final class Core
 {
 	SubsystemPool subsystem;
 	protected MessageBus bus;
@@ -14,8 +14,9 @@ final class Kelp
 	{
 		this.bus = new MessageBus();
 		this.subsystem = new SubsystemPool();
-		subsystem.append(new TimerSubsystem(this.bus));
-		subsystem.append(new EventSubsystem(this.bus));
+		subsystem.append(new LoggerSubsystem(this));
+		subsystem.append(new TimerSubsystem(this));
+		subsystem.append(new EventSubsystem(this));
 		return;
 	}
 
