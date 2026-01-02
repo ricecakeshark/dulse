@@ -1,36 +1,23 @@
 module kelp_core.logger.logger;
 
-import kelp_core.core;
-import std.logger;
+import kelp_core.logger;
+import std.datetime;
+import std.format : format;
+import std.stdio;
 
-class LoggerSubsystem : Subsystem
+struct Logger
 {
-	protected Core core;
-
-	this(Core core)
+	typeof(this) log(
+		string log_text,
+		string file = __FILE__,
+		size_t line = __LINE__,
+		string func = __FUNCTION__,
+		string mod = __MODULE__,
+	)
 	{
-		this.core = core;
-		return;
-	}
-
-	void initialize()
-	{
-		return;
-	}
-
-	void finalize()
-	{
-		return;
-	}
-
-	void process()
-	{
-		return;
-	}
-
-	void log(string log_text)
-	{
-		std.logger.log(log_text);
-		return;
+		DateTime now = cast(DateTime) Clock.currTime();
+		format!("%s %s %s(%d) %s %s")(log_text, mod, file, line, func, now.toISOExtString)
+			.writeln();
+		return this;
 	}
 }

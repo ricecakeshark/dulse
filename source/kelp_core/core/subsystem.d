@@ -34,7 +34,7 @@ class SubsystemPool
 		}
 		return this;
 	}
-	
+
 	alias pool this;
 
 	typeof(this) append(Subsystem[] subsystem_list...)
@@ -51,7 +51,7 @@ class SubsystemPool
 	{
 		return this.pool.all.filter!(subsystem => subsystem.id == id).array();
 	}+/
-	
+
 }
 
 interface Subsystem
