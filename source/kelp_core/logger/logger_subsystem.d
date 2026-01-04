@@ -42,7 +42,7 @@ class LoggerSubsystem : Subsystem
 	)
 	{
 		//std.logger.info(log_text, line, file, func);
-		this.logger.log(log_text, file, line, func, mod);
+		this.logger.log(log_text, level, file, line, func, mod);
 		return;
 	}
 }

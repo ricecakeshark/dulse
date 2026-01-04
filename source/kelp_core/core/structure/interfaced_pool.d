@@ -41,6 +41,13 @@ struct InterfacedPool(Interface)
 		return this.pool.any!(item => item.isAnyTypeOf!(Args));
 	}+/
 
+	size_t count_query(Type)() pure nothrow
+	{
+		return this.pool
+			.filter!(item => cast(Type) item !is null)()
+			.count();
+	}
+
 	Type query(Type)() pure nothrow
 	in
 	{
@@ -111,27 +118,22 @@ unittest
 	{
 	}
 
-	class TestPool : InterfacedPool!(IC)
-	{
-	}
-
 	C1 a = new C1();
 	C2 b = new C2();
 	C1 c = new C1();
 
-	TestPool pool;
-	pool = new TestPool();
+	InterfacedPool!(IC) pool;
 
 	assert(pool.count == 0);
 	assert(pool.have!(C1)() == false);
-	assert(pool.query!(C1)() == []);
+	assert(pool.count_query!(C1)() == 0);
 	assert(pool.have!(C2)() == false);
-	assert(pool.query!(C2)() == []);
+	assert(pool.count_query!(C2)() == 0);
 	pool.append(a, b, c);
 	assert(pool.have!(C1)() == true);
-	assert(pool.query!(C1)() == [a, c]);
+	assert(pool.query_all!(C1)() == [a, c]);
 	assert(pool.have!(C2)() == true);
-	assert(pool.query!(C2)() == [b]);
+	assert(pool.query_all!(C2)() == [b]);
 
 }
 

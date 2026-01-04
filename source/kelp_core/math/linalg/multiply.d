@@ -35,8 +35,4 @@ unittest
 		[0f, 0f, 1f, 0f],
 	];
 	vector = [1f, 2f, 3f, 1f];
-
-	import std.stdio;
-
-	writeln(cast(string)(matrix * vector));
 }
