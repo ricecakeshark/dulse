@@ -1,14 +1,14 @@
 module kelp_core.math.transform.transform3d;
 
 import kelp_core.math.linalg;
-import std.math:tan;
+import std.math : PI_2, tan;
 
 Matrix!(4, 4) createTransformer()
 {
 	return create_perspective() * create_look_at(
-		Vector!(3)([0.0f,0.0f,+1.0f]),
-		Vector!(3)([0.0f,0.0f,0.0f]),
-		Vector!(3)([0.0f,+1.0f,0.0f])
+		Vector!(3)([0.0f, 0.0f, +1.0f]),
+		Vector!(3)([0.0f, 0.0f, 0.0f]),
+		Vector!(3)([0.0f, +1.0f, 0.0f])
 	);
 }
 
@@ -35,10 +35,11 @@ Matrix!(4, 4) create_look_at(
 }
 
 Matrix!(4, 4) create_perspective(
+	in float fovy = PI_2,
+	in float aspect = 960.0f / 540.0f,
 	in float far = 1.0f,
 	in float near = 0.0f,
-	in size_t fovy = 45,
-	in float aspect = 960.0f / 540.0f,
+
 ) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) return_matrix;

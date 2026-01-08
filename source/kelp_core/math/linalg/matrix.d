@@ -209,6 +209,17 @@ unittest
 	);
 }
 
+Matrix!(4, 4, Type) matrix_identity(Type = float)() pure nothrow @nogc @safe
+{
+	Matrix!(4, 4, Type) temp;
+	temp.fill(0.0f);
+	temp.data[0][0] = 1.0f;
+	temp.data[1][1] = 1.0f;
+	temp.data[2][2] = 1.0f;
+	temp.data[3][3] = 1.0f;
+	return temp;
+}
+
 Matrix!(4, 4, Type) matrix_rot_z(Type = float)(float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4, Type) temp;
