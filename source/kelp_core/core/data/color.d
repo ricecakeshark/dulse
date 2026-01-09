@@ -10,94 +10,83 @@ alias Color = ColorF;
 
 struct ColorF
 {
-	private float[4] rgba;
+	public float red, green, blue, alpha;
 
-	invariant
+	/+invariant
 	{
-		assert(this.rgba[].all!(color => color >= 0.0f));
-		assert(this.rgba[].all!(color => color <= 1.0f));
-	}
+		assert(this.elements.all!(color => color >= 0.0f));
+		assert(this.elements.all!(color => color <= 1.0f));
+	}+/
 
 	this(float r, float g, float b, float a = 1.0f)
 	{
-		this.rgba[0] = r;
-		this.rgba[1] = g;
-		this.rgba[2] = b;
-		this.rgba[3] = a;
+		this.red = r;
+		this.green = g;
+		this.blue = b;
+		this.alpha = a;
 		return;
 	}
 
-	@property ref float red() pure nothrow @nogc
+	this(float[4] rgba)
 	{
-		return this.rgba[0];
+		this.red = rgba[0];
+		this.green = rgba[1];
+		this.blue = rgba[2];
+		this.alpha = rgba[3];
+		return;
 	}
 
-	@property ref float green() pure nothrow @nogc
+	inout(float[4]) elements() inout pure nothrow @nogc @safe
 	{
-		return this.rgba[1];
-	}
-
-	@property ref float blue() pure nothrow @nogc
-	{
-		return this.rgba[2];
-	}
-
-	@property ref float alpha() pure nothrow @nogc
-	{
-		return this.rgba[3];
+		return [this.red, this.green, this.blue, this.alpha];
 	}
 
 	ColorU opCast(T : ColorU)() const
 	{
-		return ColorU(this.rgba[]
-				.map!(color => color * 255.9f)
-				.map!(color => cast(ubyte) color)
-				.staticArray!(ubyte[4])());
+		return ColorU(
+			this.red.to_ubyte_color(),
+			this.green.to_ubyte_color(),
+			this.blue.to_ubyte_color(),
+			this.alpha.to_ubyte_color(),
+		);
 	}
 }
 
 struct ColorU
 {
-	ubyte[4] rgba;
+	public ubyte red, green, blue, alpha;
 
-	this(ubyte[3] rgb...)
+	this(ubyte r, ubyte g, ubyte b, ubyte a = 0xff)
 	{
-		this.rgba = rgb~0x00u;
+		this.red = r;
+		this.green = g;
+		this.blue = b;
+		this.alpha = a;
 		return;
 	}
 
-	this(ubyte[4] rgba...)
+	this(ubyte[4] rgba)
 	{
-		this.rgba = rgba;
+		this.red = rgba[0];
+		this.green = rgba[1];
+		this.blue = rgba[2];
+		this.alpha = rgba[3];
 		return;
 	}
 
-	@property ref ubyte red() pure nothrow @nogc
+	inout(ubyte[4]) elements() inout pure nothrow @nogc @safe
 	{
-		return this.rgba[0];
+		return [this.red, this.green, this.blue, this.alpha];
 	}
 
-	@property ref ubyte green() pure nothrow @nogc
+	ColorU opCast(T : ColorF)() const
 	{
-		return this.rgba[1];
-	}
-
-	@property ref ubyte blue() pure nothrow @nogc
-	{
-		return this.rgba[2];
-	}
-
-	@property ref ubyte alpha() pure nothrow @nogc
-	{
-		return this.rgba[3];
-	}
-
-	ColorF opCast(T : ColorF)() const
-	{
-		return ColorF(this.rgba[]
-				.map!(color => color / 255.9f)
-				.map!(color => cast(float) color)
-				.staticArray!(float[4])());
+		return ColorU(
+			this.red.to_float_color(),
+			this.green.to_float_color(),
+			this.blue.to_float_color(),
+			this.alpha.to_float_color(),
+		);
 	}
 }
 
@@ -108,4 +97,14 @@ unittest
 	assert(color_u.red == 255u);
 	assert(color_u.green == 127u);
 	assert(color_u.blue == 0u);
+}
+
+pure ubyte to_ubyte_color(float color) nothrow @nogc @safe
+{
+	return cast(ubyte)(color * 255.9f);
+}
+
+pure float to_float_color(ubyte color) nothrow @nogc @safe
+{
+	return (cast(float) color / 255.9f);
 }
