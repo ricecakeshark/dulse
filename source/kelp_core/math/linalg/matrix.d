@@ -86,6 +86,41 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return return_str;
 	}
 
+	bool opEquals(in Matrix!(Row, Col, Type) rhs) const pure nothrow @nogc @safe
+	{
+		foreach (row; 0 .. Row)
+		{
+			foreach (col; 0 .. Col)
+			{
+				if (isClose(this[row, col], rhs[row, col]) == false)
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	bool opEquals(in Type[Col][Row] rhs) const pure nothrow @nogc @safe
+	{
+		foreach (row; 0 .. Row)
+		{
+			foreach (col; 0 .. Col)
+			{
+				if (isClose(this[row, col], rhs[row][col], 1e-10, 1e-6) == false)
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	size_t toHash() const @nogc @safe pure nothrow
+	{
+		return this.data.hashOf();
+	}
+
 	Matrix!(Row, Col, Type) opBinary(string op : "+", size_t RhsRow, size_t RhsCol, RhsType)(
 		in Matrix!(RhsRow, RhsCol, RhsType) rhs) const pure nothrow @nogc @safe
 	in (RhsRow == Row)
@@ -107,6 +142,32 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	{
 		return multiply!(Matrix!(Row, Col, Type), Matrix!(Row2, Col2, Type))(this, rhs);
 	}
+}
+
+Matrix!(Row, Col, Type) transpose(
+M : Matrix!(Row, Col, Type),
+	size_t Row, size_t Col, Type,
+)(in M matrix) pure nothrow @nogc @safe
+{
+	Matrix!(Col, Row, Type) result_matrix = Matrix!(Col, Row, Type)(0.0);
+	static foreach (col; 0 .. Col)
+	{
+		static foreach (row; 0 .. Row)
+		{
+			result_matrix.data[col][row] = matrix[row, col];
+		}
+	}
+	return result_matrix;
+}
+
+unittest
+{
+	Matrix!(2, 2) mat;
+	mat = [
+		[1.0f, 2.0f],
+		[3.0f, 4.0f],
+	];
+	assert(mat.transpose() == [[1.0f, 3.0f], [2.0f, 4.0f]]);
 }
 
 Matrix!(Row1, Col1, Type1) add(
@@ -220,6 +281,33 @@ Matrix!(4, 4, Type) matrix_identity(Type = float)() pure nothrow @nogc @safe
 	return temp;
 }
 
+Matrix!(4, 4) matrix_scale(Type = float)(Type[3] value_list) pure nothrow @nogc @safe
+{
+	Matrix!(4, 4) temp;
+	temp.fill(0.0f);
+	foreach (count; 0 .. 3)
+	{
+		temp.data[count][count] = value_list[count];
+	}
+	temp.data[3][3] = 1.0f;
+	return temp;
+}
+/+
+Matrix!(4, 4) matrix_translate(Type = float)(Type[3] value_list) pure nothrow @nogc @safe
+{
+	Matrix!(4, 4) temp;
+	temp.fill(0.0f);
+	foreach (count; 0 .. 4)
+	{
+		temp.data[count][count] = 1.0f;
+	}
+	foreach (count; 0 .. 3)
+	{
+		temp.data[count][3] = value_list[count];
+	}
+	return temp;
+}
+
 Matrix!(4, 4, Type) matrix_rot_z(Type = float)(float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4, Type) temp;
@@ -231,31 +319,31 @@ Matrix!(4, 4, Type) matrix_rot_z(Type = float)(float rad) pure nothrow @nogc @sa
 	temp.data[2][2] = 1.0f;
 	temp.data[3][3] = 1.0f;
 	return temp;
-}
+}+/
 
-Matrix!(4, 4) matrix_translate(Type = float)(Type[3] value_list) pure nothrow @nogc @safe
+unittest
 {
-	Matrix!(4, 4) temp;
-	temp.fill(0.0f);
-	foreach (count; 0 .. 4)
-	{
-		temp.data[count][count] = 1.0f;
-	}
-	foreach (count; 0 .. 3)
-	{
-		temp.data[3][count] = value_list[count];
-	}
-	return temp;
-}
+	import std.stdio;
 
-Matrix!(4, 4) matrix_scale(Type = float)(Type[3] value_list) pure nothrow @nogc @safe
-{
-	Matrix!(4, 4) temp;
-	temp.fill(0.0f);
-	foreach (count; 0 .. 3)
-	{
-		temp.data[count][count] = value_list[count];
-	}
-	temp.data[3][3] = 1.0f;
-	return temp;
+	Matrix!(4, 4) mat_s, mat_t;
+	mat_s = matrix_scale([+1.0f, +2.0f, +3.0f]);
+	writeln(cast(string) mat_s);
+	assert(mat_s == Matrix!(4, 4)(
+			[
+			[+1.0f, 0.0f, 0.0f, 0.0f],
+			[0.0f, +2.0f, 0.0f, 0.0f],
+			[0.0f, 0.0f, +3.0f, 0.0f],
+			[0.0f, 0.0f, 0.0f, 1.0f],
+		]
+	));
+	/+mat_t = matrix_translate([+1.0f, +2.0f, +3.0f]);
+	writeln(cast(string) mat_t);
+	assert(mat_t == Matrix!(4, 4)(
+			[
+			[1.0f, 0.0f, 0.0f, +1.0f],
+			[0.0f, 1.0f, 0.0f, +2.0f],
+			[0.0f, 0.0f, 1.0f, +3.0f],
+			[0.0f, 0.0f, 0.0f, 1.0f],
+		]
+	));+/
 }
