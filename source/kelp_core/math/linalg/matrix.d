@@ -51,6 +51,17 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return this;
 	}
 
+	typeof(this) indentify() pure nothrow @nogc @safe
+	in (Row == Col)
+	{
+		this.fill(0.0f);
+		foreach (count; 0 .. Col)
+		{
+			this.data[count][count] = 1.0f;
+		}
+		return this;
+	}
+
 	Type[Col][Row] opAssign(in Type[Col][Row] assign_matrix) pure nothrow @safe
 	{
 		this.data = assign_matrix;
@@ -270,7 +281,8 @@ unittest
 	);
 }
 
-Matrix!(4, 4, Type) matrix_identity(Type = float)() pure nothrow @nogc @safe
+Matrix!(4, 4, Type) matrix_identity(size_t Row, size_t Col, Type = float)() pure nothrow @nogc @safe
+if (Row == Col && Row != 0 && Col != 0)
 {
 	Matrix!(4, 4, Type) temp;
 	temp.fill(0.0f);
@@ -346,4 +358,30 @@ unittest
 			[0.0f, 0.0f, 0.0f, 1.0f],
 		]
 	));+/
+}
+
+Matrix!(Row, Col, Type) multiply_ltor(size_t Row, size_t Col, Type)(
+	Matrix!(Row, Col, Type)[] matrix_list...
+)
+{
+	Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
+	temp.indentify();
+	foreach (count; 0 .. matrix_list.length)
+	{
+		temp = temp * matrix_list[count];
+	}
+	return temp;
+}
+
+Matrix!(Row, Col, Type) multiply_rtol(size_t Row, size_t Col, Type)(
+	Matrix!(Row, Col, Type)[] matrix_list...
+)
+{
+	Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
+	temp.indentify();
+	foreach_reverse (count; 0 .. matrix_list.length)
+	{
+		temp = temp * matrix_list[count];
+	}
+	return temp;
 }

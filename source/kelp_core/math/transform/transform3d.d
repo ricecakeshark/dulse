@@ -6,7 +6,7 @@ import std.math;
 Matrix!(4, 4) transformer_scale(in Vector!(3) vec) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(float)();
+	temp = matrix_identity!(4, 4, float)();
 	temp.data[0][0] = vec[0];
 	temp.data[1][1] = vec[1];
 	temp.data[2][2] = vec[2];
@@ -16,7 +16,7 @@ Matrix!(4, 4) transformer_scale(in Vector!(3) vec) pure nothrow @nogc @safe
 Matrix!(4, 4) transformer_scale(Type)(in Type[3] vec) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(float)();
+	temp = matrix_identity!(4, 4, float)();
 	temp.data[0][0] = vec[0];
 	temp.data[1][1] = vec[1];
 	temp.data[2][2] = vec[2];
@@ -26,7 +26,7 @@ Matrix!(4, 4) transformer_scale(Type)(in Type[3] vec) pure nothrow @nogc @safe
 Matrix!(4, 4) transformer_translate(in Vector!(3) vec) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(float)();
+	temp = matrix_identity!(4, 4, float)();
 	temp.data[0][3] = vec[0];
 	temp.data[1][3] = vec[1];
 	temp.data[2][3] = vec[2];
@@ -36,7 +36,7 @@ Matrix!(4, 4) transformer_translate(in Vector!(3) vec) pure nothrow @nogc @safe
 Matrix!(4, 4) transformer_translate(Type)(in Type[3] vec) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(float)();
+	temp = matrix_identity!(4, 4, float)();
 	temp.data[0][3] = vec[0];
 	temp.data[1][3] = vec[1];
 	temp.data[2][3] = vec[2];
@@ -48,7 +48,7 @@ Matrix!(4, 4) transformer_rotate_x(
 ) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(float)();
+	temp = matrix_identity!(4, 4, float)();
 	temp.data[1][1] = cos(rad);
 	temp.data[1][2] = -sin(rad);
 	temp.data[2][1] = sin(rad);
@@ -61,7 +61,7 @@ Matrix!(4, 4) transformer_rotate_y(
 ) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(float)();
+	temp = matrix_identity!(4, 4, float)();
 	temp.data[2][2] = cos(rad);
 	temp.data[2][0] = -sin(rad);
 	temp.data[0][2] = sin(rad);
@@ -74,7 +74,7 @@ Matrix!(4, 4) transformer_rotate_z(
 ) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(float)();
+	temp = matrix_identity!(4, 4, float)();
 	temp.data[0][0] = cos(rad);
 	temp.data[0][1] = -sin(rad);
 	temp.data[1][0] = sin(rad);
