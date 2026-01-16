@@ -9,6 +9,18 @@ struct Vertex(Pos, Col)
 	Col color;
 }
 
+struct VertexPC
+{
+	Vec3 pos;
+	ColorU color;
+}
+
+struct VertexPT
+{
+	Vec3 pos;
+	Vec2 uv;
+}
+
 unittest
 {
 	Vertex!(Vector!(3), ColorF) vertex;

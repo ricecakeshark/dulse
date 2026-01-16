@@ -5,6 +5,7 @@ import std.array;
 import std.algorithm, std.math, std.range;
 import std.range : zip;
 
+alias Vec2 = Vector!(2, float);
 alias Vec3 = Vector!(3, float);
 alias Vec4 = Vector!(4, float);
 
