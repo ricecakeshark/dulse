@@ -43,9 +43,7 @@ Matrix!(4, 4) transformer_translate(Type)(in Type[3] vec) pure nothrow @nogc @sa
 	return temp;
 }
 
-Matrix!(4, 4) transformer_rotate_x(
-	in float rad,
-) pure nothrow @nogc @safe
+Matrix!(4, 4) transformer_rotate_x(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, 4, float)();
@@ -56,9 +54,7 @@ Matrix!(4, 4) transformer_rotate_x(
 	return temp;
 }
 
-Matrix!(4, 4) transformer_rotate_y(
-	in float rad,
-) pure nothrow @nogc @safe
+Matrix!(4, 4) transformer_rotate_y(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, 4, float)();
@@ -69,9 +65,7 @@ Matrix!(4, 4) transformer_rotate_y(
 	return temp;
 }
 
-Matrix!(4, 4) transformer_rotate_z(
-	in float rad,
-) pure nothrow @nogc @safe
+Matrix!(4, 4) transformer_rotate_z(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, 4, float)();
