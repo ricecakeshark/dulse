@@ -21,6 +21,13 @@ struct VertexPT
 	Vec2 uv;
 }
 
+struct VertexPCT
+{
+	Vec3 pos;
+	ColorF color;
+	Vec2 uv;
+}
+
 unittest
 {
 	Vertex!(Vector!(3), ColorF) vertex;
