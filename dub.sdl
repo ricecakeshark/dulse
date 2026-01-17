@@ -7,3 +7,5 @@ license "proprietary"
 targetType "sourceLibrary"
 targetName "core"
 targetPath "build"
+
+dflags "-preview=in"

@@ -154,7 +154,7 @@ struct LoopedFloat(real Limit)
 		}
 	}
 
-	auto opAssign(T)(T value) pure nothrow @safe
+	auto opAssign(real value) pure nothrow @safe
 	{
 		this.internal_value = value.normalize(Limit);
 		return value;
@@ -200,10 +200,10 @@ unittest
 	import std.format : format;
 
 	LoopedFloat!(10.0f) looped;
-	looped = 0.0f;
+	looped = 0.0;
 
-	assert(LoopedFloat!(10.0f)(10.0f).isClose(+0.0f), format("%f", LoopedFloat!(10.0f)(10.0f)));
-	assert(LoopedFloat!(10.0f)(0.0f).isClose(+0.0f));
-	assert(LoopedFloat!(10.0f)(33.0f).isClose(+3.0f));
-	assert(LoopedFloat!(10.0f)(-17.0f).isClose(+3.0f), format("%f", looped - 17.0f));
+	assert(LoopedFloat!(10.0L)(10.0L).isClose(+0.0L), format("%f", LoopedFloat!(10.0f)(10.0f)));
+	assert(LoopedFloat!(10.0L)(0.0L).isClose(+0.0L));
+	assert(LoopedFloat!(10.0L)(33.0L).isClose(+3.0L));
+	assert(LoopedFloat!(10.0L)(-17.0L).isClose(+3.0L), format("%f", looped - 17.0f));
 }
