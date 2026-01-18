@@ -189,3 +189,27 @@ do
 	];
 	return temp;
 }
+
+Matrix!(4, 4) transformer_ortho_wh(
+	in float w,
+	in float h,
+	in float zn = 0.0f,
+	in float zf = 1.0f,
+)
+in
+{
+	assert(!w.isNaN && w > 1.0f);
+	assert(!h.isNaN && h > 1.0f);
+	assert(!zf.isNaN && !zn.isNaN && zn < zf);
+}
+do
+{
+	Matrix!(4, 4) temp;
+	temp = Matrix!(4, 4)([
+		[2.0f / w, 0.0f, 0.0f, -1.0f],
+		[0.0f, -2.0f / h, 0.0f, +1.0f],
+		[0.0f, 0.0f, 1.0f / (zf - zn), -zn / (zf - zn)],
+		[0.0f, 0.0f, 0.0f, +1.0f],
+	]);
+	return temp;
+}
