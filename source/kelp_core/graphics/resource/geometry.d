@@ -3,7 +3,7 @@ module kelp_core.graphics.resource.geometry;
 import kelp_core.graphics.resource;
 import kelp_core.math.linalg.vector;
 
-struct Geometry(V, I)
+struct GfxGeometry(V, I)
 {
 	V[] vertex_list;
 	I[] index_list;
