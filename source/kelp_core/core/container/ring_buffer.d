@@ -74,11 +74,11 @@ struct RingBuffer(Type, ubyte Length)
 	{
 		if (index_first + index < Length)
 		{
-			return index_first + index;
+			return this.data[index_first + index];
 		}
 		else
 		{
-			return (index_first + index) % Length;
+			return this.data[index_first + index - Length];
 		}
 	}
 
