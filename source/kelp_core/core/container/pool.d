@@ -1,6 +1,6 @@
 module kelp_core.core.container.pool;
 
-interface Pool(This,TItem)
+interface Pool(This, TItem)
 {
 	@property size_t count() const pure nothrow @nogc @safe;
 	@property inout(TItem[]) all() inout pure nothrow @nogc @safe;

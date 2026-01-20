@@ -1,10 +1,10 @@
 module kelp_core.core.container.mono_pool;
 
 import kelp_core.core.container.pool;
-import std.array: array;
+import std.array : array;
 import std.algorithm;
 
-class MonoPool(TItem) : Pool!(MonoPool,TItem)
+class MonoPool(TItem) : Pool!(MonoPool, TItem)
 {
 	TItem[] item_list;
 

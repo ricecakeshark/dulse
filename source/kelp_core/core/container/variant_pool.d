@@ -5,7 +5,7 @@ import std.array;
 import std.algorithm;
 import std.sumtype;
 
-class VariantPool(TypeList) : Pool!(VariantPool,TypeList)
+class VariantPool(TypeList) : Pool!(VariantPool, TypeList)
 {
 	TypeList[] item_list;
 
@@ -26,7 +26,7 @@ class VariantPool(TypeList) : Pool!(VariantPool,TypeList)
 
 	bool have(Type)() pure nothrow @nogc @safe
 	{
-		return this.item_list.any!(item=>item.has!(Type)())();
+		return this.item_list.any!(item => item.has!(Type)())();
 	}
 
 	bool have(Type)(Type search_item) pure nothrow @nogc @safe
@@ -51,10 +51,10 @@ class VariantPool(TypeList) : Pool!(VariantPool,TypeList)
 
 	typeof(this) append(Type...)(Type append_list)
 	{
-		foreach(append_item;append_list)
+		foreach (append_item; append_list)
 		{
-			this.item_list ~= cast(TypeList)append_item;
-		}		
+			this.item_list ~= cast(TypeList) append_item;
+		}
 		return this;
 	}
 
@@ -69,20 +69,29 @@ unittest
 {
 	import std.format;
 
-	struct S1{}
-	struct S2{}
-	struct S3{}
-	alias S = SumType!(S1,S2,S3);
+	struct S1
+	{
+	}
+
+	struct S2
+	{
+	}
+
+	struct S3
+	{
+	}
+
+	alias S = SumType!(S1, S2, S3);
 
 	S s1 = S1();
 	S s2 = S2();
-	assert(s1.has!(S1)==true);
-	
+	assert(s1.has!(S1) == true);
+
 	VariantPool!(S) pool = new VariantPool!(S)();
 
 	assert(pool.count == 0);
-	pool.append(s1,s2);
-	assert(pool.count == 2,format("count: %s",pool.count));
+	pool.append(s1, s2);
+	assert(pool.count == 2, format("count: %s", pool.count));
 	assert(pool.query!(S1)().length == 1);
 	assert(pool.have!(S1) == true);
 	assert(pool.have!(S2) == true);
