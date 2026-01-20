@@ -1,36 +1,53 @@
 module kelp_core.device.keyboard;
 
+import kelp_core.core.container : RingQueue;
+
 class Keyboard
 {
-	KeyboardInputState[2] input_state;
+	//KeyboardInputState[2] input_state;
+	RingQueue!(KeyboardInputState, 5) state_list;
+
+	void intialize()
+	{
+		return;
+	}
+
+	void finalize()
+	{
+		return;
+	}
+
+	void process()
+	{
+		return;
+	}
 
 	typeof(this) update(KeyboardInputState keyboard_input_state)
 	{
-		input_state[1] = input_state[0];
-		input_state[0] = keyboard_input_state;
+		state_list.append([keyboard_input_state]);
 		return this;
 	}
 
 	bool pressed(Scancode scancode)
 	{
-		return (input_state[0][scancode] == true) ? true : false;
+		return (state_list[0][scancode] == true) ? true : false;
 	}
 
 	bool released(Scancode scancode)
 	{
-		return (input_state[0][scancode] == false) ? true : false;
+		return (state_list[0][scancode] == false) ? true : false;
 	}
 
 	bool pressed_just(Scancode scancode)
 	{
-		return (input_state[0][scancode] == true
-				&& input_state[1][scancode] == false) ? true : false;
+		return (state_list[0][scancode] == true
+				&& state_list[1][scancode] == false) ? true : false;
 	}
 
 	bool released_just(Scancode scancode)
 	{
-		return (input_state[0][scancode] == false
-				&& input_state[1][scancode] == true) ? true : false;
+		return (state_list[0][scancode] == false
+				&& state_list[1][scancode] == true) ? true : false;
 	}
 }
 

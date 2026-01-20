@@ -7,5 +7,6 @@ license "proprietary"
 targetType "sourceLibrary"
 targetName "core"
 targetPath "build"
+sourcePaths "source\\kelp_core"
 
 dflags "-preview=in"

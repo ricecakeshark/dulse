@@ -1,7 +1,6 @@
 module kelp_core.core.message_bus;
 
-import kelp_core.core.structure;
-
+import kelp_core.core.container;
 
 class MessageBus
 {

@@ -17,6 +17,7 @@ final class Core
 		subsystem.append(new LoggerSubsystem(this));
 		subsystem.append(new TimerSubsystem(this));
 		subsystem.append(new EventSubsystem(this));
+		subsystem.append(new DeviceSubsystem(this));
 		return;
 	}
 
