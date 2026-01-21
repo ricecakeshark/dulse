@@ -42,7 +42,7 @@ struct RingQueue(Type, ubyte Length)
 		return this.buffer[index];
 	}
 
-	typeof(this) append(Type[] append_list)
+	typeof(this) append(Type[] append_list...)
 	{
 		this.buffer.append_first(append_list);
 		return this;
@@ -62,7 +62,7 @@ struct RingStack(Type, ubyte Length)
 		return;
 	}
 
-	typeof(this) append(Type[] append_list)
+	typeof(this) append(Type[] append_list...)
 	{
 		this.buffer.append_last(append_list);
 		return this;
@@ -153,7 +153,7 @@ struct RingBuffer(Type, ubyte Length)
 		return this;
 	}
 
-	typeof(this) append_first(Type[] append_list) pure nothrow @safe
+	typeof(this) append_first(Type[] append_list...) pure nothrow @safe
 	in
 	{
 
@@ -183,7 +183,7 @@ struct RingBuffer(Type, ubyte Length)
 		return this;
 	}
 
-	typeof(this) append_last(Type[] append_list) pure nothrow @safe
+	typeof(this) append_last(Type[] append_list...) pure nothrow @safe
 	in
 	{
 

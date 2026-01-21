@@ -21,6 +21,12 @@ class Gamepad
 	{
 		return;
 	}
+
+	void update(ref GamepadState state)
+	{
+		this.state_list.append(state);
+		return;
+	}
 }
 
 struct GamepadState
