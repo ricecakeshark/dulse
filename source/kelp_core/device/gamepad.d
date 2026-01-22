@@ -27,6 +27,17 @@ class Gamepad
 		this.state_list.append(state);
 		return;
 	}
+
+	bool pressed_just(GamepadButton button_type)
+	{
+		return (state_list[0][button_type] == true && state_list[1][button_type] == false) ? true
+			: false;
+	}
+
+	/+bool released_just(GamepadButton button_type)
+	{
+
+	}+/
 }
 
 struct GamepadState
@@ -40,6 +51,25 @@ struct GamepadState
 	ButtonState paddle_right_1, paddle_left_1, paddle_right_2, paddle_left_2;
 	ButtonState touchpad;
 	ButtonState misc2, misc3, misc4, misc5, misc6;
+
+	ref ButtonState opIndex(GamepadButton button_type)
+	{
+		switch (button_type)
+		{
+		case GamepadButton.south:
+			return this.south.state;
+		case GamepadButton.east:
+			return this.east.state;
+		case GamepadButton.west:
+			return this.west.state;
+		case GamepadButton.north:
+			return this.north.state;
+		case GamepadButton.north:
+			return this.north.state;
+		default:
+			assert(0);
+		}
+	}
 }
 
 enum GamepadButton
