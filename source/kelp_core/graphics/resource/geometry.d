@@ -13,7 +13,7 @@ struct GfxGeometry(V, I)
 		return (this.size_vertex + this.size_index);
 	}
 
-	size_t size(size_t index) pure nothrow @nogc @safe
+	size_t size(in size_t index) pure nothrow @nogc @safe
 	{
 		final switch (index)
 		{
@@ -24,7 +24,7 @@ struct GfxGeometry(V, I)
 		}
 	}
 
-	size_t offset(size_t index) pure nothrow @nogc @safe
+	size_t offset(in size_t index) pure nothrow @nogc @safe
 	{
 		final switch (index)
 		{

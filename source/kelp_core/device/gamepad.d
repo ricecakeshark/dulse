@@ -30,14 +30,15 @@ class Gamepad
 
 	bool pressed_just(GamepadButton button_type)
 	{
-		return (state_list[0][button_type] == true && state_list[1][button_type] == false) ? true
+		return (state_list[0][button_type].state == true && state_list[1][button_type].state == false) ? true
 			: false;
 	}
 
-	/+bool released_just(GamepadButton button_type)
+	bool released_just(GamepadButton button_type)
 	{
-
-	}+/
+		return (state_list[0][button_type].state == false && state_list[1][button_type].state == true) ? true
+			: false;
+	}
 }
 
 struct GamepadState
@@ -57,15 +58,13 @@ struct GamepadState
 		switch (button_type)
 		{
 		case GamepadButton.south:
-			return this.south.state;
+			return this.south;
 		case GamepadButton.east:
-			return this.east.state;
+			return this.east;
 		case GamepadButton.west:
-			return this.west.state;
+			return this.west;
 		case GamepadButton.north:
-			return this.north.state;
-		case GamepadButton.north:
-			return this.north.state;
+			return this.north;
 		default:
 			assert(0);
 		}

@@ -9,14 +9,14 @@ alias Poller = Event[]delegate();
 class EventSubsystem : Subsystem
 {
 	protected Core core;
-	MonoPool!(Event) event_pool;
+	MonoPool!(Event) pool;
 	Event[]delegate() poll_dlg;
 	//Handler[] handler_list;
 
 	this(Core core)
 	{
 		this.core = core;
-		this.event_pool = new MonoPool!(Event);
+		this.pool = new MonoPool!(Event);
 		return;
 	}
 
@@ -34,9 +34,9 @@ class EventSubsystem : Subsystem
 	{
 		if (poll_dlg !is null)
 		{
-			this.event_pool.append(poll_dlg());
+			this.pool.append(poll_dlg());
 		}
-		foreach (event; event_pool.all)
+		foreach (event; pool.all)
 		{
 			switch (event.type)
 			{
