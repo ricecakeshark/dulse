@@ -88,6 +88,11 @@ struct LoopedInt(long Limit)
 		return value;
 	}
 
+	bool opEquals(in typeof(this) rhs) const pure nothrow @nogc @safe
+	{
+		return this.internal_value == rhs.internal_value;
+	}
+
 	bool opEquals(in int rhs) const pure nothrow @nogc @safe
 	{
 		return internal_value == rhs;
@@ -96,6 +101,11 @@ struct LoopedInt(long Limit)
 	size_t toHash() const pure nothrow @nogc @safe
 	{
 		return this.internal_value.hashOf;
+	}
+
+	inout(long) opCast(T : long)() inout pure nothrow @nogc @safe
+	{
+		return this.internal_value;
 	}
 
 	alias value this;

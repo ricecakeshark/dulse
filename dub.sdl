@@ -8,5 +8,6 @@ targetType "sourceLibrary"
 targetName "core"
 targetPath "build"
 sourcePaths "source\\kelp_core"
+importPaths "source"
 
 dflags "-preview=in"

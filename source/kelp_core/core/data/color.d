@@ -18,7 +18,7 @@ struct ColorF
 		assert(this.elements.all!(color => color <= 1.0f));
 	}+/
 
-	this(float r, float g, float b, float a = 0.5f)
+	this(float r, float g, float b, float a = 1.0f)
 	{
 		this.red = r;
 		this.green = g;
