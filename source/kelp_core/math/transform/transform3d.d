@@ -143,7 +143,7 @@ Matrix!(4, 4) transformer_perspective(
 	in float fovy = PI_2,
 	in float aspect = 960.0f / 540.0f,
 	in float near = 0.0f,
-	in float far = 1.0f,
+	in float far = 10.0f,
 ) pure nothrow @nogc @safe
 in
 {
@@ -159,7 +159,7 @@ do
 	return_matrix = [
 		[F / aspect, 0.0f, 0.0f, 0.0f],
 		[0.0f, F, 0.0f, 0.0f],
-		[0.0f, 0.0f, (F + near) / (F - near), (-2.0f * F * near) / (F - near)],
+		[0.0f, 0.0f, (far + near) / (far - near), (-2.0f * far * near) / (far - near)],
 		[0.0f, 0.0f, -1.0f, 0.0f],
 	];
 	return return_matrix;

@@ -12,7 +12,7 @@ struct Vertex(Pos, Col)
 struct VertexPC
 {
 	Vec3 pos;
-	ColorU color;
+	ColorF color;
 }
 
 struct VertexPT

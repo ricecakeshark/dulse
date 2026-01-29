@@ -1,6 +1,7 @@
 module kelp_core.timer.timer;
 
 import kelp_core.core;
+
 //import kelp_api;
 import std.datetime;
 import core.thread;
@@ -17,7 +18,6 @@ class TimerSubsystem : Subsystem
 	long last_past;
 
 	public SysTime begin, end;
-
 
 	this(Core core)
 	{
@@ -78,7 +78,6 @@ class TimerSubsystem : Subsystem
 		return this;
 	}
 
-protected:
 	static void sleep(long wait_dur) nothrow @nogc @trusted
 	{
 		Thread.sleep(dur!("msecs")(wait_dur));
