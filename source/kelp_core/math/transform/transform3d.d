@@ -3,10 +3,11 @@ module kelp_core.math.transform.transform3d;
 import kelp_core.math.linalg;
 import std.math;
 
+// Row-major (v2 = v * M)
 Matrix!(4, 4) transformer_scale(in Vector!(3) vec) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(4, 4, float)();
+	temp = matrix_identity!(4, float)();
 	temp.data[0][0] = vec[0];
 	temp.data[1][1] = vec[1];
 	temp.data[2][2] = vec[2];
@@ -15,38 +16,45 @@ Matrix!(4, 4) transformer_scale(in Vector!(3) vec) pure nothrow @nogc @safe
 
 Matrix!(4, 4) transformer_scale(Type)(in Type[3] vec) pure nothrow @nogc @safe
 {
+	return transformer_scale(Vector!(3)(vec));
+}
+
+alias transformer_translate = transformer_translate_row;
+
+Matrix!(4, 4) transformer_translate_row(in Vector!(3) vec) pure nothrow @nogc @safe
+{
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(4, 4, float)();
-	temp.data[0][0] = vec[0];
-	temp.data[1][1] = vec[1];
-	temp.data[2][2] = vec[2];
+	temp = matrix_identity!(4, float)();
+	temp.data[3][0] = vec[0];
+	temp.data[3][1] = vec[1];
+	temp.data[3][2] = vec[2];
 	return temp;
 }
 
-Matrix!(4, 4) transformer_translate(in Vector!(3) vec) pure nothrow @nogc @safe
+Matrix!(4, 4) transformer_translate_row(Type)(in Type[3] vec) pure nothrow @nogc @safe
+{
+	return transformer_translate_row(Vector!(3)(vec));
+}
+
+Matrix!(4, 4) transformer_translate_col(in Vector!(3) vec) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(4, 4, float)();
+	temp = matrix_identity!(4, float)();
 	temp.data[0][3] = vec[0];
 	temp.data[1][3] = vec[1];
 	temp.data[2][3] = vec[2];
 	return temp;
 }
 
-Matrix!(4, 4) transformer_translate(Type)(in Type[3] vec) pure nothrow @nogc @safe
+Matrix!(4, 4) transformer_translate_col(Type)(in Type[3] vec) pure nothrow @nogc @safe
 {
-	Matrix!(4, 4) temp;
-	temp = matrix_identity!(4, 4, float)();
-	temp.data[0][3] = vec[0];
-	temp.data[1][3] = vec[1];
-	temp.data[2][3] = vec[2];
-	return temp;
+	return transformer_translate_col(Vector!(3)(vec));
 }
 
 Matrix!(4, 4) transformer_rotate_x(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(4, 4, float)();
+	temp = matrix_identity!(4, float)();
 	temp.data[1][1] = cos(rad);
 	temp.data[1][2] = -sin(rad);
 	temp.data[2][1] = sin(rad);
@@ -57,7 +65,7 @@ Matrix!(4, 4) transformer_rotate_x(in float rad) pure nothrow @nogc @safe
 Matrix!(4, 4) transformer_rotate_y(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(4, 4, float)();
+	temp = matrix_identity!(4, float)();
 	temp.data[2][2] = cos(rad);
 	temp.data[2][0] = -sin(rad);
 	temp.data[0][2] = sin(rad);
@@ -68,7 +76,7 @@ Matrix!(4, 4) transformer_rotate_y(in float rad) pure nothrow @nogc @safe
 Matrix!(4, 4) transformer_rotate_z(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
-	temp = matrix_identity!(4, 4, float)();
+	temp = matrix_identity!(4, float)();
 	temp.data[0][0] = cos(rad);
 	temp.data[0][1] = -sin(rad);
 	temp.data[1][0] = sin(rad);
@@ -91,10 +99,10 @@ unittest
 			1.0f, 2.0f, 3.0f
 		]));
 	assert(mat_translate == [
-			[1.0f, 0.0f, 0.0f, 1.0f,],
-			[0.0f, 1.0f, 0.0f, 2.0f,],
-			[0.0f, 0.0f, 1.0f, 3.0f,],
-			[0.0f, 0.0f, 0.0f, 1.0f,],
+			[1.0f, 0.0f, 0.0f, 0.0f,],
+			[0.0f, 1.0f, 0.0f, 0.0f,],
+			[0.0f, 0.0f, 1.0f, 0.0f,],
+			[1.0f, 2.0f, 3.0f, 1.0f,],
 		]
 	);
 
@@ -139,17 +147,19 @@ Matrix!(4, 4) transformer_look_at(
 	return return_matrix;
 }
 
-Matrix!(4, 4) transformer_perspective(
+alias transformer_perspective = transformer_perspective_rh_zo;
+// transfor_RH_
+/+Matrix!(4, 4) transformer_perspective_rh_no(
 	in float fovy = PI_2,
 	in float aspect = 960.0f / 540.0f,
-	in float near = 0.0f,
+	in float near = 0.1f,
 	in float far = 10.0f,
 ) pure nothrow @nogc @safe
 in
 {
 	assert(isFinite(fovy) && fovy > 0.0f && fovy < PI);
 	assert(isFinite(aspect) && aspect >= 1.0f && aspect <= 4.0f);
-	assert(isFinite(near) && isFinite(far) && near < far);
+	assert(isFinite(near) && isFinite(far) && 0 < near);
 }
 do
 {
@@ -159,36 +169,69 @@ do
 	return_matrix = [
 		[F / aspect, 0.0f, 0.0f, 0.0f],
 		[0.0f, F, 0.0f, 0.0f],
-		[0.0f, 0.0f, (far + near) / (far - near), (-2.0f * far * near) / (far - near)],
+		[
+			0.0f, 0.0f, -(far + near) / (far - near), (-2.0f * far * near) / (far - near)
+		],
 		[0.0f, 0.0f, -1.0f, 0.0f],
 	];
 	return return_matrix;
-}
+}+/
 
-Matrix!(4, 4) transformer_perspective_rh_no(
+Matrix!(4, 4) transformer_perspective_rh_zo(
 	in float fovy = PI_2,
 	in float aspect = 960.0f / 540.0f,
-	in float zn = 0.1f,
-	in float zf = 10.0f,
+	in float near = 0.1f,
+	in float far = 10.0f,
 ) pure nothrow @nogc @safe
 in
 {
 	assert(isFinite(fovy) && fovy > 0.0f && fovy < PI);
 	assert(isFinite(aspect) && aspect >= 1.0f && aspect <= 4.0f);
-	assert(isFinite(zn) && isFinite(zf) && zn < zf);
+	assert(isFinite(near) && isFinite(far) && 0 < near);
 }
 do
 {
-	Matrix!(4, 4) temp;
-	float F = 1.0f / tan(fovy * 0.5);
-	temp = [
-		[F, 0.0f, 0.0f, 0.0f],
-		[0.0f, F / aspect, 0.0f, 0.0f],
-		[0.0f, 0.0f, (zf + zn) / (zn - zf), (2.0f * zn * zf) / (zn - zf)],
-		[0.0f, 0.0f, -1.0f, 0.0f],
+	Matrix!(4, 4) return_matrix;
+	float F = 1.0f / tan(fovy * 0.5f);
+
+	return_matrix = [
+		[F / aspect, 0.0f, 0.0f, 0.0f],
+		[0.0f, F, 0.0f, 0.0f],
+		[
+			0.0f, 0.0f, far / (near - far), -1.0f
+		],
+		[0.0f, 0.0f, (far * near) / (near - far), 0.0f],
 	];
-	return temp;
+	return return_matrix;
 }
+
+/+Matrix!(4, 4) transformer_perspective_lh(
+	in float fovy = PI_2,
+	in float aspect = 960.0f / 540.0f,
+	in float near = 0.1f,
+	in float far = 10.0f,
+) pure nothrow @nogc @safe
+in
+{
+	assert(isFinite(fovy) && fovy > 0.0f && fovy < PI);
+	assert(isFinite(aspect) && aspect >= 1.0f && aspect <= 4.0f);
+	assert(isFinite(near) && isFinite(far) && 0 < near && near < far);
+}
+do
+{
+	Matrix!(4, 4) return_matrix;
+	float F = 1.0f / tan(fovy * 0.5f);
+
+	return_matrix = [
+		[F / aspect, 0.0f, 0.0f, 0.0f],
+		[0.0f, F, 0.0f, 0.0f],
+		[
+			0.0f, 0.0f, +(far + near) / (far - near), (-2.0f * far * near) / (far - near)
+		],
+		[0.0f, 0.0f, +1.0f, 0.0f],
+	];
+	return return_matrix;
+}+/
 
 Matrix!(4, 4) transformer_ortho_wh(
 	in float w,

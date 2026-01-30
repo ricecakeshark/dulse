@@ -5,6 +5,7 @@ import kelp_core.math.linalg.vector;
 
 import std.math;
 
+// Matrix(Row-Major) 
 struct Matrix(size_t Row, size_t Col, Type = float)
 {
 	Type[Col][Row] data;
@@ -281,83 +282,40 @@ unittest
 	);
 }
 
-Matrix!(4, 4, Type) matrix_identity(size_t Row, size_t Col, Type = float)() pure nothrow @nogc @safe
-if (Row == Col && Row != 0 && Col != 0)
+Matrix!(Size, Size, Type) matrix_identity(size_t Size, Type = float)() pure nothrow @nogc @safe
+in (Size != 0)
 {
 	Matrix!(4, 4, Type) temp;
 	temp.fill(0.0f);
-	temp.data[0][0] = 1.0f;
-	temp.data[1][1] = 1.0f;
-	temp.data[2][2] = 1.0f;
-	temp.data[3][3] = 1.0f;
-	return temp;
-}
-
-Matrix!(4, 4) matrix_scale(Type = float)(Type[3] value_list) pure nothrow @nogc @safe
-{
-	Matrix!(4, 4) temp;
-	temp.fill(0.0f);
-	foreach (count; 0 .. 3)
-	{
-		temp.data[count][count] = value_list[count];
-	}
-	temp.data[3][3] = 1.0f;
-	return temp;
-}
-/+
-Matrix!(4, 4) matrix_translate(Type = float)(Type[3] value_list) pure nothrow @nogc @safe
-{
-	Matrix!(4, 4) temp;
-	temp.fill(0.0f);
-	foreach (count; 0 .. 4)
+	static foreach (count; 0 .. Size)
 	{
 		temp.data[count][count] = 1.0f;
 	}
-	foreach (count; 0 .. 3)
+	return temp;
+}
+
+Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_list) pure nothrow @nogc @safe
+{
+	Matrix!(Size, Size) temp;
+	temp.fill(0.0f);
+	foreach (count; 0 .. Size)
 	{
-		temp.data[count][3] = value_list[count];
+		temp.data[count][count] = value_list[count];
 	}
 	return temp;
 }
 
-Matrix!(4, 4, Type) matrix_rot_z(Type = float)(float rad) pure nothrow @nogc @safe
-{
-	Matrix!(4, 4, Type) temp;
-	temp.fill(0.0f);
-	temp.data[0][0] = cos(rad);
-	temp.data[0][1] = sin(rad);
-	temp.data[1][0] = -sin(rad);
-	temp.data[1][1] = cos(rad);
-	temp.data[2][2] = 1.0f;
-	temp.data[3][3] = 1.0f;
-	return temp;
-}+/
-
 unittest
 {
-	import std.stdio;
-
-	Matrix!(4, 4) mat_s, mat_t;
+	Matrix!(3, 3) mat_s, mat_t;
 	mat_s = matrix_scale([+1.0f, +2.0f, +3.0f]);
-	writeln(cast(string) mat_s);
-	assert(mat_s == Matrix!(4, 4)(
+	assert(mat_s == Matrix!(3, 3)(
 			[
-			[+1.0f, 0.0f, 0.0f, 0.0f],
-			[0.0f, +2.0f, 0.0f, 0.0f],
-			[0.0f, 0.0f, +3.0f, 0.0f],
-			[0.0f, 0.0f, 0.0f, 1.0f],
+			[+1.0f, 0.0f, 0.0f,],
+			[0.0f, +2.0f, 0.0f,],
+			[0.0f, 0.0f, +3.0f,],
 		]
 	));
-	/+mat_t = matrix_translate([+1.0f, +2.0f, +3.0f]);
-	writeln(cast(string) mat_t);
-	assert(mat_t == Matrix!(4, 4)(
-			[
-			[1.0f, 0.0f, 0.0f, +1.0f],
-			[0.0f, 1.0f, 0.0f, +2.0f],
-			[0.0f, 0.0f, 1.0f, +3.0f],
-			[0.0f, 0.0f, 0.0f, 1.0f],
-		]
-	));+/
 }
 
 Matrix!(Row, Col, Type) multiply_ltor(size_t Row, size_t Col, Type)(
