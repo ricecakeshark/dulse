@@ -116,7 +116,7 @@ unittest
 	);
 }
 
-Matrix!(4, 4) transformer()
+Matrix!(4, 4) transform()
 {
 	return transformer_perspective() * transformer_look_at(
 		Vector!(3)([0.0f, 0.0f, +1.0f]),
@@ -139,11 +139,12 @@ Matrix!(4, 4) transformer_look_at(
 	vec_y = (vec_z * vec_x).unit;
 
 	return_matrix = [
-		[vec_x[0], vec_y[0], vec_z[0], -camera_pos[0]],
-		[vec_x[1], vec_y[1], vec_z[1], -camera_pos[1]],
-		[vec_x[2], vec_y[2], vec_z[2], -camera_pos[2]],
-		[0.0f, 0.0f, 0.0f, 1.0f],
+		[vec_x[0], vec_x[1], vec_x[2], 0.0f],
+		[vec_y[0], vec_y[1], vec_y[2], 0.0f],
+		[vec_z[0], vec_z[1], vec_z[2], 0.0f],
+		[0.0f, 0.0f, 0.0f, 1.0f]
 	];
+	return_matrix = return_matrix * transformer_translate(camera_pos);
 	return return_matrix;
 }
 
