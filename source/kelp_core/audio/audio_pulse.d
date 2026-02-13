@@ -9,9 +9,11 @@ class AudioPulse : AudioSource
 {
 	float frequency_ratio;
 	uint sample_rate;
-	SysTime last_write_back;
-	Duration dur_write_back;
-	LoopedFloat!(PI * 2.0) last_phase;
+	float gain = 1.0;
+
+	private SysTime last_write_back;
+	private Duration dur_write_back;
+	private LoopedFloat!(PI * 2.0) last_phase;
 
 	this(float frequency_ratio, uint sample_rate)
 	{
@@ -23,14 +25,14 @@ class AudioPulse : AudioSource
 		return;
 	}
 
-	override void write_back(out float[] back_buffer)
+	override void write_back(out AudioFragment fragment)
 	{
 		size_t sample_len = cast(size_t)(sample_rate * 0.05);
-		back_buffer.length = sample_len;
+		fragment.buffer.length = sample_len;
 		real delta_radian = 2.0 * PI * (this.frequency_ratio / sample_rate);
 		foreach (count; 0 .. sample_len)
 		{
-			back_buffer[count] = sin(last_phase + delta_radian * count);
+			fragment.buffer[count] = sin(last_phase + delta_radian * count) * gain;
 		}
 		this.last_write_back += this.dur_write_back;
 		this.last_phase += delta_radian * sample_len;

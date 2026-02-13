@@ -27,7 +27,7 @@ class AudioMixer
 		return this;
 	}
 
-	typeof(this) write_back(out float[] back_buffer)
+	typeof(this) write_back(out AudioFragment back_buffer)
 	in (this.source_list.length >= 1)
 	{
 		this.source_list[0].write_back(back_buffer);
