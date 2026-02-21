@@ -8,6 +8,20 @@ struct GfxGeometry(V, I)
 	V[] vertex_list;
 	I[] index_list;
 
+	typeof(this) initialize() pure nothrow @safe
+	{
+		this.vertex_list = new V[](0);
+		this.index_list = new I[](0);
+		return this;
+	}
+
+	typeof(this) initialize(in size_t vertex_size, in size_t index_size) pure nothrow @safe
+	{
+		this.vertex_list = new V[](vertex_size);
+		this.index_list = new I[](index_size);
+		return this;
+	}
+
 	size_t size() pure nothrow @nogc @safe
 	{
 		return (this.size_vertex + this.size_index);
