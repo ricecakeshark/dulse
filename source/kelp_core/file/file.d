@@ -6,6 +6,7 @@ import std.file;
 import std.exception;
 import std.range;
 import std.stdio;
+import std.datetime : SysTime;
 
 //import std.string;
 
@@ -17,6 +18,7 @@ struct FileHandler
 	ubyte[16] hash;
 	std.stdio.File handle_substance;
 	std.stdio.File handle_temporary;
+	bool last_result = true;
 
 	this(string path)
 	{
@@ -44,6 +46,11 @@ struct FileHandler
 		return this.hash.toHexString();
 	}
 
+	@property SysTime last_modified()
+	{
+		return timeLastModified(this.path);
+	}
+
 	typeof(this) open(string path)
 	{
 		enforce(path.exists);
@@ -64,6 +71,18 @@ struct FileHandler
 			hasher_murmur.put(chunk);
 		}
 		this.hash = hasher_murmur.finish();
+		return this;
+	}
+
+	typeof(this) try_lock()
+	{
+		last_result = this.handle_substance.tryLock(LockType.readWrite);
+		return this;
+	}
+
+	typeof(this) unlock()
+	{
+		this.handle_substance.unlock();
 		return this;
 	}
 }

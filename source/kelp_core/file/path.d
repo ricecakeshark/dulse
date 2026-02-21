@@ -25,4 +25,3 @@ struct Path
 		return this.full_path.isDir();
 	}
 }
-
