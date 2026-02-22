@@ -15,27 +15,56 @@ struct GfxGeometry(V, I)
 		return this;
 	}
 
-	typeof(this) initialize(in size_t vertex_size, in size_t index_size) pure nothrow @safe
+	typeof(this) initialize(in size_t count_vertex, in size_t count_index) pure nothrow @safe
 	{
-		this.vertex_list = new V[](vertex_size);
-		this.index_list = new I[](index_size);
+		this.vertex_list = new V[](count_vertex);
+		this.index_list = new I[](count_index);
 		return this;
 	}
-
-	size_t size() pure nothrow @nogc @safe
+	// property
+	@property size_t bytes() pure nothrow @nogc @safe
 	{
-		return (this.size_vertex + this.size_index);
+		return this.bytes_vertex + this.bytes_index;
+	}
+	// vertex property
+	@property size_t bytes_vertex() pure nothrow @nogc @safe
+	{
+		return V.sizeof * this.vertex_list.length;
 	}
 
-	size_t size(in size_t index) pure nothrow @nogc @safe
+	@property size_t count_vertex() pure nothrow @nogc @safe
 	{
-		final switch (index)
-		{
-		case 0:
-			return this.size_vertex;
-		case 1:
-			return this.size_index;
-		}
+		return this.vertex_list.length;
+	}
+
+	@property size_t offset_vertex() pure nothrow @nogc @safe
+	{
+		return 0;
+	}
+
+	@property size_t stride_vertex() pure nothrow @nogc @safe
+	{
+		return V.sizeof;
+	}
+	// index property
+	@property size_t bytes_index()
+	{
+		return I.sizeof * this.index_list.length;
+	}
+
+	@property size_t count_index() pure nothrow @nogc @safe
+	{
+		return this.index_list.length;
+	}
+
+	@property size_t offset_index() pure nothrow @nogc @safe
+	{
+		return this.bytes_vertex;
+	}
+
+	@property size_t stride_index() pure nothrow @nogc @safe
+	{
+		return I.sizeof;
 	}
 
 	size_t offset(in size_t index) pure nothrow @nogc @safe
@@ -45,40 +74,20 @@ struct GfxGeometry(V, I)
 		case 0:
 			return 0;
 		case 1:
-			return this.size_vertex;
+			return this.bytes_vertex;
 		case 2:
-			return this.size_vertex + this.size_index;
+			return this.bytes_vertex + this.bytes_index;
 		}
 	}
 
-	ref V[] vertex() pure nothrow @nogc @safe
+	@property ref V[] vertex() pure nothrow @nogc @safe
 	{
 		return this.vertex_list;
 	}
 
-	ref I[] index() pure nothrow @nogc @safe
+	@property ref I[] index() pure nothrow @nogc @safe
 	{
 		return this.index_list;
-	}
-
-	size_t size_vertex() pure nothrow @nogc @safe
-	{
-		return (V.sizeof * vertex_list.length);
-	}
-
-	size_t size_index() pure nothrow @nogc @safe
-	{
-		return (I.sizeof * index_list.length);
-	}
-
-	size_t offset_vertex() pure nothrow @nogc @safe
-	{
-		return 0;
-	}
-
-	size_t offset_index() pure nothrow @nogc @safe
-	{
-		return (V.sizeof * vertex_list.length);
 	}
 
 	// typeof(this) load() 
