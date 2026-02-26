@@ -65,6 +65,11 @@ struct GfxMesh
 		return this.capacity_vertex;
 	}
 
+	@property size_t count(G : GfxGeometry!(V, I), V, I)()
+	{
+		return (cast(G[]) this.geometry_list).length;
+	}
+
 	@property size_t count_vertex(G)()
 	{
 		return (cast(G[]) this.geometry_list)
@@ -84,6 +89,31 @@ struct GfxMesh
 		return (cast(G[]) this.geometry_list)
 			.map!(geometry => geometry.count_index)
 			.sum();
+	}
+
+	@property G[] geometry(G : GfxGeometry!(V, I), V, I)()
+	{
+		return cast(G[]) this.geometry_list;
+	}
+
+	@property DataVertex!(V)[] vertices(G : GfxGeometry!(V, I), V, I)() pure nothrow
+	{
+		scope Appender!(DataVertex!(V)[]) data;
+		foreach (geometry; cast(G[]) this.geometry_list)
+		{
+			data ~= geometry.vertex;
+		}
+		return data[];
+	}
+
+	@property DataIndex!(I)[] indices(G : GfxGeometry!(V, I), V, I)() pure nothrow
+	{
+		scope Appender!(DataIndex!(I)[]) data;
+		foreach (geometry; cast(G[]) this.geometry_list)
+		{
+			data ~= geometry.index;
+		}
+		return data[];
 	}
 
 	@property V[] data_vertex(G : GfxGeometry!(V, I), V, I)() pure nothrow
