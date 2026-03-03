@@ -2,14 +2,20 @@ module kelp_core.file.directory;
 
 import kelp_core.file;
 import std.file;
+import std.path : isValidPath;
 
 struct Directory
 {
 	string path;
 
 	this(string path)
-	in (path.exists)
-	in (path.isDir)
+	in
+	{
+		assert(path.isValidPath);
+		assert(path.exists);
+		assert(path.isDir);
+	}
+	do
 	{
 		this.path = path;
 		return;

@@ -1,12 +1,12 @@
 module kelp_core.file.file;
 
+import std.datetime : SysTime;
 import std.digest;
 import std.digest.murmurhash;
-import std.file;
-import std.exception;
-import std.range;
-import std.stdio;
-import std.datetime : SysTime;
+import std.exception : enforce;
+import std.file : exists, isFile, isDir, timeLastModified;
+import std.path : baseName, dirName, isValidFilename, isValidPath;
+import std.stdio : File, LockType;
 
 //import std.string;
 
@@ -14,13 +14,19 @@ static MurmurHash3!(128, 64) hasher_murmur;
 
 struct FileHandler
 {
-	string path;
+	string _path;
 	ubyte[16] hash;
-	std.stdio.File handle_substance;
-	std.stdio.File handle_temporary;
+	File handle_substance;
+	File handle_temporary;
 	bool last_result = true;
 
 	this(string path)
+	in
+	{
+		assert(path.isValidPath);
+		assert(path.isFile);
+	}
+	do
 	{
 		this.open(path);
 		return;
@@ -46,6 +52,21 @@ struct FileHandler
 		return this.hash.toHexString();
 	}
 
+	@property string path() pure nothrow @nogc @safe
+	{
+		return this.path;
+	}
+
+	@property string dir_name() pure nothrow @nogc @safe
+	{
+		return this.path.dirName();
+	}
+
+	@property string file_name() pure nothrow @nogc @safe
+	{
+		return this.path.baseName();
+	}
+
 	@property SysTime last_modified()
 	{
 		return timeLastModified(this.path);
@@ -57,14 +78,14 @@ struct FileHandler
 		enforce(path.isFile);
 		this.handle_substance.open(path, "r");
 		//this.handle_temporary.open(path ~ ".temp", "r");
-		this.path = path;
+		this._path = path;
 		this.get_digest();
 		return this;
 	}
 
 	typeof(this) get_digest()
 	{
-		auto temp_file = std.stdio.File(this.path);
+		auto temp_file = File(this._path);
 		hasher_murmur.start();
 		foreach (chunk; temp_file.byChunk(4096))
 		{

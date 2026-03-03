@@ -4,6 +4,7 @@ public import kelp_core.audio;
 public import kelp_core.core;
 public import kelp_core.device;
 public import kelp_core.event;
+public import kelp_core.file;
 public import kelp_core.graphics;
 public import kelp_core.logger;
 public import kelp_core.math;
