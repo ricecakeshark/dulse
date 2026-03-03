@@ -26,14 +26,14 @@ struct GfxMesh
 		return this;
 	}
 
-	@property size_t bytes(G)()
+	@property size_t bytes(G : GfxGeometry!(V, I), V, I)()
 	{
 		return (cast(G[]) this.geometry_list)
 			.map!(geometry => geometry.bytes)
 			.sum();
 	}
 
-	@property size_t bytes_vertex(G)()
+	@property size_t bytes_vertex(G : GfxGeometry!(V, I), V, I)()
 	{
 		return (cast(G[]) this.geometry_list)
 			.map!(geometry => geometry.bytes_vertex)
@@ -70,78 +70,76 @@ struct GfxMesh
 		return (cast(G[]) this.geometry_list).length;
 	}
 
-	@property size_t count_vertex(G)()
+	@property size_t count_vertex(G : GfxGeometry!(V, I), V, I)()
 	{
 		return (cast(G[]) this.geometry_list)
 			.map!(geometry => geometry.count_vertex)
 			.sum();
 	}
 
-	@property size_t bytes_index(G)()
+	@property size_t bytes_index(G : GfxGeometry!(V, I), V, I)()
 	{
 		return (cast(G[]) this.geometry_list)
 			.map!(geometry => geometry.bytes_index)
 			.sum();
 	}
 
-	@property size_t count_index(G)()
+	@property size_t count_index(G : GfxGeometry!(V, I), V, I)()
 	{
 		return (cast(G[]) this.geometry_list)
 			.map!(geometry => geometry.count_index)
 			.sum();
 	}
 
-	@property G[] geometry(G : GfxGeometry!(V, I), V, I)()
+	@property G[] geometries(G : GfxGeometry!(V, I), V, I)()
 	{
 		return cast(G[]) this.geometry_list;
 	}
 
-	@property DataVertex!(V)[] vertices(G : GfxGeometry!(V, I), V, I)() pure nothrow
-	{
-		scope Appender!(DataVertex!(V)[]) data;
-		foreach (geometry; cast(G[]) this.geometry_list)
-		{
-			data ~= geometry.vertex;
-		}
-		return data[];
-	}
-
-	@property DataIndex!(I)[] indices(G : GfxGeometry!(V, I), V, I)() pure nothrow
-	{
-		scope Appender!(DataIndex!(I)[]) data;
-		foreach (geometry; cast(G[]) this.geometry_list)
-		{
-			data ~= geometry.index;
-		}
-		return data[];
-	}
-
-	@property V[] data_vertex(G : GfxGeometry!(V, I), V, I)() pure nothrow
+	@property V[] vertices(G : GfxGeometry!(V, I), V, I)() pure nothrow
 	{
 		scope Appender!(V[]) data;
 		data.clear();
 		foreach (geometry; cast(G[]) this.geometry_list)
 		{
-			data ~= geometry.data_vertex;
+			data ~= geometry.vertices;
 		}
 		return data[];
 	}
 
-	@property I[] data_index(G : GfxGeometry!(V, I), V, I)() pure nothrow
+	@property I[] indices(G : GfxGeometry!(V, I), V, I)() pure nothrow
 	{
 		scope Appender!(I[]) data;
 		data.clear();
 		foreach (geometry; cast(G[]) this.geometry_list)
 		{
-			data ~= geometry.data_index;
+			data ~= geometry.indices;
 		}
 		return data[];
 	}
 
-	auto opAssign(G : GfxGeometry!(V, I), V, I)(G[] geometry_list)
+	typeof(this) set(G : GfxGeometry!(V, I), V, I)(G[] geometry_list)
+	in
+	{
+		assert(geometry_list.bytes_vertex <= this.capacity_vertex);
+		assert(geometry_list.bytes_index <= this.capacity_index);
+	}
+	do
 	{
 		this.geometry_list = geometry_list;
 		return this;
+	}
+
+	G[] opAssign(G : GfxGeometry!(V, I), V, I)(G[] geometry_list)
+	in
+	{
+		assert(geometry_list.bytes_vertex <= this.capacity_vertex);
+		assert(geometry_list.bytes_index <= this.capacity_index);
+	}
+	do
+	{
+		this.geometry_list = geometry_list;
+		return geometry_list;
 	}
 
 }
