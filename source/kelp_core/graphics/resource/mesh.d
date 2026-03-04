@@ -6,9 +6,9 @@ import std.algorithm;
 
 struct GfxMesh
 {
-	void[] geometry_list;
-	size_t _capacity_vertex;
-	size_t _capacity_index;
+	protected void[] geometry_list;
+	protected size_t _capacity_vertex;
+	protected size_t _capacity_index;
 
 	this(void[] geometry_list)
 	{
@@ -25,21 +25,7 @@ struct GfxMesh
 		this._capacity_index = capacity_index;
 		return this;
 	}
-
-	@property size_t bytes(G : GfxGeometry!(V, I), V, I)()
-	{
-		return (cast(G[]) this.geometry_list)
-			.map!(geometry => geometry.bytes)
-			.sum();
-	}
-
-	@property size_t bytes_vertex(G : GfxGeometry!(V, I), V, I)()
-	{
-		return (cast(G[]) this.geometry_list)
-			.map!(geometry => geometry.bytes_vertex)
-			.sum();
-	}
-
+	// capacity (not always same as acutual size)
 	@property size_t capacity()
 	{
 		return this._capacity_vertex + this._capacity_index;
@@ -54,7 +40,7 @@ struct GfxMesh
 	{
 		return this._capacity_index;
 	}
-
+	// offset
 	@property size_t offset_vertex()
 	{
 		return 0;
@@ -64,7 +50,28 @@ struct GfxMesh
 	{
 		return this.capacity_vertex;
 	}
+	// size (acutual size)
+	@property size_t size(G : GfxGeometry!(V, I), V, I)()
+	{
+		return (cast(G[]) this.geometry_list)
+			.map!(geometry => geometry.size)
+			.sum();
+	}
 
+	@property size_t size_vertex(G : GfxGeometry!(V, I), V, I)()
+	{
+		return (cast(G[]) this.geometry_list)
+			.map!(geometry => geometry.size_vertex)
+			.sum();
+	}
+
+	@property size_t size_index(G : GfxGeometry!(V, I), V, I)()
+	{
+		return (cast(G[]) this.geometry_list)
+			.map!(geometry => geometry.size_index)
+			.sum();
+	}
+	// count
 	@property size_t count(G : GfxGeometry!(V, I), V, I)()
 	{
 		return (cast(G[]) this.geometry_list).length;
@@ -77,21 +84,14 @@ struct GfxMesh
 			.sum();
 	}
 
-	@property size_t bytes_index(G : GfxGeometry!(V, I), V, I)()
-	{
-		return (cast(G[]) this.geometry_list)
-			.map!(geometry => geometry.bytes_index)
-			.sum();
-	}
-
 	@property size_t count_index(G : GfxGeometry!(V, I), V, I)()
 	{
 		return (cast(G[]) this.geometry_list)
 			.map!(geometry => geometry.count_index)
 			.sum();
 	}
-
-	@property G[] geometries(G : GfxGeometry!(V, I), V, I)()
+	// data
+	@property G[] geometries(G : GfxGeometry!(V, I), V, I)() pure nothrow
 	{
 		return cast(G[]) this.geometry_list;
 	}
@@ -117,28 +117,28 @@ struct GfxMesh
 		}
 		return data[];
 	}
-
+	// setter, getter
 	typeof(this) set(G : GfxGeometry!(V, I), V, I)(G[] geometry_list)
 	in
 	{
-		assert(geometry_list.bytes_vertex <= this.capacity_vertex);
-		assert(geometry_list.bytes_index <= this.capacity_index);
+		assert(geometry_list.size_vertex!(G) <= this.capacity_vertex);
+		assert(geometry_list.size_index!(G) <= this.capacity_index);
 	}
 	do
 	{
-		this.geometry_list = geometry_list;
+		this.geometry_list = geometry_list.dup;
 		return this;
 	}
 
 	G[] opAssign(G : GfxGeometry!(V, I), V, I)(G[] geometry_list)
 	in
 	{
-		assert(geometry_list.bytes_vertex <= this.capacity_vertex);
-		assert(geometry_list.bytes_index <= this.capacity_index);
+		assert(geometry_list.size_vertex <= this.capacity_vertex);
+		assert(geometry_list.size_index <= this.capacity_index);
 	}
 	do
 	{
-		this.geometry_list = geometry_list;
+		this.geometry_list = geometry_list.dup;
 		return geometry_list;
 	}
 

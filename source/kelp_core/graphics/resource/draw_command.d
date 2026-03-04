@@ -5,59 +5,62 @@ struct DrawCommand
 	protected DrawCommandIndexedIndirect[] draw_command_indexed;
 	protected DrawCommandIndirect[] draw_command;
 
-	size_t size() const pure nothrow @nogc
+	// size
+	@property size_t size() const pure nothrow @nogc
 	{
 		return (DrawCommandIndexedIndirect.sizeof * draw_command_indexed.length)
 			+ (
 				DrawCommandIndirect.sizeof * draw_command.length);
 	}
 
-	size_t size(size_t index) const pure nothrow @nogc
-	in (index >= 0 && index < 2)
+	@property size_t size_command_indexed() const pure nothrow @nogc @safe
 	{
-		final switch (index)
-		{
-		case 0:
-			return (DrawCommandIndexedIndirect.sizeof * draw_command_indexed.length);
-		case 1:
-			return (DrawCommandIndirect.sizeof * draw_command.length);
-		}
+		return (DrawCommandIndexedIndirect.sizeof * draw_command_indexed.length);
 	}
 
-	size_t offset(size_t index)
-	in (index >= 0 && index <= 2)
+	@property size_t size_command() const pure nothrow @nogc @safe
 	{
-		final switch (index)
-		{
-		case 0:
-			return 0;
-		case 1:
-			return this.size(0);
-		case 2:
-			return this.size(0) + this.size(1);
-		}
+		return (DrawCommandIndirect.sizeof * draw_command.length);
+	}
+	// offset
+	@property size_t offset_command_indexed() const pure nothrow @nogc @safe
+	{
+		return 0u;
 	}
 
-	size_t count(size_t index)
-	in (index >= 0 && index < 2)
+	@property size_t offset_command() const pure nothrow @nogc @safe
 	{
-		final switch (index)
-		{
-		case 0:
-			return this.draw_command_indexed.length;
-		case 1:
-			return this.draw_command.length;
-		}
+		return this.size_command_indexed;
+	}
+	// command
+	@property size_t count_command_indexed() const pure nothrow @nogc @safe
+	{
+		return this.draw_command_indexed.length;
 	}
 
-	ref DrawCommandIndexedIndirect[] command_indexed() pure nothrow @nogc
+	@property size_t count_command() const pure nothrow @nogc @safe
+	{
+		return this.draw_command.length;
+	}
+	// data
+	@property ref DrawCommandIndexedIndirect[] command_indexed() pure nothrow @nogc
 	{
 		return this.draw_command_indexed;
 	}
 
-	ref DrawCommandIndirect[] command() pure nothrow @nogc
+	@property ref DrawCommandIndirect[] command() pure nothrow @nogc
 	{
 		return this.draw_command;
+	}
+	// getter setter
+	typeof(this) set(
+		DrawCommandIndexedIndirect[] command_indexed,
+		DrawCommandIndirect[] command,
+	) pure nothrow
+	{
+		this.command_indexed = command_indexed;
+		this.command = command;
+		return this;
 	}
 }
 

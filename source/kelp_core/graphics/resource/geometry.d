@@ -18,18 +18,18 @@ struct GfxGeometry(V, I)
 		return;
 	}
 	// property
-	// bytes
-	@property size_t bytes() pure nothrow @nogc @safe
+	// size
+	@property size_t size() pure nothrow @nogc @safe
 	{
-		return this.bytes_vertex + this.bytes_index;
+		return this.size_vertex + this.size_index;
 	}
 
-	@property size_t bytes_vertex() pure nothrow @nogc @safe
+	@property size_t size_vertex() pure nothrow @nogc @safe
 	{
 		return V.sizeof * this._vertex_list.length;
 	}
 
-	@property size_t bytes_index() pure nothrow @nogc @safe
+	@property size_t size_index() pure nothrow @nogc @safe
 	{
 		return I.sizeof * this._index_list.length;
 	}
@@ -51,7 +51,7 @@ struct GfxGeometry(V, I)
 
 	@property size_t offset_index() pure nothrow @nogc @safe
 	{
-		return this.bytes_vertex;
+		return this.size_vertex;
 	}
 	// stride
 	@property size_t stride_vertex() pure nothrow @nogc @safe
@@ -89,25 +89,25 @@ struct GfxGeometry(V, I)
 	}
 }
 // GfxGeometry(V, I)[] funcition
-// bytes
-size_t bytes(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+// size
+size_t size(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
 {
 	return geometry_list
-		.map!(geometry => geometry.bytes)
+		.map!(geometry => geometry.size)
 		.sum();
 }
 
-size_t bytes_vertex(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t size_vertex(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
 {
 	return geometry_list
-		.map!(geometry => geometry.bytes_vertex)
+		.map!(geometry => geometry.size_vertex)
 		.sum();
 }
 
-size_t bytes_index(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t size_index(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
 {
 	return geometry_list
-		.map!(geometry => geometry.bytes_index)
+		.map!(geometry => geometry.size_index)
 		.sum();
 }
 // count
@@ -132,7 +132,7 @@ size_t offset_vertex(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
 
 size_t offset_index(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
 {
-	return geometry_list.bytes_vertex;
+	return geometry_list.size_vertex;
 }
 
 unittest
