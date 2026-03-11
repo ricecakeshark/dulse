@@ -30,17 +30,6 @@ struct InterfacedPool(Interface)
 			.any!(item => item is target);
 	}
 
-	//@disable bool have_any(Args...)() pure nothrow @nogc @safe; 
-	/+bool have_any(Args...)() pure nothrow @nogc @safe
-	{
-		return this.pool.any!(item => item.isAnyTypeOf!(Args));
-	}+/
-	//@disable bool have_all(Args...)() pure nothrow @nogc @safe; 
-	/+bool have_all(Args...)(Args args) pure nothrow @nogc @safe
-	{
-		return this.pool.any!(item => item.isAnyTypeOf!(Args));
-	}+/
-
 	size_t count_query(Type)() pure nothrow
 	{
 		return this.pool
@@ -60,6 +49,21 @@ struct InterfacedPool(Interface)
 			.map!(item => cast(Type) item)()
 			.takeOne()
 			.array()[0];
+	}
+
+	typeof(this) query(Type)(out Type query_buffer) pure nothrow
+	in
+	{
+		assert(this.pool.filter!(item => cast(Type) item !is null)().count == 1);
+	}
+	do
+	{
+		query_buffer = this.pool
+			.filter!(item => cast(Type) item !is null)()
+			.map!(item => cast(Type) item)()
+			.takeOne()
+			.array()[0];
+		return this;
 	}
 
 	Type[] query_all(Type)() pure nothrow
