@@ -47,6 +47,12 @@ class SubsystemPool
 		return this;
 	}
 
+	typeof(this) query(Type)(out Type out_query)
+	{
+		this.pool.query(out_query);
+		return this;
+	}
+
 	/+Subsystem[] opIndex(string id)
 	{
 		return this.pool.all.filter!(subsystem => subsystem.id == id).array();
