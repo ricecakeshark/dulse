@@ -139,6 +139,6 @@ unittest
 {
 	import kelp_core : Vector, ColorF;
 
-	GfxGeometry geometry = GfxGeometry!(Vector!(3), uint)([], []);
+	auto geometry = GfxGeometry!(Vector!(3), uint)([], []);
 	assert(__traits(isPOD, typeof(geometry)));
 }
