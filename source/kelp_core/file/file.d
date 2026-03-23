@@ -54,7 +54,7 @@ struct FileHandler
 
 	@property string path() pure nothrow @nogc @safe
 	{
-		return this.path;
+		return this._path;
 	}
 
 	@property string dir_name() pure nothrow @nogc @safe

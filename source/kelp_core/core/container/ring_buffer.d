@@ -248,5 +248,4 @@ unittest
 	assert(ring_2[0 .. $] == [1, 2, 3], format("%s", ring_2[0 .. $]));
 	ring_2.append_last([4, 5]);
 	assert(ring_2[0 .. $] == [1, 2, 3, 4, 5], format("%s", ring_2[0 .. $]));
-
 }

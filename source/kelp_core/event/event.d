@@ -16,7 +16,6 @@ class EventSubsystem : Subsystem
 	this(Core core)
 	{
 		this.core = core;
-		this.pool = new MonoPool!(Event);
 		return;
 	}
 

@@ -4,14 +4,9 @@ import kelp_core.core.container.pool;
 import std.array : array;
 import std.algorithm;
 
-class MonoPool(TItem) : Pool!(MonoPool, TItem)
+struct MonoPool(TItem)
 {
 	TItem[] item_list;
-
-	this()
-	{
-		return;
-	}
 
 	@property size_t count() const pure nothrow @nogc @safe
 	{
@@ -68,8 +63,7 @@ unittest
 		c,
 		d,
 	}
-
-	MonoPool!(E) pool = new MonoPool!(E);
+	MonoPool!(E) pool;
 
 	assert(pool.count == 0);
 	assert(!pool.have_any(E.a, E.b, E.c));

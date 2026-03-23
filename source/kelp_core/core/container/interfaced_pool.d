@@ -12,6 +12,13 @@ struct InterfacedPool(Interface)
 		return this.pool.length;
 	}
 
+	size_t count(Type)() pure nothrow
+	{
+		return this.pool
+			.filter!(item => cast(Type) item !is null)()
+			.count();
+	}
+
 	@property inout(Interface[]) all() inout pure nothrow @nogc @safe
 	{
 		return this.pool;
@@ -28,50 +35,6 @@ struct InterfacedPool(Interface)
 			.filter!(item => cast(Type) item !is null)()
 			.map!(item => cast(Type) item)
 			.any!(item => item is target);
-	}
-
-	size_t count_query(Type)() pure nothrow
-	{
-		return this.pool
-			.filter!(item => cast(Type) item !is null)()
-			.count();
-	}
-
-	Type query(Type)() pure nothrow
-	in
-	{
-		assert(this.pool.filter!(item => cast(Type) item !is null)().count == 1);
-	}
-	do
-	{
-		return this.pool
-			.filter!(item => cast(Type) item !is null)()
-			.map!(item => cast(Type) item)()
-			.takeOne()
-			.array()[0];
-	}
-
-	typeof(this) query(Type)(out Type query_buffer) pure nothrow
-	in
-	{
-		assert(this.pool.filter!(item => cast(Type) item !is null)().count == 1);
-	}
-	do
-	{
-		query_buffer = this.pool
-			.filter!(item => cast(Type) item !is null)()
-			.map!(item => cast(Type) item)()
-			.takeOne()
-			.array()[0];
-		return this;
-	}
-
-	Type[] query_all(Type)() pure nothrow
-	{
-		return this.pool
-			.filter!(item => cast(Type) item !is null)()
-			.map!(item => cast(Type) item)()
-			.array();
 	}
 
 	typeof(this) clear() pure nothrow @safe
@@ -103,12 +66,62 @@ struct InterfacedPool(Interface)
 		}
 		return this;
 	}
+
+	Type query(Type)() pure nothrow @safe
+	{
+		return this.pool
+			.filter!(item => cast(Type) item !is null)()
+			.map!(item => cast(Type) item)()
+			.array()[0];
+	}
+
+	Type[] query_all(Type)() pure nothrow @safe
+	{
+		return this.pool
+			.filter!(item => cast(Type) item !is null)()
+			.map!(item => cast(Type) item)()
+			.array();
+	}
+
+	bool query(Type)(out Type query_buffer) pure nothrow @safe
+	{
+		if (!this.have!Type)
+		{
+			return false;
+		}
+		query_buffer = this.pool
+			.filter!(item => cast(Type) item !is null)()
+			.map!(item => cast(Type) item)()
+			.array()[0];
+		return true;
+	}
+
+	bool query(Type)(out Type[] query_buffer) pure nothrow @safe
+	{
+		if (!this.have!Type)
+		{
+			return false;
+		}
+		query_buffer = this.pool
+			.filter!(item => cast(Type) item !is null)()
+			.map!(item => cast(Type) item)()
+			.array();
+		return true;
+	}
+
+	typeof(this) query(TypeList...)(out TypeList query_list) pure nothrow @safe
+	{
+		static foreach (_query; query_list)
+		{
+			this.query(_query);
+		}
+		return this;
+	}
 }
 
 unittest
 {
 	import std.format;
-	import std.stdio;
 
 	interface IC
 	{
@@ -121,6 +134,11 @@ unittest
 	class C2 : IC
 	{
 	}
+	class C3 : IC
+	{
+
+	}
+	
 
 	C1 a = new C1();
 	C2 b = new C2();
@@ -129,15 +147,19 @@ unittest
 	InterfacedPool!(IC) pool;
 
 	assert(pool.count == 0);
-	assert(pool.have!(C1)() == false);
-	assert(pool.count_query!(C1)() == 0);
-	assert(pool.have!(C2)() == false);
-	assert(pool.count_query!(C2)() == 0);
+	assert(pool.have!C1 == false);
+	assert(pool.count!C1 == 0);
+	assert(pool.have!C2 == false);
+	assert(pool.count!C2 == 0);
 	pool.append(a, b, c);
-	assert(pool.have!(C1)() == true);
-	assert(pool.query_all!(C1)() == [a, c]);
-	assert(pool.have!(C2)() == true);
-	assert(pool.query_all!(C2)() == [b]);
+	assert(pool.have!C1 == true);
+	assert(pool.count!C1 == 2);
+	assert(pool.query_all!C1 == [a, c]);
+	assert(pool.have!C2 == true);
+	assert(pool.count!C2 == 1);
+	assert(pool.query_all!C2 == [b]);
+	assert(pool.have!C3 == false);
+	assert(pool.count!C3 == 0);
 
 }
 
