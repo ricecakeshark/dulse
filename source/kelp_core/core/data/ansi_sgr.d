@@ -1,15 +1,11 @@
 module kelp_core.core.data.ansi_sgr;
 
 import kelp_core.core.data;
-import std.array;
-import std.conv;
+import std.array : join;
+import std.conv : to;
 import std.format;
 
-enum EscapeSequence : string
-{
-	begin = "\x1b[",
-	end = "m",
-}
+immutable CSI = "\x1b[";
 
 struct AnsiText
 {
@@ -37,44 +33,28 @@ struct AnsiText
 				"0");
 	}
 }
-// write text with SGR
-ref Appender!string write_text_colored(
-	ref Appender!string buf,
-	string text,
-	ColorU color_fg,
-	ColorU color_bg,
-)
-{
-	buf.put!string(EscapeSequence.begin);
-	buf ~= color_fg_24bit(color_fg) ~ ";";
-	buf ~= color_bg_24bit(color_bg);
-	buf ~= cast(string) EscapeSequence.end;
-	buf ~= text;
-	buf ~= EscapeSequence.begin ~ "0" ~ EscapeSequence.end;
-	return buf;
-}
 
 string format_SGR(string[] sgr_list...) pure nothrow @safe
 {
-	return EscapeSequence.begin ~ sgr_list.join(";") ~ EscapeSequence.end;
+	return CSI ~ sgr_list.join(";") ~ "m";
 }
 
 string color_fg_24bit(ColorU color) pure nothrow
 {
-	return "38" ~ ";" ~ sequence_color_24bit(color);
+	return "38;" ~ argument_24bit(color);
 }
 
 string color_bg_24bit(ColorU color) pure nothrow
 {
-	return "48;" ~ sequence_color_24bit(color);
+	return "48;" ~ argument_24bit(color);
 }
 
-string sequence_color_24bit(ColorU color) pure nothrow
+string argument_24bit(ColorU color) pure nothrow
 {
 	return "2;" ~ to!string(color.red) ~ ";" ~ to!string(color.green) ~ ";" ~ to!string(color.blue);
 }
-// Select Graphic Rendition Code
-enum SGRCode
+
+enum SelectGraphicRenditionCode
 {
 	reset = 0,
 	// style
@@ -117,15 +97,4 @@ enum ColorBitCode
 {
 	_24bit = 2,
 	_6bit = 5,
-}
-
-unittest
-{
-	import std.stdio;
-	import std.encoding;
-
-	Appender!string buf;
-	buf.write_text_colored("text", ColorU(200, 100, 0), ColorU(0, 100, 200));
-	writeln(buf[]);
-	assert(buf[] == "\x1b[38;2;200;100;0;48;2;0;100;200mtext\x1b[0m");
 }
