@@ -24,21 +24,18 @@ final class Core
 	void initialize()
 	{
 		this.subsystem.initialize();
-		//this.subsystem.apply((item) { item.initialize(); });
 		return;
 	}
 
 	void finalize()
 	{
 		this.subsystem.finalize();
-		//this.subsystem.apply((item) { item.finalize(); });
 		return;
 	}
 
 	void process()
 	{
 		this.subsystem.process();
-		//this.subsystem.apply((item) { item.process(); });
 		if (this.bus.pool.have!(QuitMessage))
 		{
 			this.continuable = false;
