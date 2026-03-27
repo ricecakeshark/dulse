@@ -122,7 +122,7 @@ struct GfxMesh
 	in
 	{
 		assert(geometry_list.size_vertex!(G) <= this.capacity_vertex);
-		assert(geometry_list.size_index!(G) <= this.capacity_index);
+		assert(geometry_list.size_index!(G) <= this.capacity_index,);
 	}
 	do
 	{
