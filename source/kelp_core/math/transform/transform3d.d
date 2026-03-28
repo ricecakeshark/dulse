@@ -182,13 +182,13 @@ Matrix!(4, 4) transformer_perspective_rh_zo(
 	in float fovy = PI_2,
 	in float aspect = 960.0f / 540.0f,
 	in float near = 0.1f,
-	in float far = 10.0f,
+	in float far = 100.0f,
 ) pure nothrow @nogc @safe
 in
 {
 	assert(isFinite(fovy) && fovy > 0.0f && fovy < PI);
 	assert(isFinite(aspect) && aspect >= 1.0f && aspect <= 4.0f);
-	assert(isFinite(near) && isFinite(far) && 0 < near);
+	assert(isFinite(near) && isFinite(far) && 0 < near && near < far);
 }
 do
 {
