@@ -5,6 +5,7 @@ import std.array : join;
 import std.conv : to;
 import std.format;
 import std.array;
+import std.typecons;
 
 enum EscapeSequence : string
 {
@@ -15,21 +16,29 @@ enum EscapeSequence : string
 struct Text
 {
 	string text;
-	ColorU color_fg;
-	ColorU color_bg;
+	Nullable!ColorU color_fg;
+	Nullable!ColorU color_bg;
+
+	this(string text)
+	{
+		this.text = text;
+		this.color_fg.nullify;
+		this.color_bg.nullify;
+		return;
+	}
 
 	this(string text, ColorU color_fg, ColorU color_bg)
 	{
 		this.text = text;
-		this.color_fg = color_fg;
-		this.color_bg = color_bg;
+		this.color_fg = color_fg.nullable;
+		this.color_bg = color_bg.nullable;
 		return;
 	}
 
 	string opSlice()
 	{
 		string buf;
-		return TextWriter(buf).text_colored(text, color_fg, color_bg)[];
+		return TextWriter(buf).text_colored(text, color_fg, color_bg)[].dup;
 	}
 }
 
@@ -51,19 +60,13 @@ struct TextWriter
 
 	ref typeof(this) text_colored(
 		string text,
-		ColorU color_fg,
-		ColorU color_bg,
+		Nullable!ColorU color_fg,
+		Nullable!ColorU color_bg,
 	)
 	{
-		text_ref ~= cast(string) EscapeSequence.begin;
-		this.color_fg(color_fg);
-		text_ref.put(";");
-		this.color_bg(color_bg);
-		text_ref ~= cast(string) EscapeSequence.end;
+		text_ref ~= set_color(color_fg, color_bg);
 		text_ref.put(text);
-		text_ref ~= cast(string) EscapeSequence.begin;
-		text_ref.put("0");
-		text_ref ~= cast(string) EscapeSequence.end;
+		text_ref ~= reset_color();
 		return this;
 	}
 
@@ -73,50 +76,70 @@ struct TextWriter
 	}
 
 protected:
-	ref typeof(this) reset()
+	string reset()
 	{
-		text_ref ~= cast(string) EscapeSequence.begin;
-		text_ref ~= to!string(SGRCode.reset);
-		text_ref ~= cast(string) EscapeSequence.end;
-		return this;
+		return cast(string) EscapeSequence.begin
+			~ to!string(
+				cast(int) SGRCode.reset)
+			~ cast(string) EscapeSequence.end;
 	}
 
-	ref typeof(this) color_fg(ColorU color)
+	string set_color(Nullable!ColorU color_fg, Nullable!ColorU color_bg)
 	{
-		text_ref ~= to!string(cast(int) SGRCode.fg_args);
-		text_ref ~= ";";
-		text_ref.write_color_24bit(color);
-		return this;
+		return format!"%s%s%s"(
+			cast(string) EscapeSequence.begin,
+			format!"%s;%s"(
+				this.color_fg(color_fg),
+				this.color_bg(color_bg),
+		),
+		cast(string) EscapeSequence.end,
+		);
 	}
 
-	ref typeof(this) color_bg(ColorU color)
+	string reset_color()
 	{
-		text_ref ~= to!string(cast(int) SGRCode.bg_args);
-		text_ref ~= ";";
-		text_ref.write_color_24bit(color);
-		return this;
+		return format!"%s%s%s"(
+			cast(string) EscapeSequence.begin,
+			format!"%d;%d"(cast(int) SGRCode.fg_default,
+				cast(int) SGRCode.bg_default),
+			cast(string) EscapeSequence.end,
+		);
+	}
+
+	string color_fg(Nullable!ColorU color_fg) pure
+	{
+		if (color_fg.isNull)
+		{
+			return "39";
+		}
+		return to!string(cast(int) SGRCode.fg_args)
+			~ ";"
+			~ color_24bit(color_fg.get);
+	}
+
+	string color_bg(Nullable!ColorU color_bg) pure
+	{
+		if (color_bg.isNull)
+		{
+			return "49";
+		}
+		return to!string(cast(int) SGRCode.bg_args)
+			~ ";"
+			~ color_24bit(color_bg.get);
 	}
 
 }
 
-void write_color_24bit(RefAppender!string text_ref, ColorU color)
+string color_24bit(ColorU color) pure
 {
-	text_ref ~= "2;";
-	text_ref ~= to!string(color.red);
-	text_ref ~= ";";
-	text_ref ~= to!string(color.green);
-	text_ref ~= ";";
-	text_ref ~= to!string(color.blue);
-	return;
+	return format!"2;%d;%d;%d"(color.red, color.green, color.blue,);
 }
 
 unittest
 {
 	import std.stdio;
 
-	string text_buf;
-	TextWriter(text_buf).text_colored("text", ColorU(0, 100, 200), ColorU(200, 100, 0));
-	assert(text_buf == "\x1b[38;2;0;100;200;48;2;200;100;0mtext\x1b[0m");
+	assert(Text("text", ColorU(0, 100, 200), ColorU(200, 100, 0))[] == "\x1b[38;2;0;100;200;48;2;200;100;0mtext\x1b[39;49m");
 }
 
 // SelectGraphicRenditionCode
