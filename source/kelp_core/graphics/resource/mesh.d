@@ -3,6 +3,7 @@ module kelp_core.graphics.resource.mesh;
 import kelp_core.graphics.resource;
 import std.array;
 import std.algorithm;
+import std.conv;
 
 struct GfxMesh
 {
@@ -121,8 +122,12 @@ struct GfxMesh
 	typeof(this) set(G : GfxGeometry!(V, I), V, I)(G[] geometry_list)
 	in
 	{
-		assert(geometry_list.size_vertex!(G) <= this.capacity_vertex);
-		assert(geometry_list.size_index!(G) <= this.capacity_index,);
+		assert(geometry_list.size_vertex!(G) <= this.capacity_vertex, 
+			text(geometry_list.size_vertex!(G), this.capacity_vertex)
+		);
+		assert(geometry_list.size_index!(G) <= this.capacity_index,
+			text(geometry_list.size_index!(G), this.capacity_index)
+		);
 	}
 	do
 	{

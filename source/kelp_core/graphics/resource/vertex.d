@@ -35,6 +35,13 @@ struct VertexPCT
 	Vec2 uv;
 }
 
+struct VertexPNU
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 uv;
+}
+
 unittest
 {
 	Vertex!(Vector!(3), ColorF) vertex;
