@@ -74,6 +74,19 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return this.data[row][col];
 	}
 
+	Matrix!(R, C, Type) opCast(T : Matrix!(R, C, Type), size_t R, size_t C)() const pure nothrow @nogc @safe
+	{
+		Matrix!(R, C, Type) return_mat;
+		foreach (col; 0 .. C)
+		{
+			foreach (row; 0 .. R)
+			{
+				return_mat.data[row][col] = (row < Row && col < Col) ? this.data[row][col] : 0.0f;
+			}
+		}
+		return return_mat;
+	}
+
 	string opCast(T : string)() const pure @safe
 	{
 		import std.format;
@@ -153,6 +166,12 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		in Matrix!(Row2, Col2, Type) rhs) const pure nothrow @nogc @safe
 	{
 		return multiply!(Matrix!(Row, Col, Type), Matrix!(Row2, Col2, Type))(this, rhs);
+	}
+
+	Matrix!(Row, Col, Type) opBinary(string op : "*")(
+		in Type rhs) const pure nothrow @nogc @safe
+	{
+		return multiply!(Matrix!(Row, Col, Type))(this, rhs);
 	}
 }
 
@@ -255,6 +274,24 @@ do
 	return result_matrix;
 }
 
+Matrix!(Row, Col, Type) multiply(
+M1 : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type
+)(
+	in M1 lhs, in Type rhs
+) pure nothrow @nogc @safe
+{
+	Matrix!(Row, Col, Type) result_matrix;
+	result_matrix = lhs;
+	foreach (col; 0 .. Col)
+	{
+		foreach (row; 0 .. Row)
+		{
+			result_matrix.data[row][col] *= rhs;
+		}
+	}
+	return result_matrix;
+}
+
 unittest
 {
 	import std.stdio;
@@ -342,4 +379,44 @@ Matrix!(Row, Col, Type) multiply_rtol(size_t Row, size_t Col, Type)(
 		temp = temp * matrix_list[count];
 	}
 	return temp;
+}
+
+Matrix!(2, 2) inverse(Type)(in Matrix!(2, 2, Type) mat) pure nothrow
+{
+	Type det;
+	det = mat[0, 0] * mat[1, 1] - mat[1, 0] * mat[0, 1];
+	return Matrix!(2, 2, Type)([
+		[+mat[1, 1], -mat[1, 0]],
+		[-mat[0, 1], +mat[0, 0]],
+	]) * (1.0 / det);
+}
+
+Matrix!(3, 3) inverse(Type)(in Matrix!(3, 3, Type) mat) pure nothrow
+{
+	Type det;
+	det = mat[0, 0] * mat[1, 1] * mat[2, 2]
+		+ (mat[0, 1] * mat[1, 2] * mat[2, 0])
+		+ (mat[0, 2] * mat[1, 0] * mat[2, 1])
+		- (mat[0, 2] * mat[1, 1] * mat[2, 0])
+		- (mat[0, 0] * mat[1, 2] * mat[2, 1])
+		- (mat[0, 1] * mat[1, 0] * mat[2, 2]);
+	return Matrix!(3, 3, Type)(
+		[
+		[
+			mat[1, 1] * mat[2, 2] - mat[1, 2] * mat[2, 1],
+			mat[0, 2] * mat[2, 1] - mat[0, 1] * mat[2, 2],
+			mat[0, 1] * mat[1, 2] - mat[0, 2] * mat[1, 1],
+		],
+		[
+			mat[1, 2] * mat[2, 0] - mat[1, 0] * mat[2, 2],
+			mat[0, 0] * mat[2, 2] - mat[0, 2] * mat[2, 0],
+			mat[0, 2] * mat[1, 0] - mat[0, 0] * mat[1, 2],
+		],
+		[
+			mat[1, 0] * mat[2, 1] - mat[1, 1] * mat[2, 0],
+			mat[0, 1] * mat[2, 0] - mat[0, 0] * mat[2, 1],
+			mat[0, 0] * mat[1, 1] - mat[0, 1] * mat[1, 0],
+		],
+	]
+	) * (1.0 / det);
 }
