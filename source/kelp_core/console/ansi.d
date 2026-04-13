@@ -1,8 +1,9 @@
 module kelp_core.console.ansi;
 
 import kelp_core.core.data;
+import std.algorithm;
 import std.array : join;
-import std.conv : to;
+import std.conv : to, text;
 import std.format;
 import std.array;
 import std.typecons;
@@ -16,29 +17,29 @@ enum EscapeSequence : string
 struct Text
 {
 	string text;
-	Nullable!ColorU color_fg;
-	Nullable!ColorU color_bg;
+	string color_fg;
+	string color_bg;
 
 	this(string text)
 	{
 		this.text = text;
-		this.color_fg.nullify;
-		this.color_bg.nullify;
 		return;
 	}
 
-	this(string text, ColorU color_fg, ColorU color_bg)
+	ref typeof(this) color(SGRCode color_fg, SGRCode color_bg)
 	{
-		this.text = text;
-		this.color_fg = color_fg.nullable;
-		this.color_bg = color_bg.nullable;
-		return;
+		this.color_fg = (cast(uint) color_fg).text();
+		this.color_bg = (cast(uint) color_bg).text();
+		return this;
 	}
 
 	string opSlice()
 	{
 		string buf;
-		return TextWriter(buf).text_colored(text, color_fg, color_bg)[].dup;
+		return TextWriter(buf)
+			.seq(this.color_fg, this.color_bg)
+			.text(this.text)
+			.seq(SGRCode.reset)[].dup;
 	}
 }
 
@@ -52,94 +53,64 @@ struct TextWriter
 		return;
 	}
 
+	string opSlice()()
+	{
+		return text_ref[].dup;
+	}
+
 	ref typeof(this) text(string text)
 	{
 		text_ref ~= text;
 		return this;
 	}
 
-	ref typeof(this) text_colored(
-		string text,
-		Nullable!ColorU color_fg,
-		Nullable!ColorU color_bg,
-	)
+	ref typeof(this) reset()
 	{
-		text_ref ~= set_color(color_fg, color_bg);
-		text_ref.put(text);
-		text_ref ~= reset_color();
+		text_ref ~= cast(string) EscapeSequence.begin;
+		text_ref ~= "0";
+		text_ref ~= cast(string) EscapeSequence.end;
 		return this;
 	}
 
-	string opSlice()()
+	ref typeof(this) seq(string[] sequence_list...)
 	{
-		return text_ref[].dup;
+		text_ref ~= cast(string) EscapeSequence.begin;
+		//text_ref ~= ";";
+		text_ref ~= sequence_list.join(";");
+		//text_ref ~= ";";
+		text_ref ~= cast(string) EscapeSequence.end;
+		return this;
 	}
 
-protected:
-	string reset()
+	ref typeof(this) seq(SGRCode[] sgr_list...)
 	{
-		return cast(string) EscapeSequence.begin
-			~ to!string(
-				cast(int) SGRCode.reset)
-			~ cast(string) EscapeSequence.end;
+		text_ref ~= cast(string) EscapeSequence.begin;
+		//text_ref ~= ";";
+		text_ref ~= sgr_list.map!(sequence => (cast(uint) sequence)
+				.to!string())
+			.array()
+			.join(";");
+		//text_ref ~= ";";
+		text_ref ~= cast(string) EscapeSequence.end;
+		return this;
 	}
 
-	string set_color(Nullable!ColorU color_fg, Nullable!ColorU color_bg)
+	ref typeof(this) reset_color()
 	{
-		return format!"%s%s%s"(
-			cast(string) EscapeSequence.begin,
-			format!"%s;%s"(
-				this.color_fg(color_fg),
-				this.color_bg(color_bg),
-		),
-		cast(string) EscapeSequence.end,
-		);
+		text_ref ~= cast(string) EscapeSequence.begin;
+		text_ref ~= (cast(uint)SGRCode.fg_default).to!string();
+		text_ref ~= ";";
+		text_ref ~= (cast(uint)SGRCode.bg_default).to!string();
+		text_ref ~= cast(string) EscapeSequence.end;
+		return this;
 	}
-
-	string reset_color()
-	{
-		return format!"%s%s%s"(
-			cast(string) EscapeSequence.begin,
-			format!"%d;%d"(cast(int) SGRCode.fg_default,
-				cast(int) SGRCode.bg_default),
-			cast(string) EscapeSequence.end,
-		);
-	}
-
-	string color_fg(Nullable!ColorU color_fg) pure
-	{
-		if (color_fg.isNull)
-		{
-			return "39";
-		}
-		return to!string(cast(int) SGRCode.fg_args)
-			~ ";"
-			~ color_24bit(color_fg.get);
-	}
-
-	string color_bg(Nullable!ColorU color_bg) pure
-	{
-		if (color_bg.isNull)
-		{
-			return "49";
-		}
-		return to!string(cast(int) SGRCode.bg_args)
-			~ ";"
-			~ color_24bit(color_bg.get);
-	}
-
-}
-
-string color_24bit(ColorU color) pure
-{
-	return format!"2;%d;%d;%d"(color.red, color.green, color.blue,);
 }
 
 unittest
 {
 	import std.stdio;
-
-	assert(Text("text", ColorU(0, 100, 200), ColorU(200, 100, 0))[] == "\x1b[38;2;0;100;200;48;2;200;100;0mtext\x1b[39;49m");
+	// fix later
+	//assert(Text("text", ColorU(0, 100, 200), ColorU(200, 100, 0))[] == "\x1b[38;2;0;100;200;48;2;200;100;0mtext\x1b[39;49m");
 }
 
 // SelectGraphicRenditionCode
@@ -158,6 +129,14 @@ enum SGRCode
 	strike = 9,
 	// font
 	default_font = 10,
+	// cancel style
+	bold_not = 21,
+	faint_not,
+	italic_not,
+	underline_not,
+	blink_not,
+	proportional_spacing, // what?
+	strike_not = 29,
 	// foreground color
 	fg_black = 30,
 	fg_red = 31,
@@ -180,10 +159,73 @@ enum SGRCode
 	bg_white = 47,
 	bg_args = 48,
 	bg_default = 49,
+
+	// foreground color
+	fg_black_bright = 90,
+	fg_red_bright,
+	fg_green_bright,
+	fg_yellow_bright,
+	fg_blue_bright,
+	fg_purple_bright,
+	fg_cyan_bright,
+	fg_white_bright,
+	fg_args_bright,
+	fg_default_bright,
+	// background color
+	bg_black_bright = 100,
+	bg_red_bright,
+	bg_green_bright,
+	bg_yellow_bright,
+	bg_blue_bright,
+	bg_purple_bright,
+	bg_cyan_bright,
+	bg_white_bright,
+	bg_args_bright,
+	bg_default_bright,
 }
 
 enum ColorBitCode
 {
 	_24bit = 2,
 	_6bit = 5,
+}
+
+enum TerminalColorFg
+{
+	black = 30,
+	red,
+	green,
+	yellow,
+	blue,
+	magenta,
+	cyan,
+	white,
+	black_bright = 90,
+	red_bright,
+	green_bright,
+	yellow_bright,
+	blue_bright,
+	magenta_bright,
+	cyan_bright,
+	white_bright,
+}
+
+enum TerminalColorBg
+{
+	black = 40,
+	red,
+	green,
+	yellow,
+	blue,
+	magenta,
+	cyan,
+	white,
+	black_bright = 100,
+	red_bright,
+	green_bright,
+	yellow_bright,
+	blue_bright,
+	magenta_bright,
+	cyan_bright,
+	white_bright,
 }

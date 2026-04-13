@@ -6,6 +6,7 @@ import kelp_core.console;
 import std.datetime;
 import std.format : format;
 import std.stdio;
+import std.conv : text;
 
 string[LogLevel] log_label = [
 	LogLevel.info: "info",
@@ -13,8 +14,8 @@ string[LogLevel] log_label = [
 	LogLevel.error: "error",
 ];
 
-ColorU color_header = ColorU(0xa0, 0xa0, 0xa0);
-ColorU color_body = ColorU(0x80, 0x80, 0x80);
+SGRCode color_header = SGRCode.fg_black_bright;
+SGRCode color_body = SGRCode.bg_default;
 
 struct Logger
 {
@@ -28,11 +29,47 @@ struct Logger
 	)
 	{
 		DateTime now = cast(DateTime) Clock.currTime();
-		format("[%s] %s", text_colored_label(log_level)[], log_text).writeln();
-		Text(format!"%4s : "("time"), color_header, ColorU(0, 0, 0))[].write();
-		Text(format!"%s"(now.toISOExtString), color_body, ColorU(0, 0, 0))[].writeln();
-		Text(format!"%4s : "("file"), color_header, ColorU(0, 0, 0))[].write();
-		Text(format!"%s(%d)"(file, line,), color_body, ColorU(0, 0, 0))[].writeln();
+		string level_label;
+		switch (log_level)
+		{
+		case LogLevel.error:
+			TextWriter(level_label)
+				.seq(SGRCode.fg_red)
+				.text("error")
+				.seq(SGRCode.fg_default);
+			break;
+		case LogLevel.warning:
+			TextWriter(level_label)
+				.seq(SGRCode.fg_yellow)
+				.text("warn")
+				.seq(SGRCode.fg_default);
+			break;
+		case LogLevel.success:
+			TextWriter(level_label)
+				.seq(SGRCode.fg_green)
+				.text("success")
+				.seq(SGRCode.fg_default);
+			break;
+		case LogLevel.info:
+			TextWriter(level_label)
+				.seq(SGRCode.fg_cyan)
+				.text("info")
+				.seq(SGRCode.fg_default);
+			break;
+		default:
+			break;
+		}
+
+		format("[%s] %s", level_label, log_text).writeln();
+		Text(format!"%4s : "("time"))
+			.color(color_header, color_body)[].write();
+		Text(now.toISOExtString.text())
+			.color(color_header, color_body)[].writeln();
+		Text(format!"%4s : "("file"))
+			.color(color_header, color_body)[].write();
+		stdout.flush();
+		Text(format!"%s(%d)"(file, line,))
+			.color(color_header, color_body)[].writeln();
 		/+
 		Text(format!"%4s : "("mod"), color_header, ColorU(0, 0, 0))[].write();
 		Text(format!"%s"(mod,), color_body, ColorU(0, 0, 0))[].writeln();
@@ -43,17 +80,26 @@ struct Logger
 	}
 }
 
-Text text_colored_label(LogLevel level)
+string text_colored_label(LogLevel level)
 {
-	//string label_buf;
+	string label_buf;
 	switch (level)
 	{
 	case LogLevel.info:
-		return Text("info", ColorU(0x00, 0xcc, 0x00), ColorU(0x00, 0x00, 0x00));
+		return TextWriter(label_buf)
+			.seq(SGRCode.fg_green, SGRCode.bg_default)
+			.text("info")
+			.reset_color()[];
 	case LogLevel.warning:
-		return Text("warn", ColorU(0xcc, 0xcc, 0x00), ColorU(0x00, 0x00, 0x00));
+		return TextWriter(label_buf)
+			.seq(SGRCode.fg_red, SGRCode.bg_default)
+			.text("warn")
+			.reset_color()[];
 	case LogLevel.error:
-		return Text("error", ColorU(0xcc, 0x00, 0x00), ColorU(0x00, 0x00, 0x00));
+		return TextWriter(label_buf)
+			.seq(SGRCode.fg_red, SGRCode.bg_white)
+			.text("error")
+			.reset_color()[];
 	default:
 		assert(false);
 	}

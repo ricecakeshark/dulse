@@ -3,9 +3,12 @@ module kelp_core.logger.logger_desc;
 enum LogLevel
 {
 	none = 0u,
-	info,
-	warning,
 	error,
+	warning,
+	success,
+	info,
+	
+	
 }
 
 enum LogFlags : uint
@@ -15,3 +18,4 @@ enum LogFlags : uint
 	full_module = (1u << 1),
 	full_function = (1u << 2),
 }
+
