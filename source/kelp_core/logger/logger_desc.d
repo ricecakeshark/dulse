@@ -7,15 +7,14 @@ enum LogLevel
 	warning,
 	success,
 	info,
-	
-	
+
 }
 
 enum LogFlags : uint
 {
 	none = 0u,
-	full_uri = (1u << 0),
-	full_module = (1u << 1),
-	full_function = (1u << 2),
+	time = (1u << 0),
+	file = (1u << 1),
+	mod = (1u << 2),
+	func = (1u << 3),
 }
-

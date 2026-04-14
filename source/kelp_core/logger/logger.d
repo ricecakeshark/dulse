@@ -7,6 +7,7 @@ import std.datetime;
 import std.format : format;
 import std.stdio;
 import std.conv : text;
+import std.typecons : BitFlags;
 
 string[LogLevel] log_label = [
 	LogLevel.info: "info",
@@ -22,6 +23,7 @@ struct Logger
 	typeof(this) log(
 		string log_text,
 		LogLevel log_level,
+		LogFlags log_flags = LogFlags.time,
 		string file = __FILE__,
 		size_t line = __LINE__,
 		string func = __FUNCTION__,
@@ -30,77 +32,76 @@ struct Logger
 	{
 		DateTime now = cast(DateTime) Clock.currTime();
 		string level_label;
-		switch (log_level)
-		{
-		case LogLevel.error:
-			TextWriter(level_label)
-				.seq(SGRCode.fg_red)
-				.text("error")
-				.seq(SGRCode.fg_default);
-			break;
-		case LogLevel.warning:
-			TextWriter(level_label)
-				.seq(SGRCode.fg_yellow)
-				.text("warn")
-				.seq(SGRCode.fg_default);
-			break;
-		case LogLevel.success:
-			TextWriter(level_label)
-				.seq(SGRCode.fg_green)
-				.text("success")
-				.seq(SGRCode.fg_default);
-			break;
-		case LogLevel.info:
-			TextWriter(level_label)
-				.seq(SGRCode.fg_cyan)
-				.text("info")
-				.seq(SGRCode.fg_default);
-			break;
-		default:
-			break;
-		}
+		level_label.write_colored_label(log_level);
 
+		// text
 		format("[%s] %s", level_label, log_text).writeln();
-		Text(format!"%4s : "("time"))
-			.color(color_header, color_body)[].write();
-		Text(now.toISOExtString.text())
-			.color(color_header, color_body)[].writeln();
-		Text(format!"%4s : "("file"))
-			.color(color_header, color_body)[].write();
-		stdout.flush();
-		Text(format!"%s(%d)"(file, line,))
-			.color(color_header, color_body)[].writeln();
-		/+
-		Text(format!"%4s : "("mod"), color_header, ColorU(0, 0, 0))[].write();
-		Text(format!"%s"(mod,), color_body, ColorU(0, 0, 0))[].writeln();
-		Text(format!"%4s : "("fn"), color_header, ColorU(0, 0, 0))[].write();
-		Text(format!"%s"(func,), color_body, ColorU(0, 0, 0))[].writeln();
-		+/
+		// time
+		if (log_flags & LogFlags.time)
+		{
+			Text(format!"%4s : "("time"))
+				.color(color_header, color_body)[].write();
+			Text(now.toISOExtString.text())
+				.color(color_header, color_body)[].writeln();
+		}
+		// file
+		if (log_flags & LogFlags.file)
+		{
+			Text(format!"%4s : "("file"))
+				.color(color_header, color_body)[].write();
+			Text(format!"%s(%d)"(file, line,))
+				.color(color_header, color_body)[].writeln();
+		}
+		// func
+		if (log_flags & LogFlags.func)
+		{
+			Text(format!"%4s : "("func"))
+				.color(color_header, color_body)[].write();
+			Text(format!"%s(%d)"(func, line,))
+				.color(color_header, color_body)[].writeln();
+		}
+		// module
+		if (log_flags & LogFlags.mod)
+		{
+			Text(format!"%4s : "("mod"))
+				.color(color_header, color_body)[].write();
+			Text(format!"%s(%d)"(mod, line,))
+				.color(color_header, color_body)[].writeln();
+		}
 		return this;
 	}
 }
 
-string text_colored_label(LogLevel level)
+void write_colored_label(out string level_label, in LogLevel log_level) pure nothrow 
 {
-	string label_buf;
-	switch (level)
+	switch (log_level)
 	{
-	case LogLevel.info:
-		return TextWriter(label_buf)
-			.seq(SGRCode.fg_green, SGRCode.bg_default)
-			.text("info")
-			.reset_color()[];
-	case LogLevel.warning:
-		return TextWriter(label_buf)
-			.seq(SGRCode.fg_red, SGRCode.bg_default)
-			.text("warn")
-			.reset_color()[];
 	case LogLevel.error:
-		return TextWriter(label_buf)
-			.seq(SGRCode.fg_red, SGRCode.bg_white)
+		TextWriter(level_label)
+			.seq(SGRCode.fg_red)
 			.text("error")
-			.reset_color()[];
+			.seq(SGRCode.fg_default);
+		break;
+	case LogLevel.warning:
+		TextWriter(level_label)
+			.seq(SGRCode.fg_yellow)
+			.text("warn")
+			.seq(SGRCode.fg_default);
+		break;
+	case LogLevel.success:
+		TextWriter(level_label)
+			.seq(SGRCode.fg_green)
+			.text("success")
+			.seq(SGRCode.fg_default);
+		break;
+	case LogLevel.info:
+		TextWriter(level_label)
+			.seq(SGRCode.fg_cyan)
+			.text("info")
+			.seq(SGRCode.fg_default);
+		break;
 	default:
-		assert(false);
+		break;
 	}
+	return;
 }

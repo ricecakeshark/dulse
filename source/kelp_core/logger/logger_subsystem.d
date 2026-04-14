@@ -3,8 +3,6 @@ module kelp_core.logger.logger_subsystem;
 import kelp_core.core;
 import kelp_core.logger;
 
-//import std.logger;
-
 class LoggerSubsystem : Subsystem
 {
 	protected Core core;
@@ -35,6 +33,7 @@ class LoggerSubsystem : Subsystem
 	void log(
 		string log_text,
 		LogLevel level = LogLevel.info,
+		LogFlags flags = LogFlags.time,
 		string file = __FILE__,
 		size_t line = __LINE__,
 		string func = __FUNCTION__,
@@ -42,7 +41,7 @@ class LoggerSubsystem : Subsystem
 	)
 	{
 		//std.logger.info(log_text, line, file, func);
-		this.logger.log(log_text, level, file, line, func, mod);
+		this.logger.log(log_text, level, flags, file, line, func, mod);
 		return;
 	}
 }

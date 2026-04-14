@@ -20,20 +20,20 @@ struct Text
 	string color_fg;
 	string color_bg;
 
-	this(string text)
+	this(string text) pure nothrow
 	{
 		this.text = text;
 		return;
 	}
 
-	ref typeof(this) color(SGRCode color_fg, SGRCode color_bg)
+	ref typeof(this) color(SGRCode color_fg, SGRCode color_bg) pure nothrow
 	{
 		this.color_fg = (cast(uint) color_fg).text();
 		this.color_bg = (cast(uint) color_bg).text();
 		return this;
 	}
 
-	string opSlice()
+	string opSlice() pure nothrow
 	{
 		string buf;
 		return TextWriter(buf)
@@ -47,24 +47,24 @@ struct TextWriter
 {
 	RefAppender!string text_ref;
 
-	this(ref string text)
+	this(ref string text) pure nothrow
 	{
 		text_ref = appender(&text);
 		return;
 	}
 
-	string opSlice()()
+	string opSlice()() pure nothrow
 	{
 		return text_ref[].dup;
 	}
 
-	ref typeof(this) text(string text)
+	ref typeof(this) text(string text) pure nothrow
 	{
 		text_ref ~= text;
 		return this;
 	}
 
-	ref typeof(this) reset()
+	ref typeof(this) reset() pure nothrow
 	{
 		text_ref ~= cast(string) EscapeSequence.begin;
 		text_ref ~= "0";
@@ -72,30 +72,26 @@ struct TextWriter
 		return this;
 	}
 
-	ref typeof(this) seq(string[] sequence_list...)
+	ref typeof(this) seq(string[] sequence_list...) pure nothrow
 	{
 		text_ref ~= cast(string) EscapeSequence.begin;
-		//text_ref ~= ";";
 		text_ref ~= sequence_list.join(";");
-		//text_ref ~= ";";
 		text_ref ~= cast(string) EscapeSequence.end;
 		return this;
 	}
 
-	ref typeof(this) seq(SGRCode[] sgr_list...)
+	ref typeof(this) seq(SGRCode[] sgr_list...) pure nothrow
 	{
 		text_ref ~= cast(string) EscapeSequence.begin;
-		//text_ref ~= ";";
 		text_ref ~= sgr_list.map!(sequence => (cast(uint) sequence)
 				.to!string())
 			.array()
 			.join(";");
-		//text_ref ~= ";";
 		text_ref ~= cast(string) EscapeSequence.end;
 		return this;
 	}
 
-	ref typeof(this) reset_color()
+	ref typeof(this) reset_color() pure nothrow
 	{
 		text_ref ~= cast(string) EscapeSequence.begin;
 		text_ref ~= (cast(uint)SGRCode.fg_default).to!string();
