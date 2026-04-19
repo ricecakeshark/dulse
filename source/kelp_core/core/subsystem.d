@@ -19,10 +19,12 @@ class SubsystemPool
 
 	typeof(this) finalize()
 	{
-		foreach_reverse (subsystem; this.pool.all)
+		foreach_reverse (ref subsystem; this.pool.all)
 		{
 			subsystem.finalize();
+			destroy(subsystem);
 		}
+		this.pool.clear();
 		return this;
 	}
 
