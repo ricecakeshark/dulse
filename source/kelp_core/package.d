@@ -8,4 +8,5 @@ public import kelp_core.file;
 public import kelp_core.graphics;
 public import kelp_core.logger;
 public import kelp_core.math;
+public import kelp_core.object;
 public import kelp_core.timer;
