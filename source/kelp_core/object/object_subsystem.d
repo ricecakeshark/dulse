@@ -6,7 +6,7 @@ import kelp_core.object;
 class ObjectSubsystem : Subsystem
 {
 	protected Core core;
-	//ObjectStore object_store;
+	//IObjectManager[] object_manager_list;
 
 	this(Core core)
 	{
@@ -16,7 +16,10 @@ class ObjectSubsystem : Subsystem
 
 	void initialize()
 	{
-		//this.object_store = ObjectStore();
+		/+foreach (manager; object_manager_list)
+		{
+			manager.initialize();
+		}+/
 		return;
 	}
 
@@ -27,6 +30,10 @@ class ObjectSubsystem : Subsystem
 
 	void process()
 	{
+		/+foreach (manager; object_manager_list)
+		{
+			manager.process();
+		}+/
 		return;
 	}
 }

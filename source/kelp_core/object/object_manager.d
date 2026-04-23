@@ -1,16 +1,30 @@
-module kelp_core.object.object_store;
+module kelp_core.object.object_manager;
 
 import kelp_core.object;
 import std.exception;
-import std.meta;
-import std.traits;
+import std.meta : staticIndexOf;
+import std.traits : InterfacesTuple;
+import std.algorithm : remove;
 
-class ObjectManager(Entity)
+class ObjectManager(EntityType)
 {
-	alias StoreOf(Component) = ComponentStore!(Entity, Component);
+	alias StoreOf(Component) = ComponentStore!(EntityType, Component);
 
+	EntityStore entity_store;
 	IComponentStore[TypeInfo] component_store_list;
-	IObjectSystem!Entity[] system_list;
+	IObjectSystem!EntityType[] system_list;
+
+	this()
+	{
+		this.entity_store = new EntityStore();
+		return;
+	}
+
+	typeof(this) create(Entity[] out_entity_list...)
+	{
+		this.entity_store.create(out_entity_list);
+		return this;
+	}
 
 	typeof(this) register(Component)()
 	if (is(Component == struct))
@@ -19,10 +33,23 @@ class ObjectManager(Entity)
 		return this;
 	}
 
+	typeof(this) remove(Component)()
+	{
+		component_store_list.remove(typeid(Component));
+		return this;
+	}
+
 	typeof(this) register(SystemType)()
-	if (isSystemType!(SystemType, Entity))
+	if (isSystemType!(SystemType, EntityType))
 	{
 		system_list ~= new SystemType();
+		return this;
+	}
+
+	typeof(this) remove(SystemType)(SystemType system)
+	if (isSystemType!(SystemType, EntityType))
+	{
+		system_list.remove(system);
 		return this;
 	}
 
@@ -30,7 +57,7 @@ class ObjectManager(Entity)
 	{
 		auto store_ref = typeid(Component) in component_store_list;
 		enforce(store_ref !is null);
-		auto store_ref_2 = cast(StoreOf!Component) *store_ref;
+		auto store_ref_2 = cast(StoreOf!Component)*store_ref;
 		enforce(store_ref_2 !is null);
 		return store_ref_2;
 	}
@@ -84,7 +111,7 @@ template isComponentType(T)
 	enum bool isComponentType = is(T == class) && staticIndexOf!(IComponentStore, InterfacesTuple!T) >= 0;
 }
 
-template isSystemType(T, Entity)
+template isSystemType(T, EntityType)
 {
-	enum bool isSystemType = is(T == class) && staticIndexOf!(IObjectSystem!Entity, InterfacesTuple!T) >= 0;
+	enum bool isSystemType = is(T == class) && staticIndexOf!(IObjectSystem!EntityType, InterfacesTuple!T) >= 0;
 }
