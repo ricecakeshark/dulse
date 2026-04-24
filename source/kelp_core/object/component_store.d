@@ -10,11 +10,16 @@ interface IComponentStore
 {
 }
 
-class ComponentStore(EntityType, Component) : IComponentStore
+class ComponentStore(Component) : IComponentStore
 {
 	Entity[] entity_list;
 	Component[] component_list;
 	Nullable!size_t[] lookup_list;
+
+	this()
+	{
+		//assert(component_list.length);
+	}
 
 	@property bool has(Entity entity)
 	{
@@ -22,7 +27,7 @@ class ComponentStore(EntityType, Component) : IComponentStore
 		{
 			return false;
 		}
-		return this.lookup_list[entity.index].isNull;
+		return this.lookup_list[entity.index].isNull == false;
 	}
 
 	@property size_t count()
@@ -35,7 +40,7 @@ class ComponentStore(EntityType, Component) : IComponentStore
 		return this.entity_list;
 	}
 
-	@property Component[] components()
+	@property ref Component[] components()
 	{
 		return this.component_list;
 	}
@@ -44,7 +49,7 @@ class ComponentStore(EntityType, Component) : IComponentStore
 	{
 		if (this.has(entity) == false)
 		{
-			this.create(entity);
+			this.attach(entity);
 		}
 		return this.component_list[lookup(entity)];
 	}
@@ -59,9 +64,54 @@ class ComponentStore(EntityType, Component) : IComponentStore
 	{
 		if (this.has(entity) == false)
 		{
-			this.create(entity);
+			this.attach(entity);
 		}
 		return this.component_list[lookup(entity)];
+	}
+
+	typeof(this) attach(Entity entity)
+	{
+		enforce(this.has(entity) == false);
+
+		if (entity.index >= lookup_list.length)
+		{
+			lookup_list.length = cast(size_t)(entity.index + 1);
+		}
+		// attach entity_list
+		this.entity_list ~= entity;
+		// attach lookup_list
+		this.lookup_list[entity.index] = cast(size_t) this.component_list.length;
+		// attach component_list
+		this.component_list ~= Component();
+		return this;
+	}
+
+	typeof(this) attach(Entity[] entity_list...)
+	{
+		foreach (entity; entity_list)
+		{
+			this.attach(entity);
+		}
+		return this;
+	}
+
+	typeof(this) detach(Entity entity)
+	{
+		enforce(this.has(entity) == true);
+
+		size_t count = this.entity_list.countUntil(entity);
+		if (count >= 0)
+		{
+			// detach component_list
+			this.component_list.swapAt(lookup(entity), component_list.length - 1u);
+			this.component_list.length -= 1u;
+			// detach lookup_list
+			this.lookup_list[entity.index].nullify();
+			// detach entity_list
+			this.entity_list.swapAt(count, entity_list.length - 1u);
+			this.entity_list.length -= 1u;
+		}
+		return this;
 	}
 
 	typeof(this) clear()
@@ -72,68 +122,54 @@ class ComponentStore(EntityType, Component) : IComponentStore
 		return this;
 	}
 
-	typeof(this) create(Entity entity)
-	{
-		enforce(this.has(entity) == false);
-
-		if (entity.index >= lookup_list.length)
-		{
-			lookup_list.length = cast(size_t)(entity.index+1);
-		}
-		entity_list ~= entity;
-		lookup_list[entity.index] = cast(size_t) this.component_list.length;
-		this.component_list ~= Component();
-		return this;
-	}
-
-	typeof(this) create(Entity entity, Component component)
-	{
-		enforce(this.has(entity) == false);
-		if (entity.index >= lookup_list.length)
-		{
-			lookup_list.length = cast(size_t) entity.index;
-		}
-		entity_list ~= entity;
-		lookup_list[entity.index] = cast(size_t) this.component_list.length;
-		this.component_list ~= component;
-		return this;
-	}
-
-	protected:
+protected:
 	size_t lookup(Entity entity) pure nothrow @nogc @safe
 	{
-		return lookup_list[cast(size_t)entity.index].get();
+		return lookup_list[cast(size_t) entity.index].get();
 	}
 }
 
 unittest
 {
+	import std.algorithm;
 	import std.stdio;
-	import std.datetime;
-	import std.datetime.stopwatch;
+	import std.exception;
 
-	struct S1
+	struct C
 	{
-		float a = 1.0;
+		float param;
 	}
 
-	struct S2
-	{
-		float b = 1.0;
-	}
+	ComponentStore!C store;
+	Entity[] entity_list;
 
-	struct S3
+	store = new ComponentStore!C();
+	foreach (count; 0 .. 3)
 	{
-		float c = 1.0;
+		entity_list ~= Entity(cast(uint) count);
 	}
+	assert(store.count == 0);
+	assert(entity_list.all!(entity => store.has(entity) == false));
+	assert(collectException!Exception({ store.get(entity_list[0]); }) is null);
 
-	void f1()
+	foreach (entity; entity_list)
 	{
-		scope ComponentStore!(uint, S1) store = new ComponentStore!(uint, S1);
-		foreach (count; 0 .. 100)
-			store.create(count, S1(2.0));
+		store.attach(entity);
 	}
+	assert(store.count == 3);
+	assert(store.entities.length == 3);
+	assert(store.components.length == 3);
+	assert(entity_list.all!(entity => store.has(entity)));
+	store.detach(entity_list[$ - 1]);
+	assert(store.count == 2);
+	assert(store.entities.length == 2);
+	assert(store.components.length == 2);
+	C ret = store.require(entity_list[2]);
+	assert(is(typeof(ret) == C));
+	assert(store.count == 3);
+	assert(entity_list.all!(entity => store.has(entity)));
+	store.clear();
+	assert(store.count == 0);
+	assert(entity_list.all!(entity => store.has(entity) == false));
 
-	auto result = benchmark!(f1)(100);
-	writefln("result1 : %s", result[0]);
 }

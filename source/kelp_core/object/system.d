@@ -2,10 +2,10 @@ module kelp_core.object.system;
 
 import kelp_core.object;
 
-interface IObjectSystem(Entity)
+interface IObjectSystem
 {
-	void initialize(ObjectManager!Entity);
-	void process(ObjectManager!Entity);
+	void initialize(ObjectManager);
+	void process(ObjectManager);
 }
 
 

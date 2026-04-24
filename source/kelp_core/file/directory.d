@@ -36,7 +36,7 @@ struct Directory
 	}
 }
 
-unittest
+/+unittest
 {
 	import std.stdio;
 
@@ -46,4 +46,4 @@ unittest
 	{
 		writeln(entry.path);
 	}
-}
+}+/

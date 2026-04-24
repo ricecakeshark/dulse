@@ -2,22 +2,26 @@ module kelp_core.object.object_manager;
 
 import kelp_core.object;
 import std.exception;
-import std.meta : staticIndexOf;
+import std.meta : staticIndexOf,staticMap;
 import std.traits : InterfacesTuple;
 import std.algorithm : remove;
+import std.conv:to;
 
-class ObjectManager(EntityType)
+class ObjectManager
 {
-	alias StoreOf(Component) = ComponentStore!(EntityType, Component);
-
 	EntityStore entity_store;
 	IComponentStore[TypeInfo] component_store_list;
-	IObjectSystem!EntityType[] system_list;
+	IObjectSystem[] system_list;
 
 	this()
 	{
 		this.entity_store = new EntityStore();
 		return;
+	}
+	// Entity
+	@property ref Entity[] list_entity() pure nothrow @nogc @safe
+	{
+		return this.entity_store.all;
 	}
 
 	typeof(this) create(Entity[] out_entity_list...)
@@ -25,45 +29,23 @@ class ObjectManager(EntityType)
 		this.entity_store.create(out_entity_list);
 		return this;
 	}
-
-	typeof(this) register(Component)()
-	if (is(Component == struct))
+	// Component
+	@property ref Entity[] list_component() pure nothrow @nogc @safe
 	{
-		component_store_list[typeid(Component)] = new StoreOf!Component();
-		return this;
+		return this.entity_store.all;
 	}
 
-	typeof(this) remove(Component)()
-	{
-		component_store_list.remove(typeid(Component));
-		return this;
-	}
-
-	typeof(this) register(SystemType)()
-	if (isSystemType!(SystemType, EntityType))
-	{
-		system_list ~= new SystemType();
-		return this;
-	}
-
-	typeof(this) remove(SystemType)(SystemType system)
-	if (isSystemType!(SystemType, EntityType))
-	{
-		system_list.remove(system);
-		return this;
-	}
-
-	StoreOf!Component get_store(Component)()
+	ComponentStore!Component get(Component)()
 	{
 		auto store_ref = typeid(Component) in component_store_list;
 		enforce(store_ref !is null);
-		auto store_ref_2 = cast(StoreOf!Component)*store_ref;
+		auto store_ref_2 = cast(ComponentStore!Component)*store_ref;
 		enforce(store_ref_2 !is null);
 		return store_ref_2;
 	}
 
-	typeof(this) store(ComponentList...)(
-		out staticMap!(StoreOf, ComponentList) out_list
+	typeof(this) query(ComponentList...)(
+		out staticMap!(ComponentStore, ComponentList) out_list
 	)
 	{
 		static foreach (count, Component; ComponentList)
@@ -73,9 +55,64 @@ class ObjectManager(EntityType)
 		return this;
 	}
 
-	typeof(this) store(Component)(out StoreOf!Component out_buf)
+	typeof(this) query(Component)(out ComponentStore!Component out_buf)
 	{
-		out_buf = this.get_store!Component();
+		out_buf = this.get!Component();
+		return this;
+	}
+
+	typeof(this) register(Component)()
+	if (is(Component == struct))
+	{
+		component_store_list[typeid(Component)] = new ComponentStore!Component();
+		return this;
+	}
+
+	typeof(this) remove(Component)()
+	{
+		component_store_list.remove(typeid(Component));
+		return this;
+	}
+
+	typeof(this) attach(Component)(Entity entity)
+	{
+		enforce(typeid(Component) in this.component_store_list);
+		auto store = cast(ComponentStore!Component)(this.component_store_list[typeid(Component)]);
+		store.attach(entity);
+		return this;
+	}
+
+	typeof(this) attach(Component)(Entity[] entity_list...)
+	{
+		enforce(typeid(Component) in this.component_store_list);
+		cast(ComponentStore!Component)(this.component_store_list[typeid(Component)]).attach(entity_list);
+		return this;
+	}
+
+	ref Component get_component(Component)(Entity entity)
+	{
+		return this.component_store_list[typeid(Component)]
+			.to!(ComponentStore!Component)
+			.get(entity);
+	}
+
+	// System
+	@property IObjectSystem[] list_system() pure nothrow @nogc @safe
+	{
+		return this.system_list;
+	}
+
+	typeof(this) register(SystemType)()
+	if (isSystemType!SystemType)
+	{
+		system_list ~= new SystemType();
+		return this;
+	}
+
+	typeof(this) remove(SystemType)(SystemType system)
+	if (isSystemType!SystemType)
+	{
+		system_list.remove(system);
 		return this;
 	}
 
@@ -97,10 +134,9 @@ class ObjectManager(EntityType)
 		return this;
 	}
 
-	typeof(this) with_store(Component)(void delegate(StoreOf!Component) dlg)
+	typeof(this) with_store(Component)(void delegate(ComponentStore!Component) dlg)
 	{
-		//scope StoreOf!Component store;
-		dlg(this.get_store!Component());
+		dlg(this.get!Component());
 		return this;
 	}
 
@@ -108,10 +144,27 @@ class ObjectManager(EntityType)
 
 template isComponentType(T)
 {
-	enum bool isComponentType = is(T == class) && staticIndexOf!(IComponentStore, InterfacesTuple!T) >= 0;
+	enum bool isComponentType = is(T == struct) && staticIndexOf!(IComponentStore, InterfacesTuple!T) >= 0;
 }
 
-template isSystemType(T, EntityType)
+template isSystemType(T)
 {
-	enum bool isSystemType = is(T == class) && staticIndexOf!(IObjectSystem!EntityType, InterfacesTuple!T) >= 0;
+	enum bool isSystemType = is(T == class) && staticIndexOf!(IObjectSystem, InterfacesTuple!T) >= 0;
+}
+
+unittest
+{
+	ObjectManager manager;
+	Entity[3] entity;
+
+	struct Comp
+	{
+		float param;
+	}
+
+	manager.register!Comp();
+	manager.create(entity[]);
+	manager.attach(entity[]);
+
+
 }

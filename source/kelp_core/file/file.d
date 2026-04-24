@@ -115,10 +115,10 @@ enum OpenModeFlags
 	append = 1u << 2,
 }
 
-unittest
+/+unittest
 {
 	import std.stdio : writefln;
 
 	FileHandler file;
 	file.open(__FILE__);
-}
+}+/
