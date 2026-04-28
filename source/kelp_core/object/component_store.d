@@ -18,10 +18,9 @@ class ComponentStore(Component) : IComponentStore
 
 	this()
 	{
-		//assert(component_list.length);
 	}
 
-	@property bool has(Entity entity)
+	@property bool has(Entity entity) pure nothrow @nogc @safe
 	{
 		if (entity.index >= lookup_list.length)
 		{
@@ -30,37 +29,34 @@ class ComponentStore(Component) : IComponentStore
 		return this.lookup_list[entity.index].isNull == false;
 	}
 
-	@property size_t count()
+	@property size_t count() pure nothrow @nogc @safe
 	{
 		return component_list.length;
 	}
 
-	@property Entity[] entities()
+	@property Entity[] entities() pure nothrow @nogc
 	{
 		return this.entity_list;
 	}
 
-	@property ref Component[] components()
+	@property ref Component[] components() pure nothrow @nogc
 	{
 		return this.component_list;
 	}
 
-	ref Component opIndex(Entity entity)
-	{
-		if (this.has(entity) == false)
-		{
-			this.attach(entity);
-		}
-		return this.component_list[lookup(entity)];
-	}
-
-	ref Component get(Entity entity)
+	ref Component opIndex(Entity entity) pure @safe
 	{
 		enforce(this.has(entity));
 		return this.component_list[lookup(entity)];
 	}
 
-	ref Component require(Entity entity)
+	ref Component get(Entity entity) pure @safe
+	{
+		enforce(this.has(entity));
+		return this.component_list[lookup(entity)];
+	}
+
+	ref Component require(Entity entity) pure nothrow
 	{
 		if (this.has(entity) == false)
 		{
@@ -69,10 +65,12 @@ class ComponentStore(Component) : IComponentStore
 		return this.component_list[lookup(entity)];
 	}
 
-	typeof(this) attach(Entity entity)
+	typeof(this) attach(Entity entity) pure nothrow @safe
 	{
-		enforce(this.has(entity) == false);
-
+		if (this.has(entity))
+		{
+			return this;
+		}
 		if (entity.index >= lookup_list.length)
 		{
 			lookup_list.length = cast(size_t)(entity.index + 1);
@@ -86,7 +84,7 @@ class ComponentStore(Component) : IComponentStore
 		return this;
 	}
 
-	typeof(this) attach(Entity[] entity_list...)
+	typeof(this) attach(Entity[] entity_list...) pure nothrow @safe
 	{
 		foreach (entity; entity_list)
 		{
@@ -95,10 +93,12 @@ class ComponentStore(Component) : IComponentStore
 		return this;
 	}
 
-	typeof(this) detach(Entity entity)
+	typeof(this) detach(Entity entity) pure nothrow @safe
 	{
-		enforce(this.has(entity) == true);
-
+		if (this.has(entity) == false)
+		{
+			return this;
+		}
 		size_t count = this.entity_list.countUntil(entity);
 		if (count >= 0)
 		{
@@ -114,7 +114,7 @@ class ComponentStore(Component) : IComponentStore
 		return this;
 	}
 
-	typeof(this) clear()
+	typeof(this) clear() pure nothrow @nogc @safe
 	{
 		this.entity_list = [];
 		this.component_list = [];

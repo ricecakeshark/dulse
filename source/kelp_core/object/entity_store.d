@@ -9,12 +9,12 @@ struct Entity
 
 class EntityStore
 {
-	uint next_id;
-	Entity[] entity_list;
-	Entity[] free_list;
+	protected uint next_id;
+	protected Entity[] entity_list;
+	protected Entity[] free_list;
 	//bool[] entity_table;
 
-	@property size_t count() pure nothrow @nogc @safe
+	@property size_t count() const pure nothrow @nogc @safe
 	{
 		return this.entity_list.length;
 	}
@@ -29,7 +29,7 @@ class EntityStore
 		return this.entity_list.canFind(entity);
 	}
 
-	typeof(this) create(Entity[] out_entity_list...)
+	typeof(this) create(Entity[] out_entity_list...) pure nothrow @safe
 	{
 		foreach (ref out_entity; out_entity_list)
 		{
@@ -38,19 +38,21 @@ class EntityStore
 		return this;
 	}
 
-	typeof(this) create(out Entity out_entity)
+	typeof(this) create(out Entity out_entity) pure nothrow @safe
 	{
 		scope Entity entity;
 		entity = Entity(cast(uint) this.next_id);
 		out_entity = entity;
+		// internal
 		this.entity_list ~= entity;
 		next_id += 1;
 		return this;
 	}
 
-	typeof(this) release(Entity entity)
+	typeof(this) release(Entity entity) pure nothrow @safe
 	{
-		size_t count = entity_list.countUntil(entity);
+		size_t count;
+		count = entity_list.countUntil(entity);
 		if (count >= 0)
 		{
 			this.entity_list.swapAt(count, entity_list.length - 1u);
