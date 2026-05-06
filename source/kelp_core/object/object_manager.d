@@ -17,6 +17,7 @@ class ObjectManager
 	this() pure nothrow @safe
 	{
 		this.entity_store = new EntityStore();
+		this.resource_store = new ResourceStore();
 		return;
 	}
 	// Entity
@@ -136,17 +137,26 @@ class ObjectManager
 		return this.resource_store.count;
 	}
 
-	@property bool has(Resource)()
+	typeof(this) append(TypeList...)(TypeList resource_list)
 	{
-		return this.resource_store.has!Resource;
+		this.resource_store.append!TypeList(resource_list);
+		return this;
 	}
-
 	// general process
 	typeof(this) initialize()
 	{
 		foreach (system; this.system_list)
 		{
 			system.initialize(this);
+		}
+		return this;
+	}
+
+	typeof(this) finalize()
+	{
+		foreach (system; this.system_list)
+		{
+			system.finalize(this);
 		}
 		return this;
 	}

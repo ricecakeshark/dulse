@@ -7,7 +7,7 @@ class ResourceStore
 {
 	IResourceBox[TypeInfo] resource_list;
 
-	this()
+	this() pure nothrow @trusted
 	{
 		this.resource_list = new IResourceBox[TypeInfo];
 		return;
@@ -21,6 +21,11 @@ class ResourceStore
 	@property size_t count() pure nothrow @nogc @safe
 	{
 		return this.resource_list.length;
+	}
+
+	ref Resource refer(Resource)() pure nothrow @nogc @safe
+	{
+		return (cast(ResourceBox!Resource)this.resource_list[typeid(Resource)]).get();
 	}
 
 	typeof(this) clear() pure nothrow @nogc @safe
@@ -59,14 +64,14 @@ class ResourceStore
 		return this;
 	}
 
-	typeof(this) query(Type)(out Type out_resource)
+	typeof(this) query(Type)(out Type out_resource) pure nothrow @safe
 	{
 		enforce(this.has!Type);
 		out_resource = this.resource_list[TypeInfo(Type)];
 		return this;
 	}
 
-	typeof(this) query(TypeList...)(out TypeList out_resource_list)
+	typeof(this) query(TypeList...)(out TypeList out_resource_list) pure nothrow @safe
 	{
 		foreach (out_resource; out_resource_list)
 		{
@@ -84,6 +89,11 @@ class ResourceBox(Type) : IResourceBox
 	{
 		this.resource = resource;
 		return;
+	}
+
+	ref Type get() pure nothrow @nogc @safe
+	{
+		return resource;
 	}
 }
 
