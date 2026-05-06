@@ -12,6 +12,7 @@ class ObjectManager
 	EntityStore entity_store;
 	IComponentStore[TypeInfo] component_store_list;
 	IObjectSystem[] system_list;
+	ResourceStore resource_store;
 
 	this() pure nothrow @safe
 	{
@@ -129,6 +130,17 @@ class ObjectManager
 		system_list.remove(system);
 		return this;
 	}
+	// Resouce
+	@property size_t count_resource()
+	{
+		return this.resource_store.count;
+	}
+
+	@property bool has(Resource)()
+	{
+		return this.resource_store.has!Resource;
+	}
+
 	// general process
 	typeof(this) initialize()
 	{
