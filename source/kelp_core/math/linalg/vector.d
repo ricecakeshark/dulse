@@ -129,6 +129,39 @@ struct Vector(size_t Length, Type = float)
 		return this.data[index];
 	}
 
+	ref Type x() pure nothrow @nogc @safe
+	in (0 < Length)
+	{
+		return this.data[0];
+	}
+
+	static if (1 < Length)
+	{
+		ref Type y() pure nothrow @nogc @safe
+		in (1 < Length)
+		{
+			return this.data[1];
+		}
+	}
+
+	static if (2 < Length)
+	{
+		ref Type z() pure nothrow @nogc @safe
+		in (2 < Length)
+		{
+			return this.data[2];
+		}
+	}
+
+	static if (3 < Length)
+	{
+		ref Type w() pure nothrow @nogc @safe
+		in (3 < Length)
+		{
+			return this.data[3];
+		}
+	}
+
 	size_t toHash() const pure nothrow @nogc @safe
 	{
 		return sum(this.data[]).hashOf();
