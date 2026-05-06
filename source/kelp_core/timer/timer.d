@@ -48,6 +48,11 @@ class TimerSubsystem : Subsystem
 		return (Clock.currTime() - begin).total!("msecs");
 	}
 
+	@property inout(long) delta() inout pure nothrow @nogc @safe
+	{
+		return this.last_past;
+	}
+
 	typeof(this) setFrameRate(int target_frame_rate)
 	{
 		this.target_frame_rate = target_frame_rate;
