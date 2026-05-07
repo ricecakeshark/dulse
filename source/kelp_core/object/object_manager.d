@@ -2,7 +2,7 @@ module kelp_core.object.object_manager;
 
 import kelp_core.object;
 import std.exception;
-import std.meta : staticIndexOf, staticMap;
+import std.meta : allSatisfy,staticIndexOf, staticMap;
 import std.traits : InterfacesTuple;
 import std.algorithm : remove;
 import std.conv : to;
@@ -10,25 +10,22 @@ import std.conv : to;
 class ObjectManager
 {
 	EntityStore entity_store;
-	IComponentStore[TypeInfo] component_store_list;
+	ComponentStorage component_storage;
 	IObjectSystem[] system_list;
 	ResourceStore resource_store;
 
 	this() pure nothrow @safe
 	{
 		this.entity_store = new EntityStore();
+		this.component_storage = new ComponentStorage();
 		this.resource_store = new ResourceStore();
 		return;
 	}
-	// Entity
-	@property size_t count_entity() const pure nothrow @nogc @safe
-	{
-		return this.entity_store.count;
-	}
 
-	@property ref Entity[] list_entity() pure nothrow @nogc @safe
+	// EntityStore
+	@property ref EntityStore entity() pure nothrow @nogc @safe
 	{
-		return this.entity_store.all;
+		return this.entity_store;
 	}
 
 	typeof(this) create(Entity[] out_entity_list...) pure nothrow @safe
@@ -36,84 +33,74 @@ class ObjectManager
 		this.entity_store.create(out_entity_list);
 		return this;
 	}
+
+	typeof(this) release(Entity[] entity_list...) pure nothrow @safe
+	{
+		this.entity_store.release(entity_list);
+		// later
+		this.component_storage.detach(entity_list);
+		return this;
+	}
 	// Component
-	@property size_t count_component_store() const pure nothrow @nogc @safe
+	@property ref ComponentStorage component() pure nothrow @nogc @safe
 	{
-		return this.component_store_list.length;
+		return this.component_storage;
 	}
 
-	@property IComponentStore[] list_component() pure nothrow @safe
+	bool has(Component)(Entity entity) pure nothrow @nogc @safe
 	{
-		return this.component_store_list.values;
-	}
-
-	ComponentStore!Component get(Component)() pure @safe
-	{
-		enforce((typeid(Component) in component_store_list) !is null);
-		enforce((cast(ComponentStore!Component) component_store_list[typeid(Component)]) !is null);
-		return cast(ComponentStore!Component) component_store_list[typeid(Component)];
-	}
-
-	typeof(this) query(ComponentList...)(
-		out staticMap!(ComponentStore, ComponentList) out_list
-	) pure @safe
-	{
-		static foreach (count, Component; ComponentList)
+		if (!this.entity_store.has(entity))
 		{
-			out_list[count] = this.get_store!Component();
+			return false;
 		}
-		return this;
+		return this.component_storage.has!Component(entity);
 	}
 
-	typeof(this) query(Component)(out ComponentStore!Component out_buf) pure @safe
+	ref Component get(Component)(Entity entity) pure @safe
 	{
-		out_buf = this.get!Component();
-		return this;
+		enofrce(this.entity_store.has(entity));
+		return this.component_storage.get!Component(entity);
 	}
 
-	typeof(this) register(Component)() pure nothrow @safe
-	if (is(Component == struct))
+	typeof(this) append_component(ComponentTypeList...)()
+	if (allSatisfy!(isStructType, ComponentTypeList))
 	{
-		component_store_list[typeid(Component)] = new ComponentStore!Component();
-		return this;
-	}
-
-	typeof(this) remove(Component)() pure nothrow @nogc @safe
-	{
-		component_store_list.remove(typeid(Component));
-		return this;
-	}
-
-	typeof(this) attach(Component)(Entity entity) pure @safe
-	{
-		enforce(typeid(Component) in this.component_store_list);
-		scope store = (cast(ComponentStore!Component) this.component_store_list[typeid(Component)]);
-		store.attach(entity);
+		this.component_storage.append!ComponentTypeList();
 		return this;
 	}
 
 	typeof(this) attach(Component)(Entity[] entity_list...) pure @safe
 	{
-		enforce(typeid(Component) in this.component_store_list);
-		(cast(ComponentStore!Component) this.component_store_list[typeid(Component)]).attach(
-			entity_list);
+		enforce(this.entity_store.has_all(entity_list));
+		this.component_storage.attach!Component(entity_list);
 		return this;
 	}
 
-	ref Component get_component(Component)(Entity entity) pure @safe
+	typeof(this) detach(Component)(Entity[] entity_list...) pure @safe
 	{
-		enforce(typeid(Component) in this.component_store_list);
-		return (cast(ComponentStore!Component) this.component_store_list[typeid(Component)])
-			.get(entity);
+		this.component_storage.detach!Component(entity_list);
+		return this;
 	}
 
+	typeof(this) with_in(
+		void delegate(ref ComponentStorage) dlg
+	)
+	{
+		dlg(this.component_storage);
+		return this;
+	}
 	// System
-	@property size_t count_system() pure nothrow @nogc @safe
+	@property ref IObjectSystem[] system()() pure nothrow @nogc @safe
+	{
+		return this.system_list;
+	}
+
+	deprecated @property size_t count_system() pure nothrow @nogc @safe
 	{
 		return this.system_list.length;
 	}
 
-	@property IObjectSystem[] list_system() pure nothrow @nogc @safe
+	deprecated @property IObjectSystem[] list_system() pure nothrow @nogc @safe
 	{
 		return this.system_list;
 	}
@@ -132,12 +119,17 @@ class ObjectManager
 		return this;
 	}
 	// Resouce
-	@property size_t count_resource()
+	@property ResourceStore resource() pure nothrow @nogc @safe
+	{
+		return this.resource_store;
+	}
+
+	@property size_t count_resource() pure nothrow @nogc @safe
 	{
 		return this.resource_store.count;
 	}
 
-	typeof(this) append(TypeList...)(TypeList resource_list)
+	typeof(this) append_resource(TypeList...)(TypeList resource_list) pure nothrow @safe
 	{
 		this.resource_store.append!TypeList(resource_list);
 		return this;
@@ -170,14 +162,6 @@ class ObjectManager
 		return this;
 	}
 
-	typeof(this) with_store(Component)(
-		void delegate(ComponentStore!Component) dlg
-	)
-	{
-		dlg(this.get!Component());
-		return this;
-	}
-
 }
 
 template isComponentType(T)
@@ -188,6 +172,11 @@ template isComponentType(T)
 template isSystemType(T)
 {
 	enum bool isSystemType = is(T == class) && staticIndexOf!(IObjectSystem, InterfacesTuple!T) >= 0;
+}
+
+template isStructType(T)
+{
+	enum bool isStructType = is(T == struct);
 }
 
 unittest
@@ -201,11 +190,11 @@ unittest
 	}
 
 	manager = new ObjectManager();
-	assert(manager.count_entity == 0);
-	assert(manager.count_component_store == 0);
-	manager.register!Comp();
-	assert(manager.count_component_store == 1);
+	assert(manager.entity.count == 0);
+	assert(manager.component.count_component_store == 0);
+	manager.append_component!(Comp);
+	assert(manager.component.count_component_store == 1);
 	manager.create(entity[]);
-	manager.attach!Comp(entity[]);
-	assert(manager.count_entity == 3);
+	manager.component.attach!(Comp)(entity[]);
+	assert(manager.entity.count == 3);
 }

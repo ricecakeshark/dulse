@@ -1,6 +1,7 @@
 module kelp_core.object.entity_store;
 
 import std.algorithm;
+import std.exception;
 
 struct Entity
 {
@@ -19,23 +20,35 @@ class EntityStore
 		return this.entity_list.length;
 	}
 
-	@property ref Entity[] all() pure nothrow @nogc @safe
+	@property size_t opDollar() const pure nothrow @nogc @safe
+	{
+		return this.entity_list.length;
+	}
+
+	@property ref Entity[] list() pure nothrow @nogc @safe
 	{
 		return this.entity_list;
 	}
 
-	bool has(Entity entity)
+	Entity opIndex(in size_t index) pure @safe
+	{
+		enforce(index < this.count);
+		return this.entity_list[index];
+	}
+
+	bool has(Entity entity) pure nothrow @nogc @safe
 	{
 		return this.entity_list.canFind(entity);
 	}
 
-	typeof(this) create(Entity[] out_entity_list...) pure nothrow @safe
+	bool has_all(Entity[] entity_list...) pure nothrow @nogc @safe
 	{
-		foreach (ref out_entity; out_entity_list)
-		{
-			this.create(out_entity);
-		}
-		return this;
+		return entity_list.all!(entity => this.has(entity));
+	}
+
+	bool has_any(Entity[] entity_list...) pure nothrow @nogc @safe
+	{
+		return entity_list.any!(entity => this.has(entity));
 	}
 
 	typeof(this) create(out Entity out_entity) pure nothrow @safe
@@ -46,6 +59,15 @@ class EntityStore
 		// internal
 		this.entity_list ~= entity;
 		next_id += 1;
+		return this;
+	}
+
+	typeof(this) create(Entity[] out_entity_list...) pure nothrow @safe
+	{
+		foreach (ref out_entity; out_entity_list)
+		{
+			this.create(out_entity);
+		}
 		return this;
 	}
 
@@ -62,6 +84,15 @@ class EntityStore
 		return this;
 	}
 
+	typeof(this) release(Entity[] entity_list) pure nothrow @safe
+	{
+		foreach (entity; entity_list)
+		{
+			this.release(entity);
+		}
+		return this;
+	}
+
 }
 
 unittest
@@ -71,7 +102,7 @@ unittest
 
 	store = new EntityStore();
 	assert(store.count == 0);
-	assert(store.all is null);
+	assert(store.list is null);
 	store.create(entity_list);
 	assert(store.count == 3);
 	assert(entity_list[].all!(entity => store.has(entity)));

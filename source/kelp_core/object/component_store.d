@@ -8,6 +8,19 @@ import std.traits;
 
 interface IComponentStore
 {
+	@property bool has(Entity entity) pure nothrow @nogc @safe;
+
+	@property size_t count() pure nothrow @nogc @safe;
+
+	@property Entity[] entities() pure nothrow @nogc;
+
+	@property TypeInfo type() pure nothrow @nogc @safe;
+
+	typeof(this) clear() pure nothrow @nogc @safe;
+
+	typeof(this) attach(Entity[] entity_list...) pure nothrow @safe;
+
+	typeof(this) detach(Entity[]...) pure nothrow @safe;
 }
 
 class ComponentStore(Component) : IComponentStore
@@ -15,10 +28,6 @@ class ComponentStore(Component) : IComponentStore
 	Entity[] entity_list;
 	Component[] component_list;
 	Nullable!size_t[] lookup_list;
-
-	this()
-	{
-	}
 
 	@property bool has(Entity entity) pure nothrow @nogc @safe
 	{
@@ -44,6 +53,11 @@ class ComponentStore(Component) : IComponentStore
 		return this.component_list;
 	}
 
+	@property TypeInfo type() pure nothrow @nogc @safe
+	{
+		return typeid(Component);
+	}
+
 	ref Component opIndex(Entity entity) pure @safe
 	{
 		enforce(this.has(entity));
@@ -63,6 +77,14 @@ class ComponentStore(Component) : IComponentStore
 			this.attach(entity);
 		}
 		return this.component_list[lookup(entity)];
+	}
+
+	typeof(this) clear() pure nothrow @nogc @safe
+	{
+		this.entity_list = [];
+		this.component_list = [];
+		this.lookup_list = [];
+		return this;
 	}
 
 	typeof(this) attach(Entity entity) pure nothrow @safe
@@ -114,11 +136,12 @@ class ComponentStore(Component) : IComponentStore
 		return this;
 	}
 
-	typeof(this) clear() pure nothrow @nogc @safe
+	typeof(this) detach(Entity[] entity_list...) pure nothrow @safe
 	{
-		this.entity_list = [];
-		this.component_list = [];
-		this.lookup_list = [];
+		foreach (entity; entity_list)
+		{
+			this.detach(entity);
+		}
 		return this;
 	}
 
@@ -172,4 +195,5 @@ unittest
 	assert(store.count == 0);
 	assert(entity_list.all!(entity => store.has(entity) == false));
 
+	writeln(typeid(ReturnType!(IComponentStore.attach)));
 }

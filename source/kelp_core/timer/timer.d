@@ -13,11 +13,9 @@ class TimerSubsystem : Subsystem
 	int min_sleep_dur = 5;
 	int max_sleep_dur = 1000;
 
-	SysTime measure_begin;
-	Duration last_past_dur;
-	long last_past;
-
-	public SysTime begin, end;
+	private SysTime begin;
+	protected Duration last_dur_active, last_dur_slept;
+	private SysTime begin_active, begin_sleep;
 
 	this(Core core)
 	{
@@ -28,7 +26,8 @@ class TimerSubsystem : Subsystem
 	void initialize()
 	{
 		begin = Clock.currTime();
-		measure_begin = Clock.currTime();
+		begin_active = Clock.currTime();
+		begin_sleep = Clock.currTime();
 		return;
 	}
 
@@ -50,7 +49,7 @@ class TimerSubsystem : Subsystem
 
 	@property inout(long) delta() inout pure nothrow @nogc @safe
 	{
-		return this.last_past;
+		return (this.last_dur_active + this.last_dur_slept).total!"msecs";
 	}
 
 	typeof(this) setFrameRate(int target_frame_rate)
@@ -61,25 +60,11 @@ class TimerSubsystem : Subsystem
 
 	typeof(this) sleep()
 	{
-		last_past_dur = Clock.currTime() - measure_begin;
-		last_past = last_past_dur.total!("msecs");
-
-		if (last_past < (1_000 / target_frame_rate) - min_sleep_dur && last_past >= 0)
-		{
-			sleep((1_000 / target_frame_rate) - last_past);
-		}
-		else
-		{
-			if (last_past < 0)
-			{
-				sleep(1_000 / target_frame_rate);
-			}
-			else
-			{
-				sleep(5);
-			}
-		}
-		measure_begin = Clock.currTime();
+		last_dur_active = Clock.currTime() - begin_active;
+		begin_sleep = Clock.currTime();
+		Thread.sleep(dur!"usecs"(16_000));
+		last_dur_slept = Clock.currTime() - begin_sleep;
+		begin_active = Clock.currTime();
 		return this;
 	}
 
