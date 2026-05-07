@@ -2,7 +2,7 @@ module kelp_core.object.object_manager;
 
 import kelp_core.object;
 import std.exception;
-import std.meta : allSatisfy,staticIndexOf, staticMap;
+import std.meta : allSatisfy, staticIndexOf, staticMap;
 import std.traits : InterfacesTuple;
 import std.algorithm : remove;
 import std.conv : to;
@@ -69,10 +69,10 @@ class ObjectManager
 		return this;
 	}
 
-	typeof(this) attach(Component)(Entity[] entity_list...) pure @safe
+	typeof(this) attach(ComponentList...)(Entity[] entity_list...) pure @safe
 	{
 		enforce(this.entity_store.has_all(entity_list));
-		this.component_storage.attach!Component(entity_list);
+		this.component_storage.attach!ComponentList(entity_list);
 		return this;
 	}
 
@@ -181,10 +181,16 @@ template isStructType(T)
 
 unittest
 {
+	import std.algorithm;
 	ObjectManager manager;
-	Entity[3] entity;
+	Entity[3] entity_list;
 
-	struct Comp
+	struct Comp1
+	{
+		float param;
+	}
+
+	struct Comp2
 	{
 		float param;
 	}
@@ -192,9 +198,15 @@ unittest
 	manager = new ObjectManager();
 	assert(manager.entity.count == 0);
 	assert(manager.component.count_component_store == 0);
-	manager.append_component!(Comp);
-	assert(manager.component.count_component_store == 1);
-	manager.create(entity[]);
-	manager.component.attach!(Comp)(entity[]);
+	manager.append_component!(Comp1, Comp2);
+	assert(manager.component.count_component_store == 2);
+	manager.create(entity_list[]);
+	manager.component.attach!(Comp1, Comp2)(entity_list[]);
 	assert(manager.entity.count == 3);
+	assert(entity_list[].all!(entity => manager.entity.has(entity)));
+	manager.release(entity_list[$ - 1]);
+	assert(manager.entity.count == 2);
+	assert(!manager.entity.has(entity_list[$ - 1]));
+	assert(!manager.has!Comp1(entity_list[$ - 1]));
+	assert(!manager.has!Comp2(entity_list[$ - 1]));
 }
