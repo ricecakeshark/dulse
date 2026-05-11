@@ -257,3 +257,10 @@ do
 	]);
 	return temp;
 }
+
+Matrix!(4, 4, float) to_normal(Matrix!(4, 4, float) matrix)
+{
+	return cast(Matrix!(4, 4, float))(cast(Matrix!(3, 3, float)) matrix)
+		.inverse()
+		.transpose();
+}
