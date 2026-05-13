@@ -20,6 +20,12 @@ struct Vector(size_t Length, Type = float)
 		return;
 	}
 
+	this(Type init_value...) const pure nothrow @nogc @safe
+	{
+		this.data = init_value;
+		return;
+	}
+
 	Type[Length] opAssign(in Type[Length] assign_array) pure nothrow @safe
 	in
 	{
@@ -108,7 +114,7 @@ struct Vector(size_t Length, Type = float)
 	) const pure nothrow @nogc @safe
 	if (Length2 == Length)
 	{
-		return crossProduct(this, rhs);
+		return cross_product(this, rhs);
 	}
 	// return Matrix * Vector
 	typeof(this) opBinaryRight(string op : "*", M:
@@ -218,7 +224,7 @@ if (Length1 == Length2)
 	);
 }
 
-/+Type1 innerProduct(
+/+Type1 inner_product(
 V1 : Vector!(2, Type1), V2:
 	Vector!(2, Type2),
 	Type1, Type2
@@ -227,7 +233,7 @@ V1 : Vector!(2, Type1), V2:
 	return lhs[0] * rhs[0] + lhs[1] * rhs[1];
 }+/
 
-Type1 innerProduct(
+Type1 inner_product(
 V1 : Vector!(Length1, Type1), V2:
 	Vector!(Length2, Type2),
 	size_t Length1 : 2, Type1, size_t Length2 : 2, Type2
@@ -236,7 +242,7 @@ V1 : Vector!(Length1, Type1), V2:
 	return lhs[0] * rhs[0] + lhs[1] * rhs[1];
 }
 
-Type1 innerProduct(
+Type1 inner_product(
 V1 : Vector!(Length1, Type1), V2:
 	Vector!(Length2, Type2),
 	size_t Length1 : 3, Type1, size_t Length2 : 3, Type2
@@ -245,7 +251,7 @@ V1 : Vector!(Length1, Type1), V2:
 	return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2];
 }
 
-Vector!(3) crossProduct(
+Vector!(3) cross_product(
 V1 : Vector!(Length1, Type1),
 V2:
 	Vector!(Length2, Type2),
@@ -261,6 +267,9 @@ V2:
 
 unittest
 {
+	Vec3 vec_test = Vec3(1.0f);
+	assert(vec_test.x == 1.0f && vec_test.y == 1.0f && vec_test.z == 1.0f);
+
 	assert(Vec3(2.0, 3.0, 6.0).norm == 7.0);
 	assert(Vec4(2.0, 2.0, 2.0, 2.0).unit == Vec4(0.5, 0.5, 0.5, 0.5));
 	assert(Vec3(1.0, 2.0, 3.0) * 2.0 == Vec3(2.0, 4.0, 6.0));
@@ -268,13 +277,13 @@ unittest
 	assert(Vec3(1.0, 2.0, 3.0) + Vec3(4.0, 5.0, 6.0) == Vec3(5.0, 7.0, 9.0));
 	assert(Vec3(1.0, 2.0, 3.0) - Vec3(4.0, 5.0, 6.0) == Vec3(-3.0, -3.0, -3.0));
 
-	assert(innerProduct(Vector!(2)(+1.0, +2.0), Vector!(2)(+3.0, +4.0)) == +11.0);
+	assert(inner_product(Vector!(2)(+1.0, +2.0), Vector!(2)(+3.0, +4.0)) == +11.0);
 	assert(
-		__traits(compiles, innerProduct(Vector!(2)(+1.0, +2.0), Vector!(3)(+1.0, +2.0, +3.0))) == false
+		__traits(compiles, inner_product(Vector!(2)(+1.0, +2.0), Vector!(3)(+1.0, +2.0, +3.0))) == false
 	);
 
 	assert(
-		crossProduct(Vec3(1.0, 2.0, 3.0), Vec3(4.0, 5.0, 6.0)) == Vec3(-3.0, +6.0, -3.0)
+		cross_product(Vec3(1.0, 2.0, 3.0), Vec3(4.0, 5.0, 6.0)) == Vec3(-3.0, +6.0, -3.0)
 	);
 
 	//import std.stdio;
