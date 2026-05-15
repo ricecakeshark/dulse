@@ -194,6 +194,4 @@ unittest
 	store.clear();
 	assert(store.count == 0);
 	assert(entity_list.all!(entity => store.has(entity) == false));
-
-	writeln(typeid(ReturnType!(IComponentStore.attach)));
 }

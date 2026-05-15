@@ -10,6 +10,20 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 {
 	Type[Col][Row] data;
 
+	this(in typeof(this.data) new_matrix) pure nothrow @nogc @safe
+	in (new_matrix.length == Row)
+	in (new_matrix[0].length == Col)
+	{
+		foreach (row; 0 .. Row)
+		{
+			foreach (col; 0 .. Col)
+			{
+				this.opIndex(row, col) = new_matrix[row][col];
+			}
+		}
+		return;
+	}
+
 	this(in Type value) pure nothrow @nogc @safe
 	{
 		this.fill(value);
@@ -21,55 +35,62 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		this.fill(0.0f);
 		foreach (count; 0 .. Row)
 		{
-			this.data[count][count] = new_vector[count];
+			this.opIndex(count, count) = new_vector[count];
 		}
 		return;
 	}
 
-	this(in Type[Col][Row] new_matrix) pure nothrow @nogc @safe
-	in (new_matrix.length == Row)
-	in (new_matrix[0].length == Col)
+	@property Vector!(Row, Type) row() const pure nothrow @nogc @safe
 	{
+		Vector!(Row, Type) ret_vec;
 		foreach (row; 0 .. Row)
 		{
-			foreach (col; 0 .. Col)
-			{
-				this.data[row][col] = new_matrix[row][col];
-			}
+			ret_vec.data[row] = this.opIndex(row, 0u);
 		}
-		return;
+		return ret_vec;
 	}
 
-	typeof(this) fill(float value = 0.0) pure nothrow @nogc @safe
+	@property Vector!(Col, Type) column() const pure nothrow @nogc @safe
 	{
+		Vector!(Col, Type) ret_vec;
 		foreach (col; 0 .. Col)
 		{
-			foreach (row; 0 .. Row)
-			{
-				this.data[row][col] = value;
-			}
+			ret_vec.data[col] = this.opIndex(0, col);
 		}
-		return this;
+		return ret_vec;
 	}
 
-	typeof(this) indentify() pure nothrow @nogc @safe
-	in (Row == Col)
+	@property Vector!(Row, Type) diagonal()() const pure nothrow @nogc @safe
+	if (Row == Col)
 	{
-		this.fill(0.0f);
-		foreach (count; 0 .. Col)
+		Vector!(Row, Type) ret_vec;
+		foreach (index; 0 .. Row)
 		{
-			this.data[count][count] = 1.0f;
+			ret_vec[index] = this.opIndex(index, index);
 		}
-		return this;
+		return ret_vec;
 	}
 
-	Type[Col][Row] opAssign(in Type[Col][Row] assign_matrix) pure nothrow @safe
+	@property Type determinant()() const pure nothrow @nogc @safe
+	if (Row == Col)
+	{
+		static if (Row == 2 && Col == 2)
+		{
+			return (this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1]);
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+
+	typeof(this.data) opAssign(in Type[Col][Row] assign_matrix) pure nothrow @safe
 	{
 		this.data = assign_matrix;
 		return assign_matrix;
 	}
 
-	inout(Type) opIndex(in size_t row, in size_t col) inout pure nothrow @nogc @safe
+	ref inout(Type) opIndex(in size_t row, in size_t col) inout pure nothrow @nogc @safe
 	{
 		return this.data[row][col];
 	}
@@ -81,27 +102,54 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		{
 			foreach (row; 0 .. R)
 			{
-				return_mat.data[row][col] = (row < Row && col < Col) ? this.data[row][col] : 0.0f;
+				return_mat[row, col] = (row < Row && col < Col) ? this[row, col] : 0.0f;
 			}
 		}
 		return return_mat;
 	}
 
-	string opCast(T : string)() const pure @safe
+	string to_string() const pure @safe
 	{
 		import std.format;
 
+		string return_str = "Matrix";
+		foreach (col; 0 .. Col)
+		{
+			return_str ~= format(" col%2d", col);
+		}
+		return_str ~= "\n";
+		foreach (row; 0 .. Row)
+		{
+			return_str ~= format(" row%2d", row);
+			foreach (col; 0 .. Col)
+			{
+				return_str ~= format(" %+2.2f", this.opIndex(row, col));
+			}
+			return_str ~= "\n";
+		}
+		return return_str;
+	}
+
+	string to_string_raw() const pure @safe
+	{
+		import std.conv;
+
+		return text(this.data);
+	}
+
+	string opCast(T : string)() const pure @safe
+	{
 		string return_str;
 
 		return_str = "Matrix";
 		foreach (col; 0 .. Col)
 		{
-			return_str ~= format(" row%2d", col);
+			return_str ~= format(" col%2d", col);
 		}
 		return_str ~= "\n";
 		foreach (row; 0 .. Row)
 		{
-			return_str ~= format(" col%2d", row);
+			return_str ~= format(" row%2d", row);
 			foreach (col; 0 .. Col)
 			{
 				return_str ~= format(" %+2.2f", this.opIndex(row, col));
@@ -141,11 +189,6 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return true;
 	}
 
-	size_t toHash() const @nogc @safe pure nothrow
-	{
-		return this.data.hashOf();
-	}
-
 	Matrix!(Row, Col, Type) opBinary(string op : "+", size_t RhsRow, size_t RhsCol, RhsType)(
 		in Matrix!(RhsRow, RhsCol, RhsType) rhs) const pure nothrow @nogc @safe
 	in (RhsRow == Row)
@@ -173,8 +216,36 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	{
 		return multiply!(Matrix!(Row, Col, Type))(this, rhs);
 	}
-}
 
+	typeof(this) fill(float value = 0.0) pure nothrow @nogc @safe
+	{
+		foreach (col; 0 .. Col)
+		{
+			foreach (row; 0 .. Row)
+			{
+				this.opIndex(row, col) = value;
+			}
+		}
+		return this;
+	}
+
+	typeof(this) indentify() pure nothrow @nogc @safe
+	in (Row == Col)
+	{
+		this.fill(0.0f);
+		foreach (count; 0 .. Col)
+		{
+			this.opIndex(count, count) = 1.0f;
+		}
+		return this;
+	}
+
+	size_t toHash() const @nogc @safe pure nothrow
+	{
+		return this.data.hashOf();
+	}
+}
+// transpose matrix
 Matrix!(Row, Col, Type) transpose(
 M : Matrix!(Row, Col, Type),
 	size_t Row, size_t Col, Type,
@@ -185,212 +256,23 @@ M : Matrix!(Row, Col, Type),
 	{
 		static foreach (row; 0 .. Row)
 		{
-			result_matrix.data[col][row] = matrix[row, col];
+			result_matrix[col, row] = matrix[row, col];
 		}
 	}
 	return result_matrix;
 }
-
-unittest
-{
-	Matrix!(2, 2) mat;
-	mat = [
-		[1.0f, 2.0f],
-		[3.0f, 4.0f],
-	];
-	assert(mat.transpose() == [[1.0f, 3.0f], [2.0f, 4.0f]]);
-}
-
-Matrix!(Row1, Col1, Type1) add(
-M1 : Matrix!(Row1, Col1, Type1), M2:
-	Matrix!(Row2, Col2, Type2),
-	size_t Row1, size_t Col1, Type1,
-	size_t Row2, size_t Col2, Type2
-)(in M1 lhs, in M2 rhs) pure nothrow @nogc @safe
-in
-{
-	static assert(Row1 == Row2, "lhs row and rhs row are not same");
-	static assert(Col1 == Col2, "lhs col and rhs col are not same");
-}
-do
-{
-	Matrix!(Row1, Col1, Type1) result_matrix = Matrix!(Row1, Col1, Type1)(0.0);
-	static foreach (col; 0 .. Col1)
-	{
-		static foreach (row; 0 .. Row1)
-		{
-			result_matrix.data[row][col] = lhs[row, col] + rhs[row, col];
-		}
-	}
-	return result_matrix;
-}
-
-Matrix!(Row1, Col1, Type1) subtract(
-M1 : Matrix!(Row1, Col1, Type1), M2:
-	Matrix!(Row2, Col2, Type2),
-	size_t Row1, size_t Col1, Type1,
-	size_t Row2, size_t Col2, Type2
-)(in M1 lhs, in M2 rhs) pure nothrow @nogc @safe
-in
-{
-	static assert(Row1 == Row2, "lhs row and rhs row are not same");
-	static assert(Col1 == Col2, "lhs col and rhs col are not same");
-}
-do
-{
-	Matrix!(Row1, Col1, Type1) result_matrix = Matrix!(Row1, Col1, Type1)(0.0);
-	static foreach (col; 0 .. Col1)
-	{
-		static foreach (row; 0 .. Row1)
-		{
-			result_matrix.data[row][col] = lhs[row, col] - rhs[row, col];
-		}
-	}
-	return result_matrix;
-}
-
-Matrix!(Row1, Col2, Type) multiply(M1 : Matrix!(Row1, Col1, Type), M2:
-	Matrix!(Row2, Col2, Type), size_t Row1, size_t Col1, size_t Row2, size_t Col2, Type)(
-	in M1 lhs, in M2 rhs
-) pure nothrow @nogc @safe
-in
-{
-	static assert(Col1 == Row2, "lhs col and rhs row are NOT same");
-}
-do
-{
-	Matrix!(Row1, Col2, Type) result_matrix = Matrix!(Row1, Col2, Type)(0.0);
-
-	foreach (row; 0 .. Row1)
-	{
-		foreach (col; 0 .. Col2)
-		{
-			foreach (count; 0 .. Col1)
-			{
-				result_matrix.data[row][col] += lhs[row, count] * rhs[count, col];
-			}
-		}
-	}
-	return result_matrix;
-}
-
-Matrix!(Row, Col, Type) multiply(
-M1 : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type
-)(
-	in M1 lhs, in Type rhs
-) pure nothrow @nogc @safe
-{
-	Matrix!(Row, Col, Type) result_matrix;
-	result_matrix = lhs;
-	foreach (col; 0 .. Col)
-	{
-		foreach (row; 0 .. Row)
-		{
-			result_matrix.data[row][col] *= rhs;
-		}
-	}
-	return result_matrix;
-}
-
-unittest
-{
-	import std.stdio;
-
-	Matrix!(2, 2) mat_a, mat_b, mat_ab, mat_ba;
-
-	mat_a = Matrix!(2, 2)([[+2.0, -3.0], [+4.0, +1.0]]);
-	mat_b = Matrix!(2, 2)([[+5.0, +2.0], [-1.0, +3.0]]);
-	mat_ab = Matrix!(2, 2)([[+13.0, -5.0], [+19.0, +11.0]]);
-	mat_ba = Matrix!(2, 2)([[+18.0, -13.0], [+10.0, +6.0]]);
-
-	assert(mat_a * mat_b == mat_ab);
-	assert(mat_b * mat_a == mat_ba);
-
-	assert(
-		Matrix!(2, 3)([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
-			* Matrix!(3, 2)([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-			== Matrix!(2, 2)([[22.0, 28.0], [49.0, 64.0]])
-	);
-
-	assert(
-		Matrix!(2, 2)([[1.0, 2.0], [3.0, 4.0]])
-			+ Matrix!(2, 2)([[5.0, 6.0], [7.0, 8.0]])
-			== Matrix!(2, 2)([[6.0, 8.0], [10.0, 12.0]])
-	);
-}
-
-Matrix!(Size, Size, Type) matrix_identity(size_t Size, Type = float)() pure nothrow @nogc @safe
-in (Size != 0)
-{
-	Matrix!(4, 4, Type) temp;
-	temp.fill(0.0f);
-	static foreach (count; 0 .. Size)
-	{
-		temp.data[count][count] = 1.0f;
-	}
-	return temp;
-}
-
-Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_list) pure nothrow @nogc @safe
-{
-	Matrix!(Size, Size) temp;
-	temp.fill(0.0f);
-	foreach (count; 0 .. Size)
-	{
-		temp.data[count][count] = value_list[count];
-	}
-	return temp;
-}
-
-unittest
-{
-	Matrix!(3, 3) mat_s, mat_t;
-	mat_s = matrix_scale([+1.0f, +2.0f, +3.0f]);
-	assert(mat_s == Matrix!(3, 3)(
-			[
-			[+1.0f, 0.0f, 0.0f,],
-			[0.0f, +2.0f, 0.0f,],
-			[0.0f, 0.0f, +3.0f,],
-		]
-	));
-}
-
-Matrix!(Row, Col, Type) multiply_ltor(size_t Row, size_t Col, Type)(
-	Matrix!(Row, Col, Type)[] matrix_list...
-)
-{
-	Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
-	temp.indentify();
-	foreach (count; 0 .. matrix_list.length)
-	{
-		temp = temp * matrix_list[count];
-	}
-	return temp;
-}
-
-Matrix!(Row, Col, Type) multiply_rtol(size_t Row, size_t Col, Type)(
-	Matrix!(Row, Col, Type)[] matrix_list...
-)
-{
-	Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
-	temp.indentify();
-	foreach_reverse (count; 0 .. matrix_list.length)
-	{
-		temp = temp * matrix_list[count];
-	}
-	return temp;
-}
-
+// inverse matrix 2x2
 Matrix!(2, 2) inverse(Type)(in Matrix!(2, 2, Type) mat) pure nothrow
+in (mat.determinant != 0.0)
 {
 	Type det;
 	det = mat[0, 0] * mat[1, 1] - mat[1, 0] * mat[0, 1];
 	return Matrix!(2, 2, Type)([
-		[+mat[1, 1], -mat[1, 0]],
-		[-mat[0, 1], +mat[0, 0]],
+		[+mat[1, 1], -mat[0, 1]],
+		[-mat[1, 0], +mat[0, 0]],
 	]) * (1.0 / det);
 }
-
+// inverse matrix 3x3
 Matrix!(3, 3) inverse(Type)(in Matrix!(3, 3, Type) mat) pure nothrow
 {
 	Type det;
@@ -419,4 +301,231 @@ Matrix!(3, 3) inverse(Type)(in Matrix!(3, 3, Type) mat) pure nothrow
 		],
 	]
 	) * (1.0 / det);
+}
+
+unittest
+{
+	import std.stdio;
+
+	Matrix!(2, 2) mat_a, mat_b;
+	mat_a = [
+		[1.0f, 2.0f],
+		[3.0f, 4.0f],
+	];
+	mat_b = [
+		[5.0f, 6.0f],
+		[7.0f, 8.0f],
+	];
+
+	assert(mat_a.row == Vec2(1.0f, 3.0f));
+	assert(mat_a.column == Vec2(1.0f, 2.0f));
+	assert(mat_a.diagonal == Vec2(1.0f, 4.0f));
+
+	assert(mat_a.transpose() == Matrix!(2, 2)([[1.0f, 3.0f], [2.0f, 4.0f]]));
+	assert(mat_b.transpose() == [[5.0f, 7.0f], [6.0f, 8.0f]]);
+	assert(mat_a.determinant == -2.0f);
+	assert(mat_b.determinant == -2.0f);
+	assert(mat_a.inverse() == Matrix!(2, 2)([[-2.0f, +1.0f], [+1.5f, -0.5f]]));
+	assert(mat_b.inverse() == [[-4.0f, +3.0f], [+3.5f, -2.5f]]);
+	assert(Matrix!(3, 3)(
+			[
+				[1.0f, 2.0f, 2.0f],
+				[2.0f, 1.0f, 3.0f],
+				[1.0f, 3.0f, 3.0f],
+			]
+	).inverse() == Matrix!(3, 3)(
+		[
+			[+3.0, 0.0, -2.0],
+			[+1.5, -0.5, -0.5,],
+			[-2.5, +0.5, +1.5],
+		]
+	)
+	);
+}
+
+// add Matrix
+Matrix!(Row1, Col1, Type1) add(
+M1 : Matrix!(Row1, Col1, Type1), M2:
+	Matrix!(Row2, Col2, Type2),
+	size_t Row1, size_t Col1, Type1,
+	size_t Row2, size_t Col2, Type2
+)(in M1 lhs, in M2 rhs) pure nothrow @nogc @safe
+in
+{
+	static assert(Row1 == Row2, "lhs row and rhs row are not same");
+	static assert(Col1 == Col2, "lhs col and rhs col are not same");
+}
+do
+{
+	Matrix!(Row1, Col1, Type1) result_matrix = Matrix!(Row1, Col1, Type1)(0.0);
+	static foreach (col; 0 .. Col1)
+	{
+		static foreach (row; 0 .. Row1)
+		{
+			result_matrix[row, col] = lhs[row, col] + rhs[row, col];
+		}
+	}
+	return result_matrix;
+}
+// subtract matrix
+Matrix!(Row1, Col1, Type1) subtract(
+M1 : Matrix!(Row1, Col1, Type1), M2:
+	Matrix!(Row2, Col2, Type2),
+	size_t Row1, size_t Col1, Type1,
+	size_t Row2, size_t Col2, Type2
+)(in M1 lhs, in M2 rhs) pure nothrow @nogc @safe
+in
+{
+	static assert(Row1 == Row2, "lhs row and rhs row are not same");
+	static assert(Col1 == Col2, "lhs col and rhs col are not same");
+}
+do
+{
+	Matrix!(Row1, Col1, Type1) result_matrix = Matrix!(Row1, Col1, Type1)(0.0);
+	static foreach (col; 0 .. Col1)
+	{
+		static foreach (row; 0 .. Row1)
+		{
+			result_matrix[row, col] = lhs[row, col] - rhs[row, col];
+		}
+	}
+	return result_matrix;
+}
+// multiply matrix
+Matrix!(Row1, Col2, Type) multiply(M1 : Matrix!(Row1, Col1, Type), M2:
+	Matrix!(Row2, Col2, Type), size_t Row1, size_t Col1, size_t Row2, size_t Col2, Type)(
+	in M1 lhs, in M2 rhs
+) pure nothrow @nogc @safe
+in
+{
+	static assert(Col1 == Row2, "lhs col and rhs row are NOT same");
+}
+do
+{
+	Matrix!(Row1, Col2, Type) result_matrix = Matrix!(Row1, Col2, Type)(0.0);
+
+	foreach (row; 0 .. Row1)
+	{
+		foreach (col; 0 .. Col2)
+		{
+			foreach (count; 0 .. Col1)
+			{
+				result_matrix[row, col] += lhs[row, count] * rhs[count, col];
+			}
+		}
+	}
+	return result_matrix;
+}
+// multiply matrix and scalar 
+Matrix!(Row, Col, Type) multiply(
+M1 : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type
+)(
+	in M1 lhs, in Type rhs
+) pure nothrow @nogc @safe
+{
+	Matrix!(Row, Col, Type) result_matrix;
+	result_matrix = lhs;
+	foreach (col; 0 .. Col)
+	{
+		foreach (row; 0 .. Row)
+		{
+			result_matrix[row, col] *= rhs;
+		}
+	}
+	return result_matrix;
+}
+
+unittest
+{
+	Matrix!(2, 2) mat_a, mat_b;
+	mat_a = [
+		[1.0f, 2.0f],
+		[3.0f, 4.0f],
+	];
+	mat_b = [
+		[5.0f, 6.0f],
+		[7.0f, 8.0f],
+	];
+	assert(mat_a + mat_b == Matrix!(2, 2)([[6.0, 8.0], [10.0, 12.0]]));
+	assert(mat_a - mat_b == Matrix!(2, 2)([[-4.0, -4.0], [-4.0, -4.0]]));
+
+	assert(mat_a * mat_b == Matrix!(2, 2)([[19.0, 22.0], [43.0, 50.0]]));
+	assert(mat_b * mat_a == Matrix!(2, 2)([[23.0, 34.0], [31.0, 46.0]]));
+	assert(
+		Matrix!(2, 3)([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+			* Matrix!(3, 2)([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+			== Matrix!(2, 2)([[22.0, 28.0], [49.0, 64.0]])
+	);
+	assert(
+		Matrix!(3, 2)([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]) *
+			Matrix!(2, 3)([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+			== Matrix!(3, 3)([
+				[9.0, 12.0, 15.0],
+				[19.0, 26.0, 33.0],
+				[29.0, 40.0, 51.0],
+			])
+	);
+}
+// generate matrix for using case
+// identity matrix
+Matrix!(Size, Size, Type) matrix_identity(size_t Size, Type = float)() pure nothrow @nogc @safe
+in (Size != 0)
+{
+	Matrix!(4, 4, Type) temp_mat;
+	temp_mat.fill(0.0f);
+	static foreach (count; 0 .. Size)
+	{
+		temp_mat[count, count] = 1.0f;
+	}
+	return temp_mat;
+}
+// 
+Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_list) pure nothrow @nogc @safe
+{
+	Matrix!(Size, Size) temp;
+	temp.fill(0.0f);
+	foreach (count; 0 .. Size)
+	{
+		temp[count, count] = value_list[count];
+	}
+	return temp;
+}
+
+unittest
+{
+	Matrix!(3, 3) mat_s, mat_t;
+	mat_s = matrix_scale([+1.0f, +2.0f, +3.0f]);
+	assert(mat_s == Matrix!(3, 3)(
+			[
+			[+1.0f, 0.0f, 0.0f,],
+			[0.0f, +2.0f, 0.0f,],
+			[0.0f, 0.0f, +3.0f,],
+		]
+	));
+}
+// matrix operation
+Matrix!(Row, Col, Type) multiply_ltor(size_t Row, size_t Col, Type)(
+	Matrix!(Row, Col, Type)[] matrix_list...
+)
+{
+	Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
+	temp.indentify();
+	foreach (count; 0 .. matrix_list.length)
+	{
+		temp = temp * matrix_list[count];
+	}
+	return temp;
+}
+
+Matrix!(Row, Col, Type) multiply_rtol(size_t Row, size_t Col, Type)(
+	Matrix!(Row, Col, Type)[] matrix_list...
+)
+{
+	Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
+	temp.indentify();
+	foreach_reverse (count; 0 .. matrix_list.length)
+	{
+		temp = temp * matrix_list[count];
+	}
+	return temp;
 }

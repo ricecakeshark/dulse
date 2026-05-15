@@ -129,39 +129,42 @@ struct Vector(size_t Length, Type = float)
 		return zip(this.data[], rhs.data[]).all!(elm => isClose(elm[0], elm[1], 1e-10, 1e-10));
 	}
 
-	inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
+	ref inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
 	in (index < Length)
 	{
 		return this.data[index];
 	}
 
-	ref Type x() pure nothrow @nogc @safe
-	in (0 < Length)
+	static if (1 <= Length)
 	{
-		return this.data[0];
+		ref inout(Type) x() inout pure nothrow @nogc @safe
+		in (0 < Length)
+		{
+			return this.data[0];
+		}
 	}
 
-	static if (1 < Length)
+	static if (2 <= Length)
 	{
-		ref Type y() pure nothrow @nogc @safe
+		ref inout(Type) y() inout pure nothrow @nogc @safe
 		in (1 < Length)
 		{
 			return this.data[1];
 		}
 	}
 
-	static if (2 < Length)
+	static if (3 <= Length)
 	{
-		ref Type z() pure nothrow @nogc @safe
+		ref inout(Type) z() inout pure nothrow @nogc @safe
 		in (2 < Length)
 		{
 			return this.data[2];
 		}
 	}
 
-	static if (3 < Length)
+	static if (4 <= Length)
 	{
-		ref Type w() pure nothrow @nogc @safe
+		ref inout(Type) w() inout pure nothrow @nogc @safe
 		in (3 < Length)
 		{
 			return this.data[3];
@@ -191,6 +194,29 @@ struct Vector(size_t Length, Type = float)
 		foreach (count; 0 .. Length)
 		{
 			temp_matrix.data[count][count] = this.data[count];
+		}
+		return temp_matrix;
+	}
+
+	Matrix!(Length, Length, Type) to_matrix_scale()() pure nothrow @safe
+	{
+		Matrix!(Length, Length, Type) temp_matrix = Matrix!(Length, Length, Type);
+		foreach (count; 0 .. Length)
+		{
+			temp_matrix.data[count][count] = this.data[count];
+		}
+		return temp_matrix;
+	}
+
+	
+
+	Matrix!(Length, Length, Type) to_matrix_transport()() pure nothrow @safe
+	{
+		Matrix!(Length, Length, Type) temp_matrix;
+		temp_matrix = matrix_identity();
+		foreach (count; 0 .. Length)
+		{
+			temp_matrix.data[count][$-1u] = this.data[count];
 		}
 		return temp_matrix;
 	}
