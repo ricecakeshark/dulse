@@ -37,16 +37,19 @@ class SubsystemPool
 		return this;
 	}
 
-	alias pool this;
-
 	typeof(this) append(Subsystem[] subsystem_list...)
 	{
-		foreach (subsystem; subsystem_list)
+		foreach (ref subsystem; subsystem_list)
 		{
 			subsystem.initialize();
 			this.pool.append(subsystem);
 		}
 		return this;
+	}
+
+	Type query(Type)()
+	{
+		return this.pool.query!Type();
 	}
 
 	typeof(this) query(Type)(out Type out_query)
@@ -64,11 +67,7 @@ class SubsystemPool
 		return this;
 	}
 
-	/+Subsystem[] opIndex(string id)
-	{
-		return this.pool.all.filter!(subsystem => subsystem.id == id).array();
-	}+/
-
+	alias pool this;
 }
 
 interface Subsystem
