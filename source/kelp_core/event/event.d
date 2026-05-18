@@ -8,28 +8,26 @@ alias Poller = Event[]delegate();
 
 class EventSubsystem : Subsystem
 {
-	protected Core core;
 	MonoPool!(Event) pool;
 	Event[]delegate() poll_dlg;
-	//Handler[] handler_list;
 
 	this(Core core)
 	{
-		this.core = core;
+		super(core);
 		return;
 	}
 
-	void initialize()
+	typeof(this) initialize()
 	{
-		return;
+		return this;
 	}
 
-	void finalize()
+	typeof(this) finalize()
 	{
-		return;
+		return this;
 	}
 
-	void process()
+	typeof(this) process()
 	{
 		if (poll_dlg !is null)
 		{
@@ -47,7 +45,7 @@ class EventSubsystem : Subsystem
 				break;
 			}
 		}
-		return;
+		return this;
 	}
 
 	typeof(this) register_poller(Event[]delegate() poll_dlg)

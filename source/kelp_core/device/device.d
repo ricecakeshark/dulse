@@ -6,35 +6,35 @@ import kelp_core.device;
 
 final class DeviceSubsystem : Subsystem
 {
-	Core core;
+	//Core core;
 	Keyboard keyboard;
 	Mouse mouse;
 	Gamepad gamepad;
 
 	this(Core core)
 	{
-		this.core = core;
+		super(core);
 		this.keyboard = new Keyboard();
 		this.mouse = new Mouse();
 		this.gamepad = new Gamepad();
 		return;
 	}
 
-	void initialize()
+	typeof(this) initialize()
 	{
-		return;
+		return this;
 	}
 
-	void finalize()
+	typeof(this) finalize()
 	{
-		return;
+		return this;
 	}
 
-	void process()
+	typeof(this) process()
 	{
 		this.keyboard.process();
 		this.mouse.process();
 		this.gamepad.process();
-		return;
+		return this;
 	}
 }

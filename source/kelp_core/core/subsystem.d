@@ -6,7 +6,7 @@ import std.array, std.algorithm;
 
 class SubsystemPool
 {
-	InterfacedPool!(Subsystem) pool;
+	InterfacedPool!(ISubsystem) pool;
 
 	typeof(this) initialize()
 	{
@@ -37,10 +37,12 @@ class SubsystemPool
 		return this;
 	}
 
-	typeof(this) append(Subsystem[] subsystem_list...)
+	typeof(this) append(ISubsystem[] subsystem_list...)
 	{
 		foreach (ref subsystem; subsystem_list)
 		{
+			import std.stdio;
+			writeln("subsystem append");
 			subsystem.initialize();
 			this.pool.append(subsystem);
 		}
@@ -70,9 +72,25 @@ class SubsystemPool
 	alias pool this;
 }
 
-interface Subsystem
+interface ISubsystem
 {
-	void initialize();
-	void finalize();
-	void process();
+	ISubsystem initialize();
+	ISubsystem finalize();
+	ISubsystem process();
+}
+
+abstract class Subsystem : ISubsystem
+{
+	protected Core core;
+
+	this(Core core)
+	{
+		this.core = core;
+		return;
+	}
+
+	invariant
+	{
+		assert(this !is null);
+	}
 }

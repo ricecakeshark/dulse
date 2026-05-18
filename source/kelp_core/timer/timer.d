@@ -19,27 +19,27 @@ class TimerSubsystem : Subsystem
 
 	this(Core core)
 	{
-		this.core = core;
+		super(core);
 		return;
 	}
 
-	void initialize()
+	typeof(this) initialize()
 	{
 		begin = Clock.currTime();
 		begin_active = Clock.currTime();
 		begin_sleep = Clock.currTime();
-		return;
+		return this;
 	}
 
-	void finalize()
+	typeof(this) finalize()
 	{
-		return;
+		return this;
 	}
 
-	void process()
+	typeof(this) process()
 	{
 		this.sleep();
-		return;
+		return this;
 	}
 
 	@property inout(long) past() inout @safe

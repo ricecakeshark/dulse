@@ -5,29 +5,29 @@ import kelp_core.logger;
 
 class LoggerSubsystem : Subsystem
 {
-	protected Core core;
+	//protected Core core;
 	Logger logger;
 
 	this(Core core)
 	{
-		this.core = core;
+		super(core);
 		return;
 	}
 
-	void initialize()
+	typeof(this) initialize()
 	{
 		this.logger = Logger();
-		return;
+		return this;
 	}
 
-	void finalize()
+	typeof(this) finalize()
 	{
-		return;
+		return this;
 	}
 
-	void process()
+	typeof(this) process()
 	{
-		return;
+		return this;
 	}
 
 	void log(

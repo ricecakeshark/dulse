@@ -10,30 +10,30 @@ class ObjectSubsystem : Subsystem
 
 	this(Core core)
 	{
-		this.core = core;
+		super(core);
 		return;
 	}
 
-	void initialize()
+	typeof(this) initialize()
 	{
 		/+foreach (manager; object_manager_list)
 		{
 			manager.initialize();
 		}+/
-		return;
+		return this;
 	}
 
-	void finalize()
+	typeof(this) finalize()
 	{
-		return;
+		return this;
 	}
 
-	void process()
+	typeof(this) process()
 	{
 		/+foreach (manager; object_manager_list)
 		{
 			manager.process();
 		}+/
-		return;
+		return this;
 	}
 }
