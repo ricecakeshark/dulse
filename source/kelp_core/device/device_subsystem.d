@@ -1,4 +1,4 @@
-module kelp_core.device.device;
+module kelp_core.device.device_subsystem;
 
 import kelp_core.core;
 import kelp_core.core.subsystem;
@@ -6,7 +6,6 @@ import kelp_core.device;
 
 final class DeviceSubsystem : Subsystem
 {
-	//Core core;
 	Keyboard keyboard;
 	Mouse mouse;
 	Gamepad gamepad;
