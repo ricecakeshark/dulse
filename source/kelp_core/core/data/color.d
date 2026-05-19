@@ -1,8 +1,11 @@
 module kelp_core.core.data.color;
 
+import kelp_core.math.linalg;
+
 import std.numeric;
 import std.algorithm : all, map;
 import std.array : staticArray;
+import std.math : isNaN;
 
 //alias Float16 = CustomFloat!(10,5,CustomFloatFlags.ieee);
 
@@ -12,11 +15,13 @@ struct ColorF
 {
 	public float red, green, blue, alpha;
 
-	/+invariant
+	invariant
 	{
-		assert(this.elements.all!(color => color >= 0.0f));
-		assert(this.elements.all!(color => color <= 1.0f));
-	}+/
+		assert(this.red.isNaN == false);
+		assert(this.blue.isNaN == false);
+		assert(this.green.isNaN == false);
+		assert(this.alpha.isNaN == false);
+	}
 
 	this(float r, float g, float b, float a = 1.0f)
 	{
@@ -27,12 +32,30 @@ struct ColorF
 		return;
 	}
 
+	this(float rgb)
+	{
+		this.red = rgb;
+		this.green = rgb;
+		this.blue = rgb;
+		this.alpha = 1.0f;
+		return;
+	}
+
 	this(float[4] rgba)
 	{
 		this.red = rgba[0];
 		this.green = rgba[1];
 		this.blue = rgba[2];
 		this.alpha = rgba[3];
+		return;
+	}
+
+	this(Vec4 vec)
+	{
+		this.red = vec[0];
+		this.green = vec[1];
+		this.blue = vec[2];
+		this.alpha = vec[3];
 		return;
 	}
 
@@ -49,6 +72,11 @@ struct ColorF
 			this.blue.to_ubyte_color(),
 			this.alpha.to_ubyte_color(),
 		);
+	}
+
+	Vec4 to_vec() pure nothrow @nogc @safe
+	{
+		return Vec4(this.red, this.green, this.blue, this.alpha);
 	}
 }
 
