@@ -6,30 +6,30 @@ struct LoopedInt(long Limit)
 {
 	long internal_value;
 
-	this(int init_value)
+	this(int init_value) pure nothrow @nogc @safe
 	{
 		this.internal_value = init_value.normalize(Limit);
 		return;
 	}
 
-	@property long value() const pure nothrow @nogc @safe
+	@property ref inout(long) value() inout pure nothrow @nogc @safe
 	{
-		return internal_value;
+		return this.internal_value;
 	}
 
-	long opUnary(string op : "++")() pure nothrow @nogc @safe
+	ref inout(long) opUnary(string op : "++")() inout pure nothrow @nogc @safe
 	{
 		this.internal_value = normalize(this.internal_value + 1, Limit);
 		return this.internal_value;
 	}
 
-	long opUnary(string op : "--")() pure nothrow @nogc @safe
+	ref inout(long) opUnary(string op : "--")() inout pure nothrow @nogc @safe
 	{
 		this.internal_value = normalize(this.internal_value - 1, Limit);
 		return this.internal_value;
 	}
 
-	long opBinary(string op, R)(in R rhs) const pure nothrow @nogc @safe
+	inout(long) opBinary(string op, R)(in R rhs) inout pure nothrow @nogc @safe
 	{
 		static if (op == "+")
 		{
@@ -82,7 +82,7 @@ struct LoopedInt(long Limit)
 
 	}
 
-	auto opAssign(T)(T value) pure nothrow @safe
+	long opAssign(T)(T value) pure nothrow @safe
 	{
 		this.internal_value = value.normalize(Limit);
 		return value;
@@ -125,18 +125,18 @@ struct LoopedFloat(real Limit)
 {
 	real internal_value;
 
-	this(real init_value)
+	this(real init_value) pure nothrow @nogc @safe
 	{
 		this.internal_value = init_value.normalize(Limit);
 		return;
 	}
 
-	@property real value() const pure nothrow @nogc @safe
+	@property ref inout(real) value() inout pure nothrow @nogc @safe
 	{
 		return this.internal_value;
 	}
 
-	real opBinary(string op, T)(in T rhs) const pure nothrow @nogc @safe
+	inout(real) opBinary(string op, T)(in T rhs) inout pure nothrow @nogc @safe
 	{
 		static if (op == "+")
 		{
@@ -164,7 +164,7 @@ struct LoopedFloat(real Limit)
 		}
 	}
 
-	auto opAssign(real value) pure nothrow @safe
+	real opAssign(real value) pure nothrow @safe
 	{
 		this.internal_value = value.normalize(Limit);
 		return value;
