@@ -57,17 +57,17 @@ struct Vector(size_t Length, Type = float)
 		);+/
 	}
 
-	typeof(this) opUnary(string op : "+")() const pure nothrow @nogc @safe
+	typeof(this) opUnary(string op : "+")() inout pure nothrow @nogc @safe
 	{
 		return Vector!(Length)(this.data[].map!(x => +x).staticArray());
 	}
 
-	typeof(this) opUnary(string op : "-")() const pure nothrow @nogc @safe
+	typeof(this) opUnary(string op : "-")() inout pure nothrow @nogc @safe
 	{
 		return Vector!(Length)(this.data[].map!(x => -x).staticArray());
 	}
 	// Vector * 2.0
-	typeof(this) opBinary(string op : "*")(in Type scalar) const pure nothrow @nogc @safe
+	typeof(this) opBinary(string op : "*")(in Type scalar) inout pure nothrow @nogc @safe
 	{
 		Vector!(Length, Type) temp_vec = Vector!(Length, Type)(this.data);
 		static foreach (count; 0 .. Length)
@@ -77,7 +77,7 @@ struct Vector(size_t Length, Type = float)
 		return temp_vec;
 	}
 	// Vector / 2.0
-	typeof(this) opBinary(string op : "/")(in Type scalar) const pure nothrow @nogc @safe
+	typeof(this) opBinary(string op : "/")(in Type scalar) inout pure nothrow @nogc @safe
 	{
 		Vector!(Length, Type) temp_vec = Vector!(Length, Type)(this.data);
 		static foreach (count; 0 .. Length)
@@ -96,14 +96,14 @@ struct Vector(size_t Length, Type = float)
 	}+/
 	// Vector(Length) + Vector(Length)
 	typeof(this) opBinary(string op : "+", size_t Length2, Type2)(
-		in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
+		in Vector!(Length2, Type2) rhs) inout pure nothrow @nogc @safe
 	if (Length2 == Length)
 	{
 		return add(this, rhs);
 	}
 	// Vector(Length) - Vector(Length)
 	typeof(this) opBinary(string op : "-", size_t Length2, Type2)(
-		in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
+		in Vector!(Length2, Type2) rhs) inout pure nothrow @nogc @safe
 	if (Length2 == Length)
 	{
 		return subtract(this, rhs);
@@ -111,14 +111,14 @@ struct Vector(size_t Length, Type = float)
 	// return Vector * Vector
 	typeof(this) opBinary(string op : "*", size_t Length2, Type2)(
 		in Vector!(Length2, Type2) rhs
-	) const pure nothrow @nogc @safe
+	) inout pure nothrow @nogc @safe
 	if (Length2 == Length)
 	{
 		return cross_product(this, rhs);
 	}
 	// return Matrix * Vector
 	typeof(this) opBinaryRight(string op : "*", M:
-		Matrix!(Row, Col, Type), size_t Row, size_t Col)(in M mat) const pure nothrow @nogc @safe
+		Matrix!(Row, Col, Type), size_t Row, size_t Col)(in M mat) inout pure nothrow @nogc @safe
 	{
 		return multiply(mat, this);
 	}
@@ -188,7 +188,7 @@ struct Vector(size_t Length, Type = float)
 		return result_str;
 	}
 
-	R opCast(R : Matrix!(Length, Length, Type))() const pure nothrow @safe
+	R opCast(R : Matrix!(Length, Length, Type))() inout pure nothrow @safe
 	{
 		R temp_matrix = Matrix!(Length, Length, Type);
 		foreach (count; 0 .. Length)
@@ -198,7 +198,7 @@ struct Vector(size_t Length, Type = float)
 		return temp_matrix;
 	}
 
-	Matrix!(Length, Length, Type) to_matrix_scale()() pure nothrow @safe
+	Matrix!(Length, Length, Type) to_matrix_scale()() inout pure nothrow @safe
 	{
 		Matrix!(Length, Length, Type) temp_matrix = Matrix!(Length, Length, Type);
 		foreach (count; 0 .. Length)
@@ -210,7 +210,7 @@ struct Vector(size_t Length, Type = float)
 
 	
 
-	Matrix!(Length, Length, Type) to_matrix_transport()() pure nothrow @safe
+	Matrix!(Length, Length, Type) to_matrix_transport()() inout pure nothrow @safe
 	{
 		Matrix!(Length, Length, Type) temp_matrix;
 		temp_matrix = matrix_identity();
