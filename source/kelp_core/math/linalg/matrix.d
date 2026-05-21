@@ -242,7 +242,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 
 	size_t toHash() const @nogc @safe pure nothrow
 	{
-		return this.data.hashOf();
+		return hashOf(this.data);
 	}
 }
 // transpose matrix

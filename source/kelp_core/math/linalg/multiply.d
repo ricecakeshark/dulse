@@ -26,13 +26,14 @@ V:
 
 unittest
 {
-	Matrix!(4, 4) matrix;
-	Vector!(4) vector;
-	matrix = [
+	Matrix!(4, 4) mat;
+	Vector!(4) vec;
+	mat = [
 		[1f, 0f, 0f, 0f],
-		[0f, 1f, 0f, 0f],
-		[0f, 0f, 1f, -1f],
-		[0f, 0f, 1f, 0f],
+		[0f, 2f, 0f, 0f],
+		[0f, 0f, 3f, 0f],
+		[0f, 0f, 0f, 1f],
 	];
-	vector = [1f, 2f, 3f, 1f];
+	vec = [1f, 2f, 3f, 1f];
+	assert(mat * vec == Vector!(4)(1f, 4f, 9f, 1f));
 }

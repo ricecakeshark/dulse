@@ -121,6 +121,11 @@ struct Quaternion(Type = float)
 		return devide(this, rhs);
 	}
 
+	size_t toHash() const pure nothrow @nogc @safe
+	{
+		return hashOf(this.data);
+	}
+
 }
 
 Quaternion!Type add(Type)(

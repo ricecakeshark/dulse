@@ -173,7 +173,7 @@ struct Vector(size_t Length, Type = float)
 
 	size_t toHash() const pure nothrow @nogc @safe
 	{
-		return sum(this.data[]).hashOf();
+		return hashOf(this.data[]);
 	}
 
 	string opCast(R : string)() const pure @safe
@@ -208,15 +208,13 @@ struct Vector(size_t Length, Type = float)
 		return temp_matrix;
 	}
 
-	
-
 	Matrix!(Length, Length, Type) to_matrix_transport()() inout pure nothrow @safe
 	{
 		Matrix!(Length, Length, Type) temp_matrix;
 		temp_matrix = matrix_identity();
 		foreach (count; 0 .. Length)
 		{
-			temp_matrix.data[count][$-1u] = this.data[count];
+			temp_matrix.data[count][$ - 1u] = this.data[count];
 		}
 		return temp_matrix;
 	}
