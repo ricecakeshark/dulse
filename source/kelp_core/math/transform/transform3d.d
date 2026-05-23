@@ -8,13 +8,14 @@ Matrix!(4, 4) transformer_scale(in Vector!(3) vec) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
-	temp.data[0][0] = vec[0];
-	temp.data[1][1] = vec[1];
-	temp.data[2][2] = vec[2];
+	static foreach (index; 0 .. 3)
+	{
+		temp[index, index] = vec[index];
+	}
 	return temp;
 }
 
-Matrix!(4, 4) transformer_scale(Type)(in Type[3] vec) pure nothrow @nogc @safe
+Matrix!(4, 4) transformer_scale(Type)(in Type[3] vec...) pure nothrow @nogc @safe
 {
 	return transformer_scale(Vector!(3)(vec));
 }
@@ -25,24 +26,32 @@ Matrix!(4, 4) transformer_translate_row(in Vector!(3) vec) pure nothrow @nogc @s
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
-	temp.data[3][0] = vec[0];
-	temp.data[3][1] = vec[1];
-	temp.data[3][2] = vec[2];
+	static foreach (index; 0 .. 3)
+	{
+		temp[3, index] = vec[index];
+	}
 	return temp;
 }
 
-Matrix!(4, 4) transformer_translate_row(Type)(in Type[3] vec) pure nothrow @nogc @safe
+Matrix!(4, 4) transformer_translate_row(Type)(in Type[3] vec...) pure nothrow @nogc @safe
 {
-	return transformer_translate_row(Vector!(3)(vec));
+	Matrix!(4, 4) temp;
+	temp = matrix_identity!(4, float)();
+	static foreach (index; 0 .. 3)
+	{
+		temp[3, index] = vec[index];
+	}
+	return temp;
 }
 
 Matrix!(4, 4) transformer_translate_col(in Vector!(3) vec) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
-	temp.data[0][3] = vec[0];
-	temp.data[1][3] = vec[1];
-	temp.data[2][3] = vec[2];
+	static foreach (index; 0 .. 3)
+	{
+		temp[index, 3] = vec[index];
+	}
 	return temp;
 }
 
@@ -55,10 +64,10 @@ Matrix!(4, 4) transformer_rotate_x(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
-	temp.data[1][1] = cos(rad);
-	temp.data[1][2] = -sin(rad);
-	temp.data[2][1] = sin(rad);
-	temp.data[2][2] = cos(rad);
+	temp[1, 1] = cos(rad);
+	temp[1, 2] = -sin(rad);
+	temp[2, 1] = sin(rad);
+	temp[2, 2] = cos(rad);
 	return temp;
 }
 
@@ -66,10 +75,10 @@ Matrix!(4, 4) transformer_rotate_y(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
-	temp.data[2][2] = cos(rad);
-	temp.data[2][0] = -sin(rad);
-	temp.data[0][2] = sin(rad);
-	temp.data[0][0] = cos(rad);
+	temp[2, 2] = cos(rad);
+	temp[2, 0] = -sin(rad);
+	temp[0, 2] = sin(rad);
+	temp[0, 0] = cos(rad);
 	return temp;
 }
 
@@ -77,11 +86,18 @@ Matrix!(4, 4) transformer_rotate_z(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
-	temp.data[0][0] = cos(rad);
-	temp.data[0][1] = -sin(rad);
-	temp.data[1][0] = sin(rad);
-	temp.data[1][1] = cos(rad);
+	temp[0, 0] = cos(rad);
+	temp[0, 1] = -sin(rad);
+	temp[1, 0] = sin(rad);
+	temp[1, 1] = cos(rad);
 	return temp;
+}
+
+Matrix!(4, 4) transformer_rotate(Type = float)(in Quaternion!Type quat) pure nothrow @nogc @safe
+{
+	return transformer_rotate_z(quat.z)
+		* transformer_rotate_y(quat.y)
+		* transformer_rotate_x(quat.x);
 }
 
 unittest

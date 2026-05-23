@@ -4,15 +4,14 @@ import kelp_core.math.linalg;
 import std.algorithm;
 import std.range;
 
-Vector!(Row, VecT) multiply(
-M : Matrix!(Row, Col, MatT),
-V:
-	Vector!(Row, VecT),
-	size_t Row, size_t Col, MatT, VecT,
-
+public:
+Vector!(Row, Type) multiply(
+M : Matrix!(Row, Col, Type),
+V:Vector!(Row, Type),
+	size_t Row, size_t Col, Type,
 )(in M mat, in V vec) pure nothrow @nogc @safe
 {
-	Vector!(Row, VecT) result_vec;
+	Vector!(Row, Type) result_vec;
 	static foreach (row; 0 .. Row)
 	{
 		result_vec.data[row] = 0.0;
@@ -36,4 +35,16 @@ unittest
 	];
 	vec = [1f, 2f, 3f, 1f];
 	assert(mat * vec == Vector!(4)(1f, 4f, 9f, 1f));
+}
+
+
+Matrix!(4,4) to_matrix(Vector!(4) vec)
+{
+	Matrix!(4,4) ret_mat;
+	ret_mat.indentify();
+	foreach(index;0..4)
+	{
+		ret_mat[index,index] = vec[index];
+	}
+	return ret_mat;
 }

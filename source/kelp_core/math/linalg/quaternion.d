@@ -7,7 +7,7 @@ struct Quaternion(Type = float)
 {
 	Type[4] data;
 
-	this(in Type[3] xyz...) pure nothrow @nogc @safe
+	this(in Type[3] xyzw...) pure nothrow @nogc @safe
 	{
 		static foreach (index; 0 .. 3)
 		{
@@ -19,7 +19,7 @@ struct Quaternion(Type = float)
 
 	this(in Vector!(3, Type) vec) pure nothrow @nogc @safe
 	{
-		static foreach (index; 0 .. 4)
+		static foreach (index; 0 .. 3)
 		{
 			this.opIndex(index) = vec[index];
 		}
@@ -54,6 +54,11 @@ struct Quaternion(Type = float)
 	@property ref inout(Type) w() inout pure nothrow @nogc @safe
 	{
 		return this.data[3];
+	}
+
+	@property ref inout(Type[3]) xyz() inout pure nothrow @nogc @safe
+	{
+		return this.data[0..3];
 	}
 
 	@property ref inout(Type[4]) xyzw() inout pure nothrow @nogc @safe
@@ -126,6 +131,17 @@ struct Quaternion(Type = float)
 		return hashOf(this.data);
 	}
 
+	string to_string()
+	{
+		import std.conv;
+		return text("(x,y,z,w): (",this.x,", ",this.y,", ",this.z,", ",this.w,")");
+	}
+
+	string to_string_raw()
+	{
+		import std.conv;
+		return text("float[4]: (",this[0],", ",this[1],", ",this[2],", ",this[3],")");
+	}
 }
 
 Quaternion!Type add(Type)(
@@ -173,11 +189,11 @@ unittest
 	Quaternion!float quat_i = Quaternion!float(0f, 0f, 1f, 0f);
 	Quaternion!float quat_j = Quaternion!float(0f, 1f, 0f, 0f);
 	Quaternion!float quat_k = Quaternion!float(1f, 0f, 0f, 0f);
-
+	
 	// i^2 == j^2 == k^2 == -1f
-	assert(quat_i * quat_i == Quaternion!float(0f, 0f, 0f, -1f));
-	assert(quat_j * quat_j == Quaternion!float(0f, 0f, 0f, -1f));
-	assert(quat_k * quat_k == Quaternion!float(0f, 0f, 0f, -1f));
+	assert(quat_i * quat_i == -quat_w);	
+	assert(quat_j * quat_j == -quat_w);
+	assert(quat_k * quat_k == -quat_w);
 	// (quat_a * w_1) == (w_1 * quat_a)  == quat_a 
 	assert(quat_i * quat_w == quat_i && quat_w * quat_i == quat_i);
 	assert(quat_j * quat_w == quat_j && quat_w * quat_j == quat_j);

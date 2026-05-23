@@ -1,7 +1,6 @@
 module kelp_core.math.linalg.matrix;
 
-import kelp_core.math.linalg.multiply;
-import kelp_core.math.linalg.vector;
+import kelp_core.math.linalg;
 
 import std.math;
 
@@ -38,6 +37,20 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 			this.opIndex(count, count) = new_vector[count];
 		}
 		return;
+	}
+
+	@property bool contain_nan() const pure nothrow @nogc @safe
+	{
+		foreach (row; 0 .. Row)
+		{
+			foreach (col; 0 .. Col)
+			{
+				if(this.opIndex(row, col).isNaN){
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@property Vector!(Row, Type) row() const pure nothrow @nogc @safe
@@ -215,6 +228,12 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		in Type rhs) const pure nothrow @nogc @safe
 	{
 		return multiply!(Matrix!(Row, Col, Type))(this, rhs);
+	}
+
+	Vector!(Row, Type) opBinary(string op : "*")(
+		Vector!(Row, Type) rhs) pure nothrow @nogc @safe
+	{
+		return kelp_core.math.linalg.multiply.multiply!(typeof(this), typeof(rhs),Row,Col,Type)(this, rhs);
 	}
 
 	typeof(this) fill(float value = 0.0) pure nothrow @nogc @safe
@@ -490,6 +509,23 @@ Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_lis
 	}
 	return temp;
 }
+
+Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Type[Size] value_list) pure nothrow @nogc @safe
+{
+	Matrix!(Size, Size) temp;
+	temp.fill(0.0f);
+	foreach (index; 0 .. Size)
+	{
+		temp[index, Size-1] = value_list[index];
+	}
+	return temp;
+}
+
+Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Vector!(Size,Type) vec) pure nothrow @nogc @safe
+{
+	return matrix_translate(vec.data);
+}
+
 
 unittest
 {

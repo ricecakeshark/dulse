@@ -14,13 +14,13 @@ struct Vector(size_t Length, Type = float)
 {
 	Type[Length] data;
 
-	this(Type[Length] init_value_list...) const pure nothrow @nogc @safe
+	this(Type[Length] init_value_list...) pure nothrow @nogc @safe
 	{
 		this.data = init_value_list;
 		return;
 	}
 
-	this(Type init_value...) const pure nothrow @nogc @safe
+	this(Type init_value) pure nothrow @nogc @safe
 	{
 		this.data = init_value;
 		return;
@@ -118,9 +118,9 @@ struct Vector(size_t Length, Type = float)
 	}
 	// return Matrix * Vector
 	typeof(this) opBinaryRight(string op : "*", M:
-		Matrix!(Row, Col, Type), size_t Row, size_t Col)(in M mat) inout pure nothrow @nogc @safe
+		Matrix!(Row, Col, MatT), size_t Row, size_t Col, MatT)(M mat) inout pure nothrow @nogc @safe
 	{
-		return multiply(mat, this);
+		return kelp_core.math.linalg.multiply.multiply!(Matrix!(Row, Col, MatT), Vector!(Length, Type))(mat, this);
 	}
 
 	bool opEquals(V : Vector!(RhsLength, RhsType), size_t RhsLength, RhsType)(in V rhs) const pure nothrow @nogc @safe
@@ -176,6 +176,11 @@ struct Vector(size_t Length, Type = float)
 		return hashOf(this.data[]);
 	}
 
+	CastType opCast(CastType : Type[Length])() inout pure nothrow @nogc @safe
+	{
+		return this.data;
+	}
+
 	string opCast(R : string)() const pure @safe
 	{
 		import std.format;
@@ -198,9 +203,20 @@ struct Vector(size_t Length, Type = float)
 		return temp_matrix;
 	}
 
+	Vector!(DstLength, Type) expand(size_t DstLength)()
+	{
+		Vector!(DstLength, Type) ret_vec;
+		foreach (index; 0 .. Length)
+		{
+			ret_vec.data[index] = this[index];
+		}
+		return ret_vec;
+	}
+
 	Matrix!(Length, Length, Type) to_matrix_scale()() inout pure nothrow @safe
 	{
-		Matrix!(Length, Length, Type) temp_matrix = Matrix!(Length, Length, Type);
+		Matrix!(Length, Length, Type) temp_matrix;
+		temp_matrix.indentify();
 		foreach (count; 0 .. Length)
 		{
 			temp_matrix.data[count][count] = this.data[count];
