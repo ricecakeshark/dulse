@@ -42,7 +42,7 @@ struct Vector(size_t Length, Type = float)
 		return this.data[].map!(x => x.pow(2)).sum().sqrt();
 	}
 
-	typeof(this) unit() const pure nothrow @safe
+	typeof(this) unit() const pure nothrow @nogc @safe
 	{
 		Vector!(Length) return_vec;
 		static foreach (i; 0 .. Length)
@@ -50,11 +50,6 @@ struct Vector(size_t Length, Type = float)
 			return_vec.data[i] = this[i] / this.norm();
 		}
 		return return_vec;
-		// cannot @nogc
-		/+return Vector!(Length)(
-			this.data[].map!(x => x / this.norm())
-				.staticArray!(Length)()
-		);+/
 	}
 
 	typeof(this) opUnary(string op : "+")() const pure nothrow @nogc @safe
@@ -71,22 +66,12 @@ struct Vector(size_t Length, Type = float)
 	// Vector * 2.0
 	typeof(this) opBinary(string op : "*")(in Type scalar) inout pure nothrow @nogc @safe
 	{
-		Vector!(Length, Type) temp_vec = Vector!(Length, Type)(this.data);
-		static foreach (count; 0 .. Length)
-		{
-			temp_vec.data[count] *= scalar;
-		}
-		return temp_vec;
+		return multiply(this, scalar);
 	}
 	// Vector / 2.0
 	typeof(this) opBinary(string op : "/")(in Type scalar) inout pure nothrow @nogc @safe
 	{
-		Vector!(Length, Type) temp_vec = Vector!(Length, Type)(this.data);
-		static foreach (count; 0 .. Length)
-		{
-			temp_vec.data[count] /= scalar;
-		}
-		return temp_vec;
+		return devide(this, scalar);
 	}
 	/+
 	typeof(this) opBinary(string op : "/")(const double scalar) const pure nothrow @nogc @safe
@@ -201,7 +186,7 @@ struct Vector(size_t Length, Type = float)
 		return result_str;
 	}
 
-	R opCast(R : Matrix!(Length, Length, Type))() inout pure nothrow @safe
+	R opCast(R : Matrix!(Length, Length, Type))() inout pure nothrow @nogc @safe
 	{
 		R temp_matrix = Matrix!(Length, Length, Type);
 		foreach (count; 0 .. Length)
@@ -211,7 +196,7 @@ struct Vector(size_t Length, Type = float)
 		return temp_matrix;
 	}
 
-	Vector!(DstLength, Type) extend(size_t DstLength)()
+	Vector!(DstLength, Type) extend(size_t DstLength)() const pure nothrow @nogc @safe
 	{
 		Vector!(DstLength, Type) ret_vec;
 		foreach (index; 0 .. Length)
@@ -221,7 +206,7 @@ struct Vector(size_t Length, Type = float)
 		return ret_vec;
 	}
 
-	Matrix!(Length, Length, Type) to_matrix_scale()() inout pure nothrow @safe
+	Matrix!(Length, Length, Type) to_matrix_scale()() inout pure nothrow @nogc @safe
 	{
 		Matrix!(Length, Length, Type) temp_matrix;
 		temp_matrix.indentify();
@@ -232,7 +217,7 @@ struct Vector(size_t Length, Type = float)
 		return temp_matrix;
 	}
 
-	Matrix!(Length, Length, Type) to_matrix_transport()() inout pure nothrow @safe
+	Matrix!(Length, Length, Type) to_matrix_transport()() inout pure nothrow @nogc @safe
 	{
 		Matrix!(Length, Length, Type) temp_matrix;
 		temp_matrix = matrix_identity();
@@ -262,7 +247,7 @@ V2:
 		return zip(lhs.data[], rhs.data[]).all!(elm => isClose(elm[0], elm[1], 1e-10, 1e-10));
 	}
 }
-
+// vec + vec
 Vector!(Length1, Type1) add(
 V1 : Vector!(Length1, Type1), V2:
 	Vector!(Length2, Type2),
@@ -276,7 +261,7 @@ if (Length1 == Length2)
 			.staticArray!(Type1[Length1])()
 	);
 }
-
+// vec - vec
 Vector!(Length1, Type1) subtract(
 V1 : Vector!(Length1, Type1), V2:
 	Vector!(Length2, Type2),
@@ -290,16 +275,7 @@ if (Length1 == Length2)
 			.staticArray!(Type1[Length1])()
 	);
 }
-
-/+Type1 inner_product(
-V1 : Vector!(2, Type1), V2:
-	Vector!(2, Type2),
-	Type1, Type2
-)(in V1 lhs, in V2 rhs) pure nothrow @nogc @safe
-{
-	return lhs[0] * rhs[0] + lhs[1] * rhs[1];
-}+/
-
+// vec(x, y)・vec(x, y)
 Type1 inner_product(
 V1 : Vector!(Length1, Type1), V2:
 	Vector!(Length2, Type2),
@@ -308,7 +284,7 @@ V1 : Vector!(Length1, Type1), V2:
 {
 	return lhs[0] * rhs[0] + lhs[1] * rhs[1];
 }
-
+// vec(x, y, z)・vec(x, y, z)
 Type1 inner_product(
 V1 : Vector!(Length1, Type1), V2:
 	Vector!(Length2, Type2),
@@ -317,7 +293,7 @@ V1 : Vector!(Length1, Type1), V2:
 {
 	return lhs[0] * rhs[0] + lhs[1] * rhs[1] + lhs[2] * rhs[2];
 }
-
+// vec(x, y, z) × vec(x, y, z)
 Vector!(3) cross_product(
 V1 : Vector!(Length1, Type1),
 V2:
@@ -352,7 +328,30 @@ unittest
 	assert(
 		cross_product(Vec3(1.0, 2.0, 3.0), Vec3(4.0, 5.0, 6.0)) == Vec3(-3.0, +6.0, -3.0)
 	);
-
-	//import std.stdio;
-	//writeln();
+}
+// Vector * 2.0
+Vector!(Length, Type) multiply(size_t Length, Type)(
+	in Vector!(Length, Type) vec,
+	in Type scalar,
+) pure nothrow @nogc @safe
+{
+	Vector!(Length, Type) temp_vec;
+	static foreach (count; 0 .. Length)
+	{
+		temp_vec[count] = vec[count] * scalar;
+	}
+	return temp_vec;
+}
+// Vector / 2.0
+Vector!(Length, Type) devide(size_t Length, Type)(
+	in Vector!(Length, Type) vec,
+	in Type scalar,
+) pure nothrow @nogc @safe
+{
+	Vector!(Length, Type) temp_vec;
+	static foreach (count; 0 .. Length)
+	{
+		temp_vec[count] = vec[count] / scalar;
+	}
+	return temp_vec;
 }

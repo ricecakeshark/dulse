@@ -3,7 +3,7 @@ module kelp_core.math.linalg.quaternion_helper;
 import kelp_core.math.linalg;
 
 import std.math;
-
+/+
 Quaternion!Type quaternion_rotate(Type)(Vec3 axis, float angle) pure nothrow @nogc @safe
 {
 	return Quaternion!Type(
@@ -53,3 +53,4 @@ Vector!(4, Type) to_vec4(Type)(Quaternion!Type quat) pure nothrow @nogc @safe
 {
 	return Vector!(4, Type)(quat.xyzw);
 }
++/

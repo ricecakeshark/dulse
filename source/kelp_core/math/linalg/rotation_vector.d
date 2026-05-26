@@ -79,7 +79,6 @@ Vector!(3, Type) multiply(Type)(
 
 unittest
 {
-
 	RotationVector!float rotate_vec;
 	Vec3 vec;
 	rotate_vec = RotationVector!float(Vec3(0.0f, 0.0f, PI / 2.0f));

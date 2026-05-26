@@ -1,6 +1,7 @@
 module kelp_core.math.linalg.matrix;
 
 import kelp_core.math.linalg;
+import kelp_core.math.linalg.multiply;
 
 import std.math;
 
@@ -217,16 +218,22 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return true;
 	}
 
-	Matrix!(Row, Col, Type) opBinary(string op : "+", size_t RhsRow, size_t RhsCol, RhsType)(
-		in Matrix!(RhsRow, RhsCol, RhsType) rhs) const pure nothrow @nogc @safe
+	Matrix!(Row, Col, Type) opBinary(
+		string op : "+", size_t RhsRow, size_t RhsCol, RhsType,
+	)(
+		in Matrix!(RhsRow, RhsCol, RhsType) rhs,
+	) const pure nothrow @nogc @safe
 	in (RhsRow == Row)
 	in (RhsCol == Col)
 	{
 		return add(this, rhs);
 	}
 
-	Matrix!(Row, Col, Type) opBinary(string op : "-", size_t RhsRow, size_t RhsCol, RhsType)(
-		in Matrix!(RhsRow, RhsCol, RhsType) rhs) const pure nothrow @nogc @safe
+	Matrix!(Row, Col, Type) opBinary(
+		string op : "-", size_t RhsRow, size_t RhsCol, RhsType,
+	)(
+		in Matrix!(RhsRow, RhsCol, RhsType) rhs,
+	) const pure nothrow @nogc @safe
 	in (RhsRow == Row)
 	in (RhsCol == Col)
 	{
@@ -377,7 +384,7 @@ unittest
 	);
 }
 
-// add Matrix
+// add Matrix (Mat + Mat)
 Matrix!(Row1, Col1, Type1) add(
 M1 : Matrix!(Row1, Col1, Type1), M2:
 	Matrix!(Row2, Col2, Type2),
@@ -401,7 +408,7 @@ do
 	}
 	return result_matrix;
 }
-// subtract matrix
+// subtract matrix (Mat - Mat)
 Matrix!(Row1, Col1, Type1) subtract(
 M1 : Matrix!(Row1, Col1, Type1), M2:
 	Matrix!(Row2, Col2, Type2),
@@ -425,7 +432,7 @@ do
 	}
 	return result_matrix;
 }
-// multiply matrix
+// multiply matrix (Mat * Mat)
 Matrix!(Row1, Col2, Type) multiply(M1 : Matrix!(Row1, Col1, Type), M2:
 	Matrix!(Row2, Col2, Type), size_t Row1, size_t Col1, size_t Row2, size_t Col2, Type)(
 	in M1 lhs, in M2 rhs
@@ -450,7 +457,7 @@ do
 	}
 	return result_matrix;
 }
-// multiply matrix and scalar 
+// multiply matrix and scalar (Mat * 2.0)
 Matrix!(Row, Col, Type) multiply(
 M1 : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type
 )(

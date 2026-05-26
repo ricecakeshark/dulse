@@ -1,8 +1,6 @@
 module kelp_core.math.linalg.multiply;
 
 import kelp_core.math.linalg;
-import std.algorithm;
-import std.range;
 
 public:
 Vector!(Row, Type) multiply(
@@ -56,15 +54,4 @@ unittest
 	vec = [1f, 2f, 3f, 1f];
 	assert(multiply(mat, vec) == Vector!(4)(1f, 4f, 9f, 1f));
 	assert(multiply(vec, mat) == Vector!(4)(1f, 4f, 9f, 1f));
-}
-
-Matrix!(4, 4) to_matrix(Vector!(4) vec)
-{
-	Matrix!(4, 4) ret_mat;
-	ret_mat.indentify();
-	foreach (index; 0 .. 4)
-	{
-		ret_mat[index, index] = vec[index];
-	}
-	return ret_mat;
 }

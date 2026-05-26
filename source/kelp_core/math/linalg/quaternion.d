@@ -101,12 +101,9 @@ struct Quaternion(Type = float)
 		return this.conjugate / (this.norm * this.norm);
 	}
 
-	bool opEquals(in typeof(this) rhs) const pure nothrow @nogc @safe
+	bool opEquals(RhsType)(in Quaternion!RhsType rhs) const pure nothrow @nogc @safe
 	{
-		return isClose(this.x, rhs.x, 1e-5, 1e-5)
-			&& isClose(this.y, rhs.y, 1e-5, 1e-5)
-			&& isClose(this.z, rhs.z, 1e-5, 1e-5)
-			&& isClose(this.w, rhs.w, 1e-5, 1e-5);
+		return equal(this, rhs);
 	}
 
 	ref inout(Type) opIndex(size_t index) inout pure nothrow @nogc @safe
@@ -114,7 +111,7 @@ struct Quaternion(Type = float)
 		return this.data[index];
 	}
 
-	typeof(this) opUnary(string op)() pure nothrow @nogc @safe
+	typeof(this) opUnary(string op)() const pure nothrow @nogc @safe
 	{
 		static if (op == "+")
 		{
@@ -126,32 +123,32 @@ struct Quaternion(Type = float)
 		}
 	}
 
-	typeof(this) opBinary(string op : "+")(in Quaternion!Type rhs)
+	typeof(this) opBinary(string op : "+")(in Quaternion!Type rhs) const pure nothrow @nogc @safe
 	{
 		return add(this, rhs);
 	}
 
-	typeof(this) opBinary(string op : "-")(in Quaternion!Type rhs)
+	typeof(this) opBinary(string op : "-")(in Quaternion!Type rhs) const pure nothrow @nogc @safe
 	{
 		return subtract(this, rhs);
 	}
 
-	typeof(this) opBinary(string op : "*")(in Quaternion!Type rhs) inout pure nothrow @nogc @safe
+	typeof(this) opBinary(string op : "*")(in Quaternion!Type rhs) const pure nothrow @nogc @safe
 	{
 		return multiply(this, rhs);
 	}
 
-	typeof(this) opBinary(string op : "*")(in Type rhs)
+	typeof(this) opBinary(string op : "*")(in Type rhs) const pure nothrow @nogc @safe
 	{
 		return multiply(this, rhs);
 	}
-
-	typeof(this) opBinary(string op : "*")(in Vector!(4, Type) vec)
+	// 
+	typeof(this) opBinary(string op : "*")(in Vector!(4, Type) vec) const pure nothrow @nogc @safe
 	{
 		return vec.rotate_by(this);
 	}
 
-	typeof(this) opBinary(string op : "/")(in Type rhs)
+	typeof(this) opBinary(string op : "/")(in Type rhs) const pure nothrow @nogc @safe
 	{
 		return devide(this, rhs);
 	}
@@ -161,7 +158,7 @@ struct Quaternion(Type = float)
 		return hashOf(this.data);
 	}
 
-	static Quaternion!Type identity(Type)()
+	static Quaternion!Type identity(Type)() const pure nothrow @nogc @safe
 	{
 		return Quaternion!Type(0.0f, 0.0f, 0.0f, 1.0f);
 	}
@@ -210,14 +207,14 @@ struct Quaternion(Type = float)
 		);
 	}
 
-	string to_string()
+	string to_string() const pure @safe
 	{
 		import std.conv;
 
 		return text("(x,y,z,w): (", this.x, ", ", this.y, ", ", this.z, ", ", this.w, ")");
 	}
 
-	string to_string_raw()
+	string to_string_raw() const pure @safe
 	{
 		import std.conv;
 
@@ -225,6 +222,34 @@ struct Quaternion(Type = float)
 	}
 }
 
+bool equal(
+Q1 : Quaternion!LhsType,
+Q2:
+	Quaternion!RhsType,
+	LhsType,
+	RhsType,
+)(
+	in Q1 quat_lhs,
+	in Q2 quat_rhs,
+)
+{
+	static if (is(LhsType == float) && is(RhsType == float))
+	{
+		return isClose(quat_lhs.x, quat_rhs.x, 1e-5, 1e-5)
+			&& isClose(quat_lhs.y, quat_rhs.y, 1e-5, 1e-5)
+			&& isClose(quat_lhs.z, quat_rhs.z, 1e-5, 1e-5)
+			&& isClose(quat_lhs.w, quat_rhs.w, 1e-5, 1e-5);
+	}
+	else
+	{
+		return isClose(quat_lhs.x, quat_rhs.x, 1e-10, 1e-10)
+			&& isClose(quat_lhs.y, quat_rhs.y, 1e-10, 1e-10)
+			&& isClose(quat_lhs.z, quat_rhs.z, 1e-10, 1e-10)
+			&& isClose(quat_lhs.w, quat_rhs.w, 1e-10, 1e-10);
+	}
+}
+
+// Quat + Quat
 Quaternion!Type add(Type)(
 	in Quaternion!Type lhs,
 	in Quaternion!Type rhs,
@@ -237,7 +262,7 @@ Quaternion!Type add(Type)(
 		lhs[3] + rhs[3],
 	);
 }
-
+// Quat - Quat
 Quaternion!Type subtract(Type)(
 	in Quaternion!Type lhs,
 	in Quaternion!Type rhs,
@@ -250,7 +275,7 @@ Quaternion!Type subtract(Type)(
 		lhs[3] - rhs[3],
 	);
 }
-
+// Quat * Quat
 Quaternion!Type multiply(Type)(
 	in Quaternion!Type lhs,
 	in Quaternion!Type rhs,
@@ -289,7 +314,7 @@ unittest
 	assert(quat_k * quat_j == -quat_i);
 	assert(quat_i * quat_k == -quat_j);
 }
-
+// Quat * 2.0
 Quaternion!Type multiply(Type)(
 	in Quaternion!Type lhs,
 	in Type rhs,
@@ -302,7 +327,7 @@ Quaternion!Type multiply(Type)(
 		lhs.w * rhs,
 	);
 }
-
+// Quat / 2.0
 Quaternion!Type devide(Type)(
 	in Quaternion!Type lhs,
 	in Type rhs,
@@ -337,8 +362,6 @@ Vector!(3, Type) rotate_by(Type)(
 
 unittest
 {
-	import std.math;
-
 	Quaternion!float quat_x, quat_y, quat_z;
 	Vector!(3, float) vec_x, vec_y, vec_z;
 	quat_x = Quaternion!float(Vec3(1.0f, 0.0f, 0.0f), PI / 2);
