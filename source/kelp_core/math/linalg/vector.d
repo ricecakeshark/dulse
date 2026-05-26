@@ -57,14 +57,16 @@ struct Vector(size_t Length, Type = float)
 		);+/
 	}
 
-	typeof(this) opUnary(string op : "+")() inout pure nothrow @nogc @safe
+	typeof(this) opUnary(string op : "+")() const pure nothrow @nogc @safe
 	{
-		return Vector!(Length)(this.data[].map!(x => +x).staticArray());
+		return Vector!(Length, Type)(this.data[].map!(x => +x)
+				.staticArray!(Type[Length]));
 	}
 
-	typeof(this) opUnary(string op : "-")() inout pure nothrow @nogc @safe
+	typeof(this) opUnary(string op : "-")() const pure nothrow @nogc @safe
 	{
-		return Vector!(Length)(this.data[].map!(x => -x).staticArray());
+		return Vector!(Length, Type)(this.data[].map!(x => -x)
+				.staticArray!(Type[Length]));
 	}
 	// Vector * 2.0
 	typeof(this) opBinary(string op : "*")(in Type scalar) inout pure nothrow @nogc @safe
@@ -126,7 +128,8 @@ struct Vector(size_t Length, Type = float)
 	bool opEquals(V : Vector!(RhsLength, RhsType), size_t RhsLength, RhsType)(in V rhs) const pure nothrow @nogc @safe
 	if (RhsLength == Length)
 	{
-		return zip(this.data[], rhs.data[]).all!(elm => isClose(elm[0], elm[1], 1e-10, 1e-10));
+		//return zip(this.data[], rhs.data[]).all!(elm => isClose(elm[0], elm[1], 1e-5, 1e-5));
+		return approxEqual(this, rhs);
 	}
 
 	ref inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
@@ -183,6 +186,11 @@ struct Vector(size_t Length, Type = float)
 
 	string opCast(R : string)() const pure @safe
 	{
+		return to_string();
+	}
+
+	string to_string() const pure @safe
+	{
 		import std.format;
 
 		string result_str;
@@ -203,7 +211,7 @@ struct Vector(size_t Length, Type = float)
 		return temp_matrix;
 	}
 
-	Vector!(DstLength, Type) expand(size_t DstLength)()
+	Vector!(DstLength, Type) extend(size_t DstLength)()
 	{
 		Vector!(DstLength, Type) ret_vec;
 		foreach (index; 0 .. Length)
@@ -233,6 +241,25 @@ struct Vector(size_t Length, Type = float)
 			temp_matrix.data[count][$ - 1u] = this.data[count];
 		}
 		return temp_matrix;
+	}
+}
+
+bool approxEqual(
+V1 : Vector!(Length, LhsType),
+V2:
+	Vector!(Length, RhsType),
+	size_t Length, LhsType, RhsType,
+)(
+	in V1 lhs, in V2 rhs
+) pure nothrow @nogc @safe
+{
+	static if (is(LhsType == float) && is(RhsType == float))
+	{
+		return zip(lhs.data[], rhs.data[]).all!(elm => isClose(elm[0], elm[1], 1e-5, 1e-5));
+	}
+	else
+	{
+		return zip(lhs.data[], rhs.data[]).all!(elm => isClose(elm[0], elm[1], 1e-10, 1e-10));
 	}
 }
 

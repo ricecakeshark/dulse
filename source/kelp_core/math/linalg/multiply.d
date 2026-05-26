@@ -7,7 +7,8 @@ import std.range;
 public:
 Vector!(Row, Type) multiply(
 M : Matrix!(Row, Col, Type),
-V:Vector!(Row, Type),
+V:
+	Vector!(Row, Type),
 	size_t Row, size_t Col, Type,
 )(in M mat, in V vec) pure nothrow @nogc @safe
 {
@@ -18,6 +19,25 @@ V:Vector!(Row, Type),
 		static foreach (col; 0 .. Col)
 		{
 			result_vec.data[row] += mat[row, col] * vec[row];
+		}
+	}
+	return result_vec;
+}
+
+Vector!(Row, Type) multiply(
+M : Matrix!(Row, Col, Type),
+V:
+	Vector!(Col, Type),
+	size_t Row, size_t Col, Type,
+)(in V vec, in M mat,) pure nothrow @nogc @safe
+{
+	Vector!(Col, Type) result_vec;
+	static foreach (col; 0 .. Col)
+	{
+		result_vec.data[col] = 0.0;
+		static foreach (row; 0 .. Row)
+		{
+			result_vec.data[col] += vec[col] * mat[row, col];
 		}
 	}
 	return result_vec;
@@ -34,17 +54,17 @@ unittest
 		[0f, 0f, 0f, 1f],
 	];
 	vec = [1f, 2f, 3f, 1f];
-	assert(mat * vec == Vector!(4)(1f, 4f, 9f, 1f));
+	assert(multiply(mat, vec) == Vector!(4)(1f, 4f, 9f, 1f));
+	assert(multiply(vec, mat) == Vector!(4)(1f, 4f, 9f, 1f));
 }
 
-
-Matrix!(4,4) to_matrix(Vector!(4) vec)
+Matrix!(4, 4) to_matrix(Vector!(4) vec)
 {
-	Matrix!(4,4) ret_mat;
+	Matrix!(4, 4) ret_mat;
 	ret_mat.indentify();
-	foreach(index;0..4)
+	foreach (index; 0 .. 4)
 	{
-		ret_mat[index,index] = vec[index];
+		ret_mat[index, index] = vec[index];
 	}
 	return ret_mat;
 }

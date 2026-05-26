@@ -45,7 +45,8 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		{
 			foreach (col; 0 .. Col)
 			{
-				if(this.opIndex(row, col).isNaN){
+				if (this.opIndex(row, col).isNaN)
+				{
 					return true;
 				}
 			}
@@ -116,6 +117,20 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 			foreach (row; 0 .. R)
 			{
 				return_mat[row, col] = (row < Row && col < Col) ? this[row, col] : 0.0f;
+			}
+		}
+		return return_mat;
+	}
+
+	Matrix!(R, C, Type) extend(T : Matrix!(R, C, Type), size_t R, size_t C)() const pure nothrow @nogc @safe
+	{
+		Matrix!(R, C, Type) return_mat;
+		foreach (col; 0 .. C)
+		{
+			foreach (row; 0 .. R)
+			{
+				return_mat[row, col] = (row < Row && col < Col) ? this[row, col] : (row == col) ? 1.0f
+					: 0.0f;
 			}
 		}
 		return return_mat;
@@ -233,7 +248,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	Vector!(Row, Type) opBinary(string op : "*")(
 		Vector!(Row, Type) rhs) pure nothrow @nogc @safe
 	{
-		return kelp_core.math.linalg.multiply.multiply!(typeof(this), typeof(rhs),Row,Col,Type)(this, rhs);
+		return kelp_core.math.linalg.multiply.multiply!(typeof(this), typeof(rhs), Row, Col, Type)(this, rhs);
 	}
 
 	typeof(this) fill(float value = 0.0) pure nothrow @nogc @safe
@@ -516,16 +531,15 @@ Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Type[Size] value
 	temp.fill(0.0f);
 	foreach (index; 0 .. Size)
 	{
-		temp[index, Size-1] = value_list[index];
+		temp[index, Size - 1] = value_list[index];
 	}
 	return temp;
 }
 
-Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Vector!(Size,Type) vec) pure nothrow @nogc @safe
+Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Vector!(Size, Type) vec) pure nothrow @nogc @safe
 {
 	return matrix_translate(vec.data);
 }
-
 
 unittest
 {

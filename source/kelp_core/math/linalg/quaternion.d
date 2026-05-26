@@ -23,7 +23,7 @@ struct Quaternion(Type = float)
 		{
 			this.opIndex(index) = vec[index];
 		}
-		this.opIndex(3) = 1.0f;
+		this.opIndex(3) = 0.0f;
 		return;
 	}
 
@@ -33,6 +33,21 @@ struct Quaternion(Type = float)
 		{
 			this.opIndex(index) = xyzw[index];
 		}
+		return;
+	}
+
+	this(in Vector!(3, Type) axis, in Type angle) pure nothrow @nogc @safe
+	{
+		if (axis.norm == Type(0.0))
+		{
+			this.identify();
+			return;
+		}
+		static foreach (index; 0 .. 3)
+		{
+			this.opIndex(index) = axis.unit[index] * sin(angle / 2);
+		}
+		this.opIndex(3) = cos(angle / 2);
 		return;
 	}
 
@@ -58,12 +73,32 @@ struct Quaternion(Type = float)
 
 	@property ref inout(Type[3]) xyz() inout pure nothrow @nogc @safe
 	{
-		return this.data[0..3];
+		return this.data[0 .. 3];
 	}
 
 	@property ref inout(Type[4]) xyzw() inout pure nothrow @nogc @safe
 	{
 		return this.data;
+	}
+
+	@property Type norm() const pure nothrow @nogc @safe
+	{
+		return sqrt(this[0].pow(2) + this[1].pow(2) + this[2].pow(2) + this[3].pow(2));
+	}
+
+	@property Quaternion!Type unit() const pure nothrow @nogc @safe
+	{
+		return devide(this, this.norm);
+	}
+
+	@property Quaternion!Type conjugate() const pure nothrow @nogc @safe
+	{
+		return Quaternion!Type(-this.x, -this.y, -this.z, +this.w);
+	}
+
+	@property Quaternion!Type inverse() const pure nothrow @nogc @safe
+	{
+		return this.conjugate / (this.norm * this.norm);
 	}
 
 	bool opEquals(in typeof(this) rhs) const pure nothrow @nogc @safe
@@ -72,11 +107,6 @@ struct Quaternion(Type = float)
 			&& isClose(this.y, rhs.y, 1e-5, 1e-5)
 			&& isClose(this.z, rhs.z, 1e-5, 1e-5)
 			&& isClose(this.w, rhs.w, 1e-5, 1e-5);
-	}
-
-	@property Type norm() pure nothrow @nogc @safe
-	{
-		return sqrt(this[0].pow(2) + this[1].pow(2) + this[2].pow(2) + this[3].pow(2));
 	}
 
 	ref inout(Type) opIndex(size_t index) inout pure nothrow @nogc @safe
@@ -96,11 +126,6 @@ struct Quaternion(Type = float)
 		}
 	}
 
-	typeof(this) unit() pure nothrow @nogc @safe
-	{
-		return this / this.norm;
-	}
-
 	typeof(this) opBinary(string op : "+")(in Quaternion!Type rhs)
 	{
 		return add(this, rhs);
@@ -111,7 +136,7 @@ struct Quaternion(Type = float)
 		return subtract(this, rhs);
 	}
 
-	typeof(this) opBinary(string op : "*")(in Quaternion!Type rhs)
+	typeof(this) opBinary(string op : "*")(in Quaternion!Type rhs) inout pure nothrow @nogc @safe
 	{
 		return multiply(this, rhs);
 	}
@@ -119,6 +144,11 @@ struct Quaternion(Type = float)
 	typeof(this) opBinary(string op : "*")(in Type rhs)
 	{
 		return multiply(this, rhs);
+	}
+
+	typeof(this) opBinary(string op : "*")(in Vector!(4, Type) vec)
+	{
+		return vec.rotate_by(this);
 	}
 
 	typeof(this) opBinary(string op : "/")(in Type rhs)
@@ -131,16 +161,67 @@ struct Quaternion(Type = float)
 		return hashOf(this.data);
 	}
 
+	static Quaternion!Type identity(Type)()
+	{
+		return Quaternion!Type(0.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	typeof(this) identify() pure nothrow @nogc @safe
+	{
+		this.x = 0.0f;
+		this.y = 0.0f;
+		this.z = 0.0f;
+		this.w = 1.0f;
+		return this;
+	}
+
+	Vector!(3, Type) opCast(T : Vector!(3, Type))() const pure nothrow @nogc @safe
+	{
+		return this.to_vec();
+	}
+
+	Vector!(3, Type) to_vec() const pure nothrow @nogc @safe
+	{
+		return Vector!(3, Type)(this.x, this.y, this.z);
+	}
+
+	Matrix!(3, 3, Type) to_matrix() const pure nothrow @nogc @safe
+	{
+		return Matrix!(3, 3, Type)(
+			[
+			[
+				this.x * this.x - this.y * this.y - this.z * this.z + this.w * this.w,
+				Type(2.0) * (this.x * this.y - this.z * this.w),
+				Type(2.0) * (this.x * this.z + this.y * this.w),
+			],
+			[
+				Type(2.0) * (this.x * this.y + this.z * this.w),
+				-this.x * this.x + this.y * this.y - this.z * this.z + this.w * this.w,
+				Type(2.0) * (this.y * this.z - this.x * this.w),
+			],
+			[
+				Type(2.0) * (this.x * this.z - this.y * this.w),
+				Type(2.0) * (this.y * this.z + this.x * this.w),
+				-this.x * this.x - this.y * this.y + this.z * this.z + this.w * this.w,
+
+			
+
+		]]
+		);
+	}
+
 	string to_string()
 	{
 		import std.conv;
-		return text("(x,y,z,w): (",this.x,", ",this.y,", ",this.z,", ",this.w,")");
+
+		return text("(x,y,z,w): (", this.x, ", ", this.y, ", ", this.z, ", ", this.w, ")");
 	}
 
 	string to_string_raw()
 	{
 		import std.conv;
-		return text("float[4]: (",this[0],", ",this[1],", ",this[2],", ",this[3],")");
+
+		return text("float[4]: (", this[0], ", ", this[1], ", ", this[2], ", ", this[3], ")");
 	}
 }
 
@@ -176,22 +257,21 @@ Quaternion!Type multiply(Type)(
 ) pure nothrow @nogc @safe
 {
 	return Quaternion!Type(
-		+(lhs.w * rhs.x) + (lhs.z * rhs.y) - (lhs.y * rhs.z) + (lhs.x * rhs.w),
-		+(lhs.w * rhs.y) - (lhs.z * rhs.x) + (lhs.y * rhs.w) + (lhs.x * rhs.z),
-		+(lhs.w * rhs.z) + (lhs.z * rhs.w) + (lhs.y * rhs.x) - (lhs.x * rhs.y),
-		+(lhs.w * rhs.w) - (lhs.z * rhs.z) - (lhs.y * rhs.y) - (lhs.x * rhs.x),
+		+(lhs.w * rhs.x) + (lhs.x * rhs.w) + (lhs.y * rhs.z) - (lhs.z * rhs.y),
+		+(lhs.w * rhs.y) - (lhs.x * rhs.z) + (lhs.y * rhs.w) + (lhs.z * rhs.x),
+		+(lhs.w * rhs.z) + (lhs.x * rhs.y) - (lhs.y * rhs.x) + (lhs.z * rhs.w),
+		+(lhs.w * rhs.w) - (lhs.x * rhs.x) - (lhs.y * rhs.y) - (lhs.z * rhs.z),
 	);
 }
 
 unittest
 {
-	Quaternion!float quat_w = Quaternion!float(0f, 0f, 0f, 1f);
-	Quaternion!float quat_i = Quaternion!float(0f, 0f, 1f, 0f);
+	Quaternion!float quat_i = Quaternion!float(1f, 0f, 0f, 0f);
 	Quaternion!float quat_j = Quaternion!float(0f, 1f, 0f, 0f);
-	Quaternion!float quat_k = Quaternion!float(1f, 0f, 0f, 0f);
-	
+	Quaternion!float quat_k = Quaternion!float(0f, 0f, 1f, 0f);
+	Quaternion!float quat_w = Quaternion!float(0f, 0f, 0f, 1f);
 	// i^2 == j^2 == k^2 == -1f
-	assert(quat_i * quat_i == -quat_w);	
+	assert(quat_i * quat_i == -quat_w);
 	assert(quat_j * quat_j == -quat_w);
 	assert(quat_k * quat_k == -quat_w);
 	// (quat_a * w_1) == (w_1 * quat_a)  == quat_a 
@@ -208,7 +288,6 @@ unittest
 	assert(quat_j * quat_i == -quat_k);
 	assert(quat_k * quat_j == -quat_i);
 	assert(quat_i * quat_k == -quat_j);
-
 }
 
 Quaternion!Type multiply(Type)(
@@ -235,4 +314,42 @@ Quaternion!Type devide(Type)(
 		lhs.z / rhs,
 		lhs.w / rhs,
 	);
+}
+
+/+Quaternion!Type from_axis_angle(Type)(Vector!(3, Type) axis, Type angle)
+{
+	static foreach (index; 0 .. 3)
+	{
+		this.opIndex(index) = axis.unit[index] * sin(angle/2);
+	}
+	this.opIndex(3) = cos(angle/2);
+	return Quaternion!Type(axis.x,cos(angle/2));
+}+/
+
+Vector!(3, Type) rotate_by(Type)(
+	in Vector!(3, Type) vec,
+	in Quaternion!Type quat,
+) pure nothrow @nogc @safe
+{
+	return (quat * Quaternion!Type(vec) * quat.conjugate)
+		.to_vec();
+}
+
+unittest
+{
+	import std.math;
+
+	Quaternion!float quat_x, quat_y, quat_z;
+	Vector!(3, float) vec_x, vec_y, vec_z;
+	quat_x = Quaternion!float(Vec3(1.0f, 0.0f, 0.0f), PI / 2);
+	quat_y = Quaternion!float(Vec3(0.0f, 1.0f, 0.0f), PI / 2);
+	quat_z = Quaternion!float(Vec3(0.0f, 0.0f, 1.0f), PI / 2);
+
+	vec_x = Vec3(1.0f, 0.0f, 0.0f);
+	vec_y = Vec3(0.0f, 1.0f, 0.0f);
+	vec_z = Vec3(0.0f, 0.0f, 1.0f);
+
+	assert(vec_x.rotate_by(quat_x) == vec_x);
+	assert(vec_x.rotate_by(quat_y) == -vec_z);
+	assert(vec_x.rotate_by(quat_z) == vec_y);
 }
