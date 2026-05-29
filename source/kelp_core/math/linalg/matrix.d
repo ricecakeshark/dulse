@@ -521,13 +521,24 @@ in (Size != 0)
 	return temp_mat;
 }
 // 
-Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_list) pure nothrow @nogc @safe
+Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_list...) pure nothrow @nogc @safe
 {
 	Matrix!(Size, Size) temp;
 	temp.fill(0.0f);
 	foreach (count; 0 .. Size)
 	{
 		temp[count, count] = value_list[count];
+	}
+	return temp;
+}
+
+Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type value) pure nothrow @nogc @safe
+{
+	Matrix!(Size, Size) temp;
+	temp.fill(0.0f);
+	foreach (count; 0 .. Size)
+	{
+		temp[count, count] = value;
 	}
 	return temp;
 }

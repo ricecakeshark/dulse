@@ -63,24 +63,6 @@ struct Vector(size_t Length, Type = float)
 		return Vector!(Length, Type)(this.data[].map!(x => -x)
 				.staticArray!(Type[Length]));
 	}
-	// Vector * 2.0
-	typeof(this) opBinary(string op : "*")(in Type scalar) inout pure nothrow @nogc @safe
-	{
-		return multiply(this, scalar);
-	}
-	// Vector / 2.0
-	typeof(this) opBinary(string op : "/")(in Type scalar) inout pure nothrow @nogc @safe
-	{
-		return devide(this, scalar);
-	}
-	/+
-	typeof(this) opBinary(string op : "/")(const double scalar) const pure nothrow @nogc @safe
-	{
-		return Vector!(Length)(
-			this.data[].map!(x => x / scalar)
-				.staticArray!(Type[Length])
-		);
-	}+/
 	// Vector(Length) + Vector(Length)
 	typeof(this) opBinary(string op : "+", size_t Length2, Type2)(
 		in Vector!(Length2, Type2) rhs) inout pure nothrow @nogc @safe
@@ -95,7 +77,7 @@ struct Vector(size_t Length, Type = float)
 	{
 		return subtract(this, rhs);
 	}
-	// return Vector * Vector
+	// Vector * Vector
 	typeof(this) opBinary(string op : "*", size_t Length2, Type2)(
 		in Vector!(Length2, Type2) rhs
 	) inout pure nothrow @nogc @safe
@@ -103,7 +85,24 @@ struct Vector(size_t Length, Type = float)
 	{
 		return cross_product(this, rhs);
 	}
-	// return Matrix * Vector
+
+	// Vector * Scalar
+	typeof(this) opBinary(string op : "*")(in Type scalar) inout pure nothrow @nogc @safe
+	{
+		return multiply(this, scalar);
+	}
+	// Scalar * Vector
+	typeof(this) opBinaryRight(string op : "*")(in Type scalar) inout pure nothrow @nogc @safe
+	{
+		return multiply(this, scalar);
+	}
+	// Vector / Scalar
+	typeof(this) opBinary(string op : "/")(in Type scalar) inout pure nothrow @nogc @safe
+	{
+		return devide(this, scalar);
+	}
+
+	// Matrix * Vector
 	typeof(this) opBinaryRight(string op : "*", M:
 		Matrix!(Row, Col, MatT), size_t Row, size_t Col, MatT)(M mat) inout pure nothrow @nogc @safe
 	{
@@ -226,6 +225,23 @@ struct Vector(size_t Length, Type = float)
 			temp_matrix.data[count][$ - 1u] = this.data[count];
 		}
 		return temp_matrix;
+	}
+
+	ref typeof(this) opOpAssign(string op)(in typeof(this) rhs) pure nothrow @nogc @safe
+	{
+		static if (op == "+")
+		{
+			this = this.opBinary!("+")(rhs);
+		}
+		else static if (op == "-")
+		{
+			this = this.opBinary!("-")(rhs);
+		}
+		else
+		{
+			static assert(false, "the operator is not implemented.");
+		}
+		return this;
 	}
 }
 
