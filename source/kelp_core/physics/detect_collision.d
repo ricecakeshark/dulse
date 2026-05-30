@@ -5,14 +5,23 @@ import kelp_core.physics;
 import std.exception;
 import std.math;
 
-CollideManifold detect_collision(ref Body lhs, ref Body rhs) pure @safe
+CollideManifold detect_collision(ref Body lhs, ref Body rhs) //pure @safe
+in
+{
+	assert(!lhs.position.contain_nan);
+	assert(!rhs.position.contain_nan);
+	assert(lhs.pos != rhs.pos);
+}
+do
 {
 	CollideManifold manifold;
-	scope Vec3 delta = rhs.pos - lhs.pos;
-	scope float dist = distance(lhs.pos, rhs.pos);
+	scope Vec3 delta;
+	scope float dist, penetrate;
+	delta = rhs.pos - lhs.pos;
+	dist = distance(lhs.pos, rhs.pos);
 	enforce(!dist.isNaN);
-	scope float penetrate = (lhs.shape!Sphere.radius + rhs.shape!Sphere.radius) - dist;
-	enforce(!penetrate.isNaN);
+	penetrate = (lhs.shape!Sphere.radius + rhs.shape!Sphere.radius) - dist;
+
 	if (penetrate > 0)
 	{
 		manifold.hit = true;

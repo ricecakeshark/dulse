@@ -37,7 +37,12 @@ struct Vector(size_t Length, Type = float)
 		return assign_array;
 	}
 
-	Type norm() const pure nothrow @nogc @safe
+	@property bool contain_nan() const pure nothrow @nogc @safe
+	{
+		return this.data[].any!(x => x.isNaN);
+	}
+
+	@property Type norm() const pure nothrow @nogc @safe
 	{
 		return this.data[].map!(x => x.pow(2)).sum().sqrt();
 	}

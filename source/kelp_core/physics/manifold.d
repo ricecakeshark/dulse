@@ -8,11 +8,11 @@ struct CollideManifold
 	float penetration;
 	Vector!(3, float) normal;
 	Vector!(3, float) point;
-	
-	this(bool hit, float penetration)
+
+	/+this(bool hit, float penetration)
 	{
 		this.hit = hit;
 		this.penetration = penetration;
 		return;
-	}
+	}+/
 }

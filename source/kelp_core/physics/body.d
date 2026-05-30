@@ -11,12 +11,12 @@ struct Body
 	Vec3 position;
 	Vec3 velocity = Vec3(0.0f, 0.0f, 0.0f);
 	float inverse_mass;
-	float restitution;
+	float restitution = 1.0;
 
-	this(Shape shape, Vec3 pos, float inverse_mass = 1.0) pure nothrow @nogc @safe
+	this(Shape shape, Vec3 position, float inverse_mass = 1.0) pure nothrow @nogc @safe
 	{
 		this._shape = shape;
-		this.position = pos;
+		this.position = position;
 		this.velocity = Vec3(0.0f, 0.0f, 0.0f);
 		this.inverse_mass = inverse_mass;
 		this.restitution = 1.0;
