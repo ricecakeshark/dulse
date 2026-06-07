@@ -1,12 +1,12 @@
-module kelp_core.event.event;
+module kelp_core.input.input_subsystem;
 
 //import kelp_api;
 import kelp_core.core;
-import kelp_core.event;
+import kelp_core.input;
 
 alias Poller = Event[]delegate();
 
-class EventSubsystem : Subsystem
+class InputSubsystem : Subsystem
 {
 	MonoPool!(Event) pool;
 	Event[]delegate() poll_dlg;

@@ -1,4 +1,4 @@
-module kelp_core.event.desc;
+module kelp_core.input.desc;
 
 struct Event
 {

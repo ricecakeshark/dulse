@@ -16,7 +16,7 @@ final class Core
 		this.subsystem = new SubsystemPool();
 		subsystem.append(new LoggerSubsystem(this));
 		subsystem.append(new TimerSubsystem(this));
-		subsystem.append(new EventSubsystem(this));
+		subsystem.append(new InputSubsystem(this));
 		subsystem.append(new DeviceSubsystem(this));
 		return;
 	}

@@ -1,6 +1,6 @@
-module kelp_core.event.handler;
+module kelp_core.input.handler;
 
-import kelp_core.event;
+import kelp_core.input;
 import std.algorithm;
 
 struct Handler
