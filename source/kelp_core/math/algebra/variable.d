@@ -6,6 +6,11 @@ struct Variable
 {
 	string variable;
 
+	ref inout(string) name() return inout pure nothrow @nogc @safe
+	{
+		return this.variable;
+	}
+
 	string to_string() const pure nothrow @nogc @safe
 	{
 		return this.variable;

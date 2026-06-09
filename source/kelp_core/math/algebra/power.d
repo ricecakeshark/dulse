@@ -6,8 +6,32 @@ import std.conv : to;
 
 struct Power
 {
-	Variable variable;
+	Variable _variable;
 	real exponent = 1.0;
+
+	this(Variable variable, real exponent) pure nothrow @nogc @safe
+	{
+		this._variable = variable;
+		this.exponent = exponent;
+		return;
+	}
+
+	this(string variable, real exponent) pure nothrow @nogc @safe
+	{
+		this._variable = Variable(variable);
+		this.exponent = exponent;
+		return;
+	}
+
+	@property ref inout(Variable) variable() return inout pure nothrow @nogc @safe
+	{
+		return this._variable;
+	}
+
+	@property ref inout(string) name() return inout pure nothrow @nogc @safe
+	{
+		return _variable.name;
+	}
 
 	@property double degree() const pure nothrow @nogc @safe
 	{
@@ -16,12 +40,11 @@ struct Power
 
 	string to_string() const pure @safe
 	{
-
 		return this.variable.to_string ~ "^" ~ to!string(exponent);
 	}
 
 	real apply(Type)(Type[string] parameter) const pure nothrow @nogc @safe
 	{
-		return variable.apply!Type(parameter).pow(exponent);
+		return this._variable.apply!Type(parameter).pow(exponent);
 	}
 }
