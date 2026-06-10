@@ -2,13 +2,14 @@ module kelp_core.math.algebra.monomial;
 
 import kelp_core.math.algebra;
 import std.math : cmp, isClose;
+import std.algorithm : sort, SwapStrategy;
 import std.array : Appender, appender;
 import std.conv : to;
 
 struct Monomial(Type)
 {
-	Power[] power_list;
 	Type coefficient;
+	Power[] power_list;
 
 	this(Monomial!Type mono) pure nothrow @nogc @safe
 	{
@@ -20,6 +21,13 @@ struct Monomial(Type)
 	this(Type coefficient, Power[] power_list...) pure nothrow @nogc @safe
 	{
 		this.coefficient = coefficient;
+		this.power_list = power_list;
+		return;
+	}
+
+	this(Power[] power_list...) pure nothrow @nogc @safe
+	{
+		this.coefficient = 1.0;
 		this.power_list = power_list;
 		return;
 	}
@@ -68,6 +76,12 @@ struct Monomial(Type)
 		return degree_max;
 	}
 
+	ref typeof(this) normalize()
+	{
+		this.power_list.sort!((a, b) => kelp_core.math.algebra.power.compare(a, b) > 0);
+		return this;
+	}
+
 	Type apply(Type[string] applier) const pure nothrow @nogc @safe
 	{
 		scope Type product;
@@ -77,11 +91,6 @@ struct Monomial(Type)
 			product = product * power.apply(applier);
 		}
 		return product;
-	}
-
-	bool opEqauls(in Monomial!Type rhs)
-	{
-		return equal(this, rhs);
 	}
 
 	Monomial!Type integrate(string variable) pure nothrow @safe
@@ -121,11 +130,21 @@ struct Monomial(Type)
 		}
 		return buffer[];
 	}
+
+	bool opEqauls(in Monomial!Type rhs)
+	{
+		return equal(this, rhs);
+	}
 }
 // helper
 Monomial!Type monomial(Type)(Type coefficient, Power[] power_list...) pure nothrow @nogc @safe
 {
 	return Monomial!Type(coefficient, power_list);
+}
+
+Monomial!Type monomial(Type = real)(Power[] power_list...) pure nothrow @nogc @safe
+{
+	return Monomial!Type(power_list);
 }
 
 bool equal(Type)(in Monomial!Type lhs, in Monomial!Type rhs) pure nothrow @nogc @safe
@@ -135,7 +154,11 @@ bool equal(Type)(in Monomial!Type lhs, in Monomial!Type rhs) pure nothrow @nogc 
 
 int compare(Type)(in Monomial!Type lhs, in Monomial!Type rhs) pure nothrow @nogc @safe
 {
-	return (lhs.degree < rhs.degree) ? +1 : -1;
+	if (lhs.degree != rhs.degree)
+	{
+		return (lhs.degree > rhs.degree) ? +1 : -1;
+	}
+	return 0;
 }
 
 unittest
@@ -155,4 +178,19 @@ unittest
 	writeln("f(x) = ", mono.to_string);
 	writeln("f(x) dx = ", mono.integrate("x").to_string);
 	writeln("f(x) d/dx = ", mono.differentiate("x").to_string);
+
+	auto mono_2 = monomial(
+		3.0L,
+		Power("x", 2.0),
+		Power("x", 3.0),
+		Power("z", 1.0),
+		Power("y", 1.0),
+		Power("y", 2.0),
+		Power("x", 1.0),
+	);
+	mono_2.normalize.to_string.writeln();
+	assert(mono_2.powers == [
+			Power("x", 1.0), Power("x", 2.0), Power("x", 3.0),
+			Power("y", 1.0), Power("y", 2.0), Power("z", 1.0),
+		]);
 }

@@ -36,9 +36,13 @@ struct Polynomial(Type)
 		return degree_max;
 	}
 
-	ref typeof(this) normalize() pure nothrow @nogc @safe
+	ref typeof(this) normalize() pure @safe
 	{
-		monomial_list.sort!((a, b) => compare(a, b) < 0);
+		monomial_list.sort!((a, b) => compare(a, b) > 0);
+		foreach (mono; monomial_list)
+		{
+			mono.normalize();
+		}
 		return this;
 	}
 
@@ -88,9 +92,9 @@ unittest
 {
 	Polynomial!real nomial;
 	nomial = polynomial(
-		monomial(3.3L, Power(Variable("x"), 1.0L)),
-		monomial(1.1L, Power(Variable("x"), 3.0L)),
-		monomial(2.2L, Power(Variable("x"), 2.0L)),
+		monomial(3.3L, Power("x", 1.0L)),
+		monomial(1.1L, Power("x", 3.0L)),
+		monomial(2.2L, Power("x", 2.0L)),
 	);
 	nomial.normalize();
 	import std.stdio;

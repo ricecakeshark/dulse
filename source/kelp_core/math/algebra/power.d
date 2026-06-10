@@ -48,3 +48,16 @@ struct Power
 		return this._variable.apply!Type(parameter).pow(exponent);
 	}
 }
+
+int compare(in Power lhs, in Power rhs) pure nothrow @nogc @safe
+{
+	if (lhs.name != rhs.name)
+	{
+		return (lhs.name < rhs.name) ? +1 : -1;
+	}
+	if (lhs.degree != rhs.degree)
+	{
+		return (lhs.degree < rhs.degree) ? +1 : -1;
+	}
+	return 0;
+}
