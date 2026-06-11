@@ -170,14 +170,8 @@ unittest
 	assert(mono.apply(["x": 2.0L]) == 12.0);
 	assert(mono.apply(["x": 3.0L]) == 27.0);
 
-	import std.stdio;
-
 	assert(mono.integrate("x") == Monomial!real(1.0, Power("x", 3.0)));
 	assert(mono.differentiate("x") == Monomial!real(6.0, Power("x", 1.0)));
-
-	writeln("f(x) = ", mono.to_string);
-	writeln("f(x) dx = ", mono.integrate("x").to_string);
-	writeln("f(x) d/dx = ", mono.differentiate("x").to_string);
 
 	auto mono_2 = monomial(
 		3.0L,
@@ -188,9 +182,9 @@ unittest
 		Power("y", 2.0),
 		Power("x", 1.0),
 	);
-	mono_2.normalize.to_string.writeln();
-	assert(mono_2.powers == [
+	assert(mono_2.normalize.powers == [
 			Power("x", 1.0), Power("x", 2.0), Power("x", 3.0),
-			Power("y", 1.0), Power("y", 2.0), Power("z", 1.0),
+			Power("y", 1.0), Power("y", 2.0),
+			Power("z", 1.0),
 		]);
 }
