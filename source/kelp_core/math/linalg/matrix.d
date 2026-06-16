@@ -317,14 +317,21 @@ unittest
 	assert(mat_a.transpose() == Matrix!(2, 2)([[1.0f, 3.0f], [2.0f, 4.0f]]));
 	assert(mat_b.transpose() == [[5.0f, 7.0f], [6.0f, 8.0f]]);
 }
-
+// calculate adjugate matrix(2x2)
+Matrix!(2, 2) adjugate(Type)(in Matrix!(2, 2, Type) mat) pure nothrow @nogc @safe
+{
+	return Matrix!(2, 2, Type)([
+		[+mat[1, 1], -mat[0, 1]],
+		[-mat[1, 0], +mat[0, 0]],
+	]);
+}
+// calculate determinant matrix(2x2)
 Type determinant(Type)(in Matrix!(2, 2, Type) mat) pure nothrow @nogc @safe
 {
 	return mat[0, 0] * mat[1, 1] - mat[1, 0] * mat[0, 1];
 }
-
-// inverse matrix 2x2
-Matrix!(2, 2) inverse(Type)(in Matrix!(2, 2, Type) mat) pure nothrow
+// calculate inverse matrix(2x2)
+Matrix!(2, 2) invert(Type)(in Matrix!(2, 2, Type) mat) pure nothrow @nogc @safe
 in (mat.determinant != 0.0)
 {
 	Type det;
@@ -346,10 +353,12 @@ unittest
 		[5.0f, 6.0f],
 		[7.0f, 8.0f],
 	];
-	assert(mat_a.determinant == -2.0f);
-	assert(mat_b.determinant == -2.0f);
-	assert(mat_a.inverse() == Matrix!(2, 2)([[-2.0f, +1.0f], [+1.5f, -0.5f]]));
-	assert(mat_b.inverse() == [[-4.0f, +3.0f], [+3.5f, -2.5f]]);
+	assert(mat_a.determinant == -2.0);
+	assert(mat_b.determinant == -2.0);
+	assert(mat_a.adjugate() == Matrix!(2, 2)([[4.0, -2.0], [-3.0, 1.0]]));
+	assert(mat_b.adjugate() == [[8.0, -6.0], [-7.0, 5.0]]);
+	assert(mat_a.invert() == Matrix!(2, 2)([[-2.0f, +1.0], [+1.5, -0.5]]));
+	assert(mat_b.invert() == [[-4.0, +3.0], [+3.5f, -2.5]]);
 }
 // adjugate 3x3
 Matrix!(3, 3) adjugate(Type)(in Matrix!(3, 3, Type) mat) pure nothrow @nogc @safe
@@ -383,7 +392,7 @@ Type determinant(Type)(in Matrix!(3, 3, Type) mat) pure nothrow @nogc @safe
 		- (mat[0, 1] * mat[1, 0] * mat[2, 2]);
 }
 // inverse matrix 3x3
-Matrix!(3, 3) inverse(Type)(in Matrix!(3, 3, Type) mat) pure nothrow @nogc @safe
+Matrix!(3, 3) invert(Type)(in Matrix!(3, 3, Type) mat) pure nothrow @nogc @safe
 {
 	return mat.adjugate / mat.determinant;
 }
@@ -391,9 +400,9 @@ Matrix!(3, 3) inverse(Type)(in Matrix!(3, 3, Type) mat) pure nothrow @nogc @safe
 unittest
 {
 	Matrix!(3, 3) mat = Matrix!(3, 3)([
-		[1.0f, 2.0f, 2.0f,],
-		[2.0f, 1.0f, 3.0f,],
-		[1.0f, 3.0f, 3.0f,],
+		[1.0, 2.0, 2.0,],
+		[2.0, 1.0, 3.0,],
+		[1.0, 3.0, 3.0,],
 	]);
 	assert(mat.determinant == -2.0);
 	assert(mat.adjugate == Matrix!(3, 3)([
@@ -402,7 +411,7 @@ unittest
 			[5.0, -1.0, -3.0,],
 		])
 	);
-	assert(mat.inverse() == Matrix!(3, 3)([
+	assert(mat.invert() == Matrix!(3, 3)([
 			[+3.0, 0.0, -2.0],
 			[+1.5, -0.5, -0.5,],
 			[-2.5, +0.5, +1.5,],
@@ -512,7 +521,7 @@ Matrix!(4, 4, Type) adjugate(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nog
 	return mat_adj;
 }
 
-Type determinant(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nogc
+Type determinant(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nogc @safe
 {
 	return mat[0, 0] * mat[1, 1] * mat[2, 2] * mat[3, 3]
 		+ mat[0, 0] * mat[1, 2] * mat[2, 3] * mat[3, 1]
@@ -540,7 +549,7 @@ Type determinant(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nogc
 		- mat[0, 3] * mat[1, 2] * mat[2, 0] * mat[3, 1];
 }
 
-Matrix!(4, 4, Type) invert(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nogc
+Matrix!(4, 4, Type) invert(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nogc @safe
 {
 	return mat.adjugate / mat.determinant;
 }
