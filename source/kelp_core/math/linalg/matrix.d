@@ -86,19 +86,6 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return ret_vec;
 	}
 
-	@property Type determinant()() const pure nothrow @nogc @safe
-	if (Row == Col)
-	{
-		static if (Row == 2 && Col == 2)
-		{
-			return (this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1]);
-		}
-		else
-		{
-			assert(0);
-		}
-	}
-
 	typeof(this.data) opAssign(in Type[Col][Row] assign_matrix) pure nothrow @safe
 	{
 		this.data = assign_matrix;
@@ -217,7 +204,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		}
 		return true;
 	}
-
+	// Matrix + Matrix
 	Matrix!(Row, Col, Type) opBinary(
 		string op : "+", size_t RhsRow, size_t RhsCol, RhsType,
 	)(
@@ -228,7 +215,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	{
 		return add(this, rhs);
 	}
-
+	// Matrix - Matrix
 	Matrix!(Row, Col, Type) opBinary(
 		string op : "-", size_t RhsRow, size_t RhsCol, RhsType,
 	)(
@@ -239,17 +226,24 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	{
 		return subtract(this, rhs);
 	}
-
+	// Matrix * Matrix
 	Matrix!(Row, Col2, Type) opBinary(string op : "*", size_t Row2, size_t Col2)(
 		in Matrix!(Row2, Col2, Type) rhs) const pure nothrow @nogc @safe
 	{
 		return multiply!(Matrix!(Row, Col, Type), Matrix!(Row2, Col2, Type))(this, rhs);
 	}
-
+	// Matrix * 2.0
 	Matrix!(Row, Col, Type) opBinary(string op : "*")(
 		in Type rhs) const pure nothrow @nogc @safe
 	{
 		return multiply!(Matrix!(Row, Col, Type))(this, rhs);
+	}
+	// Matrix / 2.0
+	Matrix!(Row, Col, Type) opBinary(string op : "/")(
+		in Type rhs) const pure nothrow @nogc @safe
+	in (!rhs.isClose(0.0))
+	{
+		return devide!(Matrix!(Row, Col, Type))(this, rhs);
 	}
 
 	Vector!(Row, Type) opBinary(string op : "*")(
@@ -286,6 +280,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return hashOf(this.data);
 	}
 }
+
 // transpose matrix
 Matrix!(Row, Col, Type) transpose(
 M : Matrix!(Row, Col, Type),
@@ -302,52 +297,9 @@ M : Matrix!(Row, Col, Type),
 	}
 	return result_matrix;
 }
-// inverse matrix 2x2
-Matrix!(2, 2) inverse(Type)(in Matrix!(2, 2, Type) mat) pure nothrow
-in (mat.determinant != 0.0)
-{
-	Type det;
-	det = mat[0, 0] * mat[1, 1] - mat[1, 0] * mat[0, 1];
-	return Matrix!(2, 2, Type)([
-		[+mat[1, 1], -mat[0, 1]],
-		[-mat[1, 0], +mat[0, 0]],
-	]) * (1.0 / det);
-}
-// inverse matrix 3x3
-Matrix!(3, 3) inverse(Type)(in Matrix!(3, 3, Type) mat) pure nothrow
-{
-	Type det;
-	det = mat[0, 0] * mat[1, 1] * mat[2, 2]
-		+ (mat[0, 1] * mat[1, 2] * mat[2, 0])
-		+ (mat[0, 2] * mat[1, 0] * mat[2, 1])
-		- (mat[0, 2] * mat[1, 1] * mat[2, 0])
-		- (mat[0, 0] * mat[1, 2] * mat[2, 1])
-		- (mat[0, 1] * mat[1, 0] * mat[2, 2]);
-	return Matrix!(3, 3, Type)(
-		[
-		[
-			mat[1, 1] * mat[2, 2] - mat[1, 2] * mat[2, 1],
-			mat[0, 2] * mat[2, 1] - mat[0, 1] * mat[2, 2],
-			mat[0, 1] * mat[1, 2] - mat[0, 2] * mat[1, 1],
-		],
-		[
-			mat[1, 2] * mat[2, 0] - mat[1, 0] * mat[2, 2],
-			mat[0, 0] * mat[2, 2] - mat[0, 2] * mat[2, 0],
-			mat[0, 2] * mat[1, 0] - mat[0, 0] * mat[1, 2],
-		],
-		[
-			mat[1, 0] * mat[2, 1] - mat[1, 1] * mat[2, 0],
-			mat[0, 1] * mat[2, 0] - mat[0, 0] * mat[2, 1],
-			mat[0, 0] * mat[1, 1] - mat[0, 1] * mat[1, 0],
-		],
-	]
-	) * (1.0 / det);
-}
 
 unittest
 {
-	import std.stdio;
-
 	Matrix!(2, 2) mat_a, mat_b;
 	mat_a = [
 		[1.0f, 2.0f],
@@ -364,24 +316,256 @@ unittest
 
 	assert(mat_a.transpose() == Matrix!(2, 2)([[1.0f, 3.0f], [2.0f, 4.0f]]));
 	assert(mat_b.transpose() == [[5.0f, 7.0f], [6.0f, 8.0f]]);
+}
+
+Type determinant(Type)(in Matrix!(2, 2, Type) mat) pure nothrow @nogc @safe
+{
+	return mat[0, 0] * mat[1, 1] - mat[1, 0] * mat[0, 1];
+}
+
+// inverse matrix 2x2
+Matrix!(2, 2) inverse(Type)(in Matrix!(2, 2, Type) mat) pure nothrow
+in (mat.determinant != 0.0)
+{
+	Type det;
+	det = mat[0, 0] * mat[1, 1] - mat[1, 0] * mat[0, 1];
+	return Matrix!(2, 2, Type)([
+		[+mat[1, 1], -mat[0, 1]],
+		[-mat[1, 0], +mat[0, 0]],
+	]) * (1.0 / det);
+}
+
+unittest
+{
+	Matrix!(2, 2) mat_a, mat_b;
+	mat_a = [
+		[1.0f, 2.0f],
+		[3.0f, 4.0f],
+	];
+	mat_b = [
+		[5.0f, 6.0f],
+		[7.0f, 8.0f],
+	];
 	assert(mat_a.determinant == -2.0f);
 	assert(mat_b.determinant == -2.0f);
 	assert(mat_a.inverse() == Matrix!(2, 2)([[-2.0f, +1.0f], [+1.5f, -0.5f]]));
 	assert(mat_b.inverse() == [[-4.0f, +3.0f], [+3.5f, -2.5f]]);
-	assert(Matrix!(3, 3)(
-			[
-				[1.0f, 2.0f, 2.0f],
-				[2.0f, 1.0f, 3.0f],
-				[1.0f, 3.0f, 3.0f],
-			]
-	).inverse() == Matrix!(3, 3)(
+}
+// adjugate 3x3
+Matrix!(3, 3) adjugate(Type)(in Matrix!(3, 3, Type) mat) pure nothrow @nogc @safe
+{
+	return Matrix!(3, 3, Type)([
 		[
+			mat[1, 1] * mat[2, 2] - mat[1, 2] * mat[2, 1],
+			mat[0, 2] * mat[2, 1] - mat[0, 1] * mat[2, 2],
+			mat[0, 1] * mat[1, 2] - mat[0, 2] * mat[1, 1],
+		],
+		[
+			mat[1, 2] * mat[2, 0] - mat[1, 0] * mat[2, 2],
+			mat[0, 0] * mat[2, 2] - mat[0, 2] * mat[2, 0],
+			mat[0, 2] * mat[1, 0] - mat[0, 0] * mat[1, 2],
+		],
+		[
+			mat[1, 0] * mat[2, 1] - mat[1, 1] * mat[2, 0],
+			mat[0, 1] * mat[2, 0] - mat[0, 0] * mat[2, 1],
+			mat[0, 0] * mat[1, 1] - mat[0, 1] * mat[1, 0],
+		],
+	]);
+}
+// determinant 3x3
+Type determinant(Type)(in Matrix!(3, 3, Type) mat) pure nothrow @nogc @safe
+{
+	return mat[0, 0] * mat[1, 1] * mat[2, 2]
+		+ (mat[0, 1] * mat[1, 2] * mat[2, 0])
+		+ (mat[0, 2] * mat[1, 0] * mat[2, 1])
+		- (mat[0, 2] * mat[1, 1] * mat[2, 0])
+		- (mat[0, 0] * mat[1, 2] * mat[2, 1])
+		- (mat[0, 1] * mat[1, 0] * mat[2, 2]);
+}
+// inverse matrix 3x3
+Matrix!(3, 3) inverse(Type)(in Matrix!(3, 3, Type) mat) pure nothrow @nogc @safe
+{
+	return mat.adjugate / mat.determinant;
+}
+
+unittest
+{
+	Matrix!(3, 3) mat = Matrix!(3, 3)([
+		[1.0f, 2.0f, 2.0f,],
+		[2.0f, 1.0f, 3.0f,],
+		[1.0f, 3.0f, 3.0f,],
+	]);
+	assert(mat.determinant == -2.0);
+	assert(mat.adjugate == Matrix!(3, 3)([
+			[-6.0, 0.0, 4.0,],
+			[-3.0, 1.0, 1.0,],
+			[5.0, -1.0, -3.0,],
+		])
+	);
+	assert(mat.inverse() == Matrix!(3, 3)([
 			[+3.0, 0.0, -2.0],
 			[+1.5, -0.5, -0.5,],
-			[-2.5, +0.5, +1.5],
-		]
-	)
+			[-2.5, +0.5, +1.5,],
+		])
 	);
+}
+// adjugate
+Matrix!(4, 4, Type) adjugate(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nogc @safe
+{
+	Matrix!(4, 4, Type) mat_adj;
+	mat_adj[0, 0] = mat[1, 1] * mat[2, 2] * mat[3, 3]
+		+ mat[1, 2] * mat[2, 3] * mat[3, 1]
+		+ mat[1, 3] * mat[2, 1] * mat[3, 2]
+		- mat[1, 1] * mat[2, 3] * mat[3, 2]
+		- mat[1, 2] * mat[2, 1] * mat[3, 3]
+		- mat[1, 3] * mat[2, 2] * mat[3, 1];
+	mat_adj[0, 1] = mat[0, 1] * mat[2, 3] * mat[3, 2]
+		+ mat[0, 2] * mat[2, 1] * mat[3, 3]
+		+ mat[0, 3] * mat[2, 2] * mat[3, 1]
+		- mat[0, 1] * mat[2, 2] * mat[3, 3]
+		- mat[0, 2] * mat[2, 3] * mat[3, 1]
+		- mat[0, 3] * mat[2, 1] * mat[3, 2];
+	mat_adj[0, 2] = mat[0, 1] * mat[1, 2] * mat[3, 3]
+		+ mat[0, 2] * mat[1, 3] * mat[3, 1]
+		+ mat[0, 3] * mat[1, 1] * mat[3, 2]
+		- mat[0, 1] * mat[1, 3] * mat[3, 2]
+		- mat[0, 2] * mat[1, 1] * mat[3, 3]
+		- mat[0, 3] * mat[1, 2] * mat[3, 1];
+	mat_adj[0, 3] = mat[0, 1] * mat[1, 3] * mat[2, 2]
+		+ mat[0, 2] * mat[1, 1] * mat[2, 3]
+		+ mat[0, 3] * mat[1, 2] * mat[2, 1]
+		- mat[0, 1] * mat[1, 2] * mat[2, 3]
+		- mat[0, 2] * mat[1, 3] * mat[2, 1]
+		- mat[0, 3] * mat[1, 1] * mat[2, 2];
+	mat_adj[1, 0] = mat[1, 0] * mat[2, 3] * mat[3, 2]
+		+ mat[1, 2] * mat[2, 0] * mat[3, 3]
+		+ mat[1, 3] * mat[2, 2] * mat[3, 0]
+		- mat[1, 0] * mat[2, 2] * mat[3, 3]
+		- mat[1, 2] * mat[2, 3] * mat[3, 0]
+		- mat[1, 3] * mat[2, 0] * mat[3, 2];
+	mat_adj[1, 1] = mat[0, 0] * mat[2, 2] * mat[3, 3]
+		+ mat[0, 2] * mat[2, 3] * mat[3, 0]
+		+ mat[0, 3] * mat[2, 0] * mat[3, 2]
+		- mat[0, 0] * mat[2, 3] * mat[3, 2]
+		- mat[0, 2] * mat[2, 0] * mat[3, 3]
+		- mat[0, 3] * mat[2, 2] * mat[3, 0];
+	mat_adj[1, 2] = mat[0, 0] * mat[1, 3] * mat[3, 2]
+		+ mat[0, 2] * mat[1, 0] * mat[3, 3]
+		+ mat[0, 3] * mat[1, 2] * mat[3, 0]
+		- mat[0, 0] * mat[1, 2] * mat[3, 3]
+		- mat[0, 2] * mat[1, 3] * mat[3, 0]
+		- mat[0, 3] * mat[1, 0] * mat[3, 2];
+	mat_adj[1, 3] = mat[0, 0] * mat[1, 2] * mat[2, 3]
+		+ mat[0, 2] * mat[1, 3] * mat[2, 0]
+		+ mat[0, 3] * mat[1, 0] * mat[2, 2]
+		- mat[0, 0] * mat[1, 3] * mat[2, 2]
+		- mat[0, 2] * mat[1, 0] * mat[2, 3]
+		- mat[0, 3] * mat[1, 2] * mat[2, 0];
+	mat_adj[2, 0] = mat[1, 0] * mat[2, 1] * mat[3, 3]
+		+ mat[1, 1] * mat[2, 3] * mat[3, 0]
+		+ mat[1, 3] * mat[2, 0] * mat[3, 1]
+		- mat[1, 0] * mat[2, 3] * mat[3, 1]
+		- mat[1, 1] * mat[2, 0] * mat[3, 3]
+		- mat[1, 3] * mat[2, 1] * mat[3, 0];
+	mat_adj[2, 1] = mat[0, 0] * mat[2, 3] * mat[3, 1]
+		+ mat[0, 1] * mat[2, 0] * mat[3, 3]
+		+ mat[0, 3] * mat[2, 1] * mat[3, 0]
+		- mat[0, 0] * mat[2, 1] * mat[3, 3]
+		- mat[0, 1] * mat[2, 3] * mat[3, 0]
+		- mat[0, 3] * mat[2, 0] * mat[3, 1];
+	mat_adj[2, 2] = mat[0, 0] * mat[1, 1] * mat[3, 3]
+		+ mat[0, 1] * mat[1, 3] * mat[3, 0]
+		+ mat[0, 3] * mat[1, 0] * mat[3, 1]
+		- mat[0, 0] * mat[1, 3] * mat[3, 1]
+		- mat[0, 1] * mat[1, 0] * mat[3, 3]
+		- mat[0, 3] * mat[1, 1] * mat[3, 0];
+	mat_adj[2, 3] = mat[0, 0] * mat[1, 3] * mat[2, 1]
+		+ mat[0, 1] * mat[1, 0] * mat[2, 3]
+		+ mat[0, 3] * mat[1, 1] * mat[2, 0]
+		- mat[0, 0] * mat[1, 1] * mat[2, 3]
+		- mat[0, 1] * mat[1, 3] * mat[2, 0]
+		- mat[0, 3] * mat[1, 0] * mat[2, 1];
+	mat_adj[3, 0] = mat[1, 0] * mat[2, 2] * mat[3, 1]
+		+ mat[1, 1] * mat[2, 0] * mat[3, 2]
+		+ mat[1, 2] * mat[2, 1] * mat[3, 0]
+		- mat[1, 0] * mat[2, 1] * mat[3, 2]
+		- mat[1, 1] * mat[2, 2] * mat[3, 0]
+		- mat[1, 2] * mat[2, 0] * mat[3, 1];
+	mat_adj[3, 1] = mat[0, 0] * mat[2, 1] * mat[3, 2]
+		+ mat[0, 1] * mat[2, 2] * mat[3, 0]
+		+ mat[0, 2] * mat[2, 0] * mat[3, 1]
+		- mat[0, 0] * mat[2, 2] * mat[3, 1]
+		- mat[0, 1] * mat[2, 0] * mat[3, 2]
+		- mat[0, 2] * mat[2, 1] * mat[3, 0];
+	mat_adj[3, 2] = mat[0, 0] * mat[1, 2] * mat[3, 1]
+		+ mat[0, 1] * mat[1, 0] * mat[3, 2]
+		+ mat[0, 2] * mat[1, 1] * mat[3, 0]
+		- mat[0, 0] * mat[1, 1] * mat[3, 2]
+		- mat[0, 1] * mat[1, 2] * mat[3, 0]
+		- mat[0, 2] * mat[1, 0] * mat[3, 1];
+	mat_adj[3, 3] = mat[0, 0] * mat[1, 1] * mat[2, 2]
+		+ mat[0, 1] * mat[1, 2] * mat[2, 0]
+		+ mat[0, 2] * mat[1, 0] * mat[2, 1]
+		- mat[0, 0] * mat[1, 2] * mat[2, 1]
+		- mat[0, 1] * mat[1, 0] * mat[2, 2]
+		- mat[0, 2] * mat[1, 1] * mat[2, 0];
+	return mat_adj;
+}
+
+Type determinant(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nogc
+{
+	return mat[0, 0] * mat[1, 1] * mat[2, 2] * mat[3, 3]
+		+ mat[0, 0] * mat[1, 2] * mat[2, 3] * mat[3, 1]
+		+ mat[0, 0] * mat[1, 3] * mat[2, 1] * mat[3, 2]
+		+ mat[0, 1] * mat[1, 0] * mat[2, 3] * mat[3, 2]
+		+ mat[0, 1] * mat[1, 2] * mat[2, 0] * mat[3, 3]
+		+ mat[0, 1] * mat[1, 3] * mat[2, 2] * mat[3, 0]
+		+ mat[0, 2] * mat[1, 0] * mat[2, 1] * mat[3, 3]
+		+ mat[0, 2] * mat[1, 1] * mat[2, 3] * mat[3, 0]
+		+ mat[0, 2] * mat[1, 3] * mat[2, 0] * mat[3, 1]
+		+ mat[0, 3] * mat[1, 0] * mat[2, 2] * mat[3, 1]
+		+ mat[0, 3] * mat[1, 1] * mat[2, 0] * mat[3, 2]
+		+ mat[0, 3] * mat[1, 2] * mat[2, 1] * mat[3, 0]
+		- mat[0, 0] * mat[1, 1] * mat[2, 3] * mat[3, 2]
+		- mat[0, 0] * mat[1, 2] * mat[2, 1] * mat[3, 3]
+		- mat[0, 0] * mat[1, 3] * mat[2, 2] * mat[3, 1]
+		- mat[0, 1] * mat[1, 0] * mat[2, 2] * mat[3, 3]
+		- mat[0, 1] * mat[1, 2] * mat[2, 3] * mat[3, 0]
+		- mat[0, 1] * mat[1, 3] * mat[2, 0] * mat[3, 2]
+		- mat[0, 2] * mat[1, 0] * mat[2, 3] * mat[3, 1]
+		- mat[0, 2] * mat[1, 1] * mat[2, 0] * mat[3, 3]
+		- mat[0, 2] * mat[1, 3] * mat[2, 1] * mat[3, 0]
+		- mat[0, 3] * mat[1, 0] * mat[2, 1] * mat[3, 2]
+		- mat[0, 3] * mat[1, 1] * mat[2, 2] * mat[3, 0]
+		- mat[0, 3] * mat[1, 2] * mat[2, 0] * mat[3, 1];
+}
+
+Matrix!(4, 4, Type) invert(Type)(in Matrix!(4, 4, Type) mat) pure nothrow @nogc
+{
+	return mat.adjugate / mat.determinant;
+}
+
+unittest
+{
+	Matrix!(4, 4) mat = Matrix!(4, 4)([
+		[2.0, 1.0, 0.0, 3.0,],
+		[0.0, 3.0, 1.0, 4.0,],
+		[0.0, 0.0, 5.0, 2.0,],
+		[0.0, 0.0, 0.0, 1.0,],
+	]);
+	assert(mat.determinant == 30.0);
+	assert(mat.adjugate == [
+			[15.0, -5.0, 1.0, -27.0,],
+			[0.0, 10.0, -2.0, -36.0,],
+			[0.0, 0.0, 6.0, -12.0,],
+			[0.0, 0.0, 0.0, 30.0,],
+		]);
+	assert(mat.invert == [
+			[1.0 / 2, -1.0 / 6, +1.0 / 30, -9.0 / 10,],
+			[0.0, 1.0 / 3.0, -1.0 / 15, -6.0 / 5,],
+			[0.0, 0.0, 1.0 / 5, -2.0 / 5,],
+			[0.0, 0.0, 0.0, 1.0,],
+		]);
 }
 
 // add Matrix (Mat + Mat)
@@ -471,6 +655,25 @@ M1 : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type
 		foreach (row; 0 .. Row)
 		{
 			result_matrix[row, col] *= rhs;
+		}
+	}
+	return result_matrix;
+}
+
+// devide matrix and scalar (Matrix / 2.0)
+Matrix!(Row, Col, Type) devide(
+M1 : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type
+)(
+	in M1 lhs, in Type rhs
+) pure nothrow @nogc @safe
+{
+	Matrix!(Row, Col, Type) result_matrix;
+	result_matrix = lhs;
+	foreach (col; 0 .. Col)
+	{
+		foreach (row; 0 .. Row)
+		{
+			result_matrix[row, col] /= rhs;
 		}
 	}
 	return result_matrix;
