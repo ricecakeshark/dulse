@@ -42,6 +42,13 @@ struct VertexPNU
 	Vec2 uv;
 }
 
+struct VertexPNC
+{
+	Vec3 pos;
+	Vec3 normal;
+	ColorF color;
+}
+
 unittest
 {
 	Vertex!(Vector!(3), ColorF) vertex;

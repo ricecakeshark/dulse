@@ -122,11 +122,11 @@ struct GfxMesh
 	typeof(this) set(G : GfxGeometry!(V, I), V, I)(G[] geometry_list)
 	in
 	{
-		assert(geometry_list.size_vertex!(G) <= this.capacity_vertex, 
-			text(geometry_list.size_vertex!(G), this.capacity_vertex)
+		assert(geometry_list.size_vertex!(G) <= this.capacity_vertex,
+			text(geometry_list.size_vertex!(G), ">", this.capacity_vertex)
 		);
 		assert(geometry_list.size_index!(G) <= this.capacity_index,
-			text(geometry_list.size_index!(G), this.capacity_index)
+			text(geometry_list.size_index!(G), ">", this.capacity_index)
 		);
 	}
 	do
