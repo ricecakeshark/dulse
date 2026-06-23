@@ -97,6 +97,10 @@ unittest
 		monomial(2.2L, Power("x", 2.0L)),
 	);
 	nomial.normalize();
+	assert(nomial[0] == monomial(1.1L, Power("x", 3.0L)));
+	assert(nomial[1] == monomial(2.2L, Power("x", 2.0L)));
+	assert(nomial[2] == monomial(3.3L, Power("x", 1.0L)));
+	/+
 	import std.stdio;
 
 	writeln("F(x) = ", nomial.to_string());
@@ -105,4 +109,5 @@ unittest
 	writeln("F(3) = ", nomial.apply(["x": 3.0]));
 	writeln("F(4) = ", nomial.apply(["x": 4.0]));
 	writeln("F(5) = ", nomial.apply(["x": 5.0]));
+	+/
 }

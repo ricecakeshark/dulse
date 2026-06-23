@@ -19,17 +19,17 @@ struct GfxGeometry(V, I)
 	}
 	// property
 	// size
-	@property size_t size() pure nothrow @nogc @safe
+	@property size_t size() const pure nothrow @nogc @safe
 	{
 		return this.size_vertex + this.size_index;
 	}
 
-	@property size_t size_vertex() pure nothrow @nogc @safe
+	@property size_t size_vertex() const pure nothrow @nogc @safe
 	{
 		return V.sizeof * this._vertex_list.length;
 	}
 
-	@property size_t size_index() pure nothrow @nogc @safe
+	@property size_t size_index() const pure nothrow @nogc @safe
 	{
 		return I.sizeof * this._index_list.length;
 	}
@@ -72,6 +72,11 @@ struct GfxGeometry(V, I)
 	@property ref I[] indices() pure nothrow @nogc @safe
 	{
 		return this._index_list;
+	}
+	// state of them
+	@property bool has_empty() const pure nothrow @nogc @safe
+	{
+		return (this.size_vertex == 0 && this.size_index == 0 ) ? true : false;
 	}
 
 	GfxGeometry!(V, I) opAssign(V, I)(GfxGeometry!(V, I) geometry)
