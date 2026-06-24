@@ -1,6 +1,6 @@
 module kelp_core.math.geometry.plane;
 
-import kelp_core.math;
+import kelp_core.math.linalg;
 
 struct Plane
 {

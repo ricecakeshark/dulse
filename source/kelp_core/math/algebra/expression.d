@@ -6,19 +6,9 @@ import std.stdio;
 import std.sumtype;
 
 auto number_regex = ctRegex!(`^[0-9]+\.([0-9]+)?`);
-//auto number_regex = ctRegex!(`^[0-9]+\.([0-9]+)?`);
 
-/+struct Expression
-{
-
-	this()
-	{
-
-	}	
-}+/
-
-alias Expression = SumType!(Constant,Variable,Add,Mul,Pow);
-alias Atom = SumType!(Constant,Variable);
+alias Expression = SumType!(Constant, Variable, Add, Mul, Pow);
+alias Atom = SumType!(Constant, Variable);
 
 struct Add
 {
@@ -45,10 +35,6 @@ struct Variable
 	string variable;
 }
 
-
-
-
-
 Polynomial!real expression(string expr)
 {
 	Polynomial!real poly;
@@ -62,7 +48,6 @@ Polynomial!real expression(string expr)
 			str ~= result.hit;
 		}
 	}
-
 	return poly;
 }
 /+

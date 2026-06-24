@@ -1,7 +1,10 @@
 module kelp_core.core.container.interfaced_pool;
 
 import kelp_core.core.container.pool;
-import std.array, std.algorithm, std.range;
+import std.array : array;
+import std.algorithm : any, count, filter, map;
+
+//import std.range;
 
 struct InterfacedPool(Interface)
 {
@@ -68,6 +71,11 @@ struct InterfacedPool(Interface)
 	}
 
 	Type query(Type)() pure nothrow @safe
+	in
+	{
+		assert(this.pool.any!(item => cast(Type) item !is null), "the Type not found");
+	}
+	do
 	{
 		return this.pool
 			.filter!(item => cast(Type) item !is null)()
@@ -134,11 +142,11 @@ unittest
 	class C2 : IC
 	{
 	}
+
 	class C3 : IC
 	{
 
 	}
-	
 
 	C1 a = new C1();
 	C2 b = new C2();

@@ -7,24 +7,24 @@ struct RotationVector(Type)
 {
 	Vector!(3, Type) rot_vec;
 
-	this(Type[3] xyz...)
+	this(Type[3] xyz...) pure nothrow @nogc @safe
 	{
 		this.rot_vec = Vector!(3, Type)(xyz);
 		return;
 	}
 
-	this(Vector!(3, Type) vec...)
+	this(Vector!(3, Type) vec...) pure nothrow @nogc @safe
 	{
 		this.rot_vec = vec;
 		return;
 	}
 
-	Vector!(3, Type) opBinary(string op : "*")(in Vector!(3, Type) rhs) const
+	Vector!(3, Type) opBinary(string op : "*")(in Vector!(3, Type) rhs) const pure nothrow @nogc @safe
 	{
 		return rotate(rhs, this);
 	}
 
-	Matrix!(3, 3) to_matrix()
+	Matrix!(3, 3) to_matrix() pure nothrow @nogc @safe
 	{
 		scope float theta = rot_vec.norm;
 		scope Vector!(3, Type) axis = rot_vec.unit;

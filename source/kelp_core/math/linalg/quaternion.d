@@ -2,6 +2,7 @@ module kelp_core.math.linalg.quaternion;
 
 import kelp_core.math.linalg;
 import std.math;
+import std.conv : text;
 
 struct Quaternion(Type = float)
 {
@@ -209,16 +210,12 @@ struct Quaternion(Type = float)
 
 	string to_string() const pure @safe
 	{
-		import std.conv;
-
 		return text("(x,y,z,w): (", this.x, ", ", this.y, ", ", this.z, ", ", this.w, ")");
 	}
 
 	string to_string_raw() const pure @safe
 	{
-		import std.conv;
-
-		return text("float[4]: (", this[0], ", ", this[1], ", ", this[2], ", ", this[3], ")");
+		return text("float[4]: (", this, ")");
 	}
 }
 
@@ -231,7 +228,7 @@ Q2:
 )(
 	in Q1 quat_lhs,
 	in Q2 quat_rhs,
-)
+) pure nothrow @nogc @safe
 {
 	static if (is(LhsType == float) && is(RhsType == float))
 	{
@@ -340,16 +337,6 @@ Quaternion!Type devide(Type)(
 		lhs.w / rhs,
 	);
 }
-
-/+Quaternion!Type from_axis_angle(Type)(Vector!(3, Type) axis, Type angle)
-{
-	static foreach (index; 0 .. 3)
-	{
-		this.opIndex(index) = axis.unit[index] * sin(angle/2);
-	}
-	this.opIndex(3) = cos(angle/2);
-	return Quaternion!Type(axis.x,cos(angle/2));
-}+/
 
 Vector!(3, Type) rotate_by(Type)(
 	in Vector!(3, Type) vec,

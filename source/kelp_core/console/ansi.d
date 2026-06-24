@@ -1,12 +1,10 @@
 module kelp_core.console.ansi;
 
 import kelp_core.core.data;
-import std.algorithm;
-import std.array : join;
+import std.algorithm:map;
+import std.array : array, join;
 import std.conv : to, text;
-import std.format;
-import std.array;
-import std.typecons;
+import std.array : RefAppender,appender;
 
 enum EscapeSequence : string
 {
@@ -104,9 +102,12 @@ struct TextWriter
 
 unittest
 {
-	import std.stdio;
+	//import std.stdio;
 	// fix later
-	//assert(Text("text", ColorU(0, 100, 200), ColorU(200, 100, 0))[] == "\x1b[38;2;0;100;200;48;2;200;100;0mtext\x1b[39;49m");
+	/+assert(
+		TextWriter("text").color(SGRCode.bg_black, SGRCode.bg_white)[]
+		 == "\x1b[38;2;0;100;200;48;2;200;100;0mtext\x1b[39;49m"
+	);+/
 }
 
 // SelectGraphicRenditionCode

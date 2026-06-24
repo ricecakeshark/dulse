@@ -21,12 +21,12 @@ struct VertexPT
 	Vec2 uv;
 }
 
-struct VertexPTC
+/+struct VertexPTC
 {
 	Vec3 pos;
 	Vec2 uv;
 	ColorF color;
-}
+}+/
 
 struct VertexPCT
 {

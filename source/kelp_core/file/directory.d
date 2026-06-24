@@ -1,7 +1,7 @@
 module kelp_core.file.directory;
 
 import kelp_core.file;
-import std.file;
+import std.file : exists, isDir, dirEntries, SpanMode;
 import std.path : isValidPath;
 
 struct Directory

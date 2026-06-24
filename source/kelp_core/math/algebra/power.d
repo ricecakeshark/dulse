@@ -33,9 +33,9 @@ struct Power
 		return _variable.name;
 	}
 
-	@property double degree() const pure nothrow @nogc @safe
+	@property ref inout(real) degree() return inout pure nothrow @nogc @safe
 	{
-		return exponent;
+		return this.exponent;
 	}
 
 	string to_string() const pure @safe

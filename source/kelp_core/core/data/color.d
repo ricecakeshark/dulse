@@ -2,8 +2,6 @@ module kelp_core.core.data.color;
 
 import kelp_core.math.linalg;
 
-import std.numeric;
-import std.algorithm : all, map;
 import std.array : staticArray;
 import std.math : isNaN;
 

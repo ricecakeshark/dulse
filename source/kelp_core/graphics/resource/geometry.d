@@ -11,7 +11,7 @@ struct GfxGeometry(V, I)
 	V[] _vertex_list;
 	I[] _index_list;
 
-	this(V[] vertex_list, I[] index_list)
+	this(V[] vertex_list, I[] index_list) pure nothrow @nogc @safe
 	{
 		this._vertex_list = vertex_list;
 		this._index_list = index_list;
@@ -34,32 +34,32 @@ struct GfxGeometry(V, I)
 		return I.sizeof * this._index_list.length;
 	}
 	// count
-	@property size_t count_vertex() pure nothrow @nogc @safe
+	@property size_t count_vertex() const pure nothrow @nogc @safe
 	{
 		return this._vertex_list.length;
 	}
 
-	@property size_t count_index() pure nothrow @nogc @safe
+	@property size_t count_index() const pure nothrow @nogc @safe
 	{
 		return this._index_list.length;
 	}
 	// offset
-	@property size_t offset_vertex() pure nothrow @nogc @safe
+	@property size_t offset_vertex() const pure nothrow @nogc @safe
 	{
 		return 0;
 	}
 
-	@property size_t offset_index() pure nothrow @nogc @safe
+	@property size_t offset_index() const pure nothrow @nogc @safe
 	{
 		return this.size_vertex;
 	}
 	// stride
-	@property size_t stride_vertex() pure nothrow @nogc @safe
+	@property size_t stride_vertex() const pure nothrow @nogc @safe
 	{
 		return V.sizeof;
 	}
 
-	@property size_t stride_index() pure nothrow @nogc @safe
+	@property size_t stride_index() const pure nothrow @nogc @safe
 	{
 		return I.sizeof;
 	}
@@ -76,17 +76,17 @@ struct GfxGeometry(V, I)
 	// state of them
 	@property bool has_empty() const pure nothrow @nogc @safe
 	{
-		return (this.size_vertex == 0 && this.size_index == 0 ) ? true : false;
+		return (this.size_vertex == 0 && this.size_index == 0) ? true : false;
 	}
 
-	GfxGeometry!(V, I) opAssign(V, I)(GfxGeometry!(V, I) geometry)
+	GfxGeometry!(V, I) opAssign(V, I)(GfxGeometry!(V, I) geometry) pure nothrow @nogc @safe
 	{
 		this._vertex_list = geometry._vertex_list;
 		this._index_list = geometry._index_list;
 		return geometry;
 	}
 
-	typeof(this) set(V, I)(V[] vertices, I[] indices)
+	typeof(this) set(V, I)(V[] vertices, I[] indices) pure nothrow @nogc @safe
 	{
 		this._vertex_list = vertices;
 		this._index_list = indices;
@@ -95,47 +95,47 @@ struct GfxGeometry(V, I)
 }
 // GfxGeometry(V, I)[] funcition
 // size
-size_t size(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t size(G : GfxGeometry!(V, I), V, I)(G[] geometry_list...) pure nothrow @nogc @safe
 {
 	return geometry_list
 		.map!(geometry => geometry.size)
 		.sum();
 }
 
-size_t size_vertex(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t size_vertex(G : GfxGeometry!(V, I), V, I)(G[] geometry_list...) pure nothrow @nogc @safe
 {
 	return geometry_list
 		.map!(geometry => geometry.size_vertex)
 		.sum();
 }
 
-size_t size_index(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t size_index(G : GfxGeometry!(V, I), V, I)(G[] geometry_list...) pure nothrow @nogc @safe
 {
 	return geometry_list
 		.map!(geometry => geometry.size_index)
 		.sum();
 }
 // count
-size_t count_vertex(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t count_vertex(G : GfxGeometry!(V, I), V, I)(G[] geometry_list...) pure nothrow @nogc @safe
 {
 	return geometry_list
 		.map!(geometry => geometry.count_vertex)
 		.sum();
 }
 
-size_t count_index(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t count_index(G : GfxGeometry!(V, I), V, I)(G[] geometry_list...) pure nothrow @nogc @safe
 {
 	return geometry_list
 		.map!(geometry => geometry.count_index)
 		.sum();
 }
 // offset
-size_t offset_vertex(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t offset_vertex(G : GfxGeometry!(V, I), V, I)(G[] geometry_list...) pure nothrow @nogc @safe
 {
 	return 0;
 }
 
-size_t offset_index(G : GfxGeometry!(V, I), V, I)(ref G[] geometry_list)
+size_t offset_index(G : GfxGeometry!(V, I), V, I)(G[] geometry_list...) pure nothrow @nogc @safe
 {
 	return geometry_list.size_vertex;
 }
@@ -146,4 +146,6 @@ unittest
 
 	auto geometry = GfxGeometry!(Vector!(3), uint)([], []);
 	assert(__traits(isPOD, typeof(geometry)));
+
+	assert(size(geometry, geometry, geometry) == 0u);
 }

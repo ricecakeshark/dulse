@@ -1,7 +1,7 @@
 module kelp_core.object.component_storage;
 
 import kelp_core.object;
-import std.exception;
+import std.exception : enforce;
 
 class ComponentStorage
 {
@@ -15,6 +15,15 @@ class ComponentStorage
 	@property IComponentStore[] list_component() pure nothrow @safe
 	{
 		return this.component_store_list.values;
+	}
+
+	bool has(Component)() pure nothrow @nogc @safe
+	{
+		if ((typeid(Component) in this.component_store_list) is null)
+		{
+			return false;
+		}
+		return true;
 	}
 
 	bool has(Component)(Entity entity) pure nothrow @nogc @safe
@@ -135,6 +144,7 @@ class ComponentStorage
 unittest
 {
 	import std.algorithm;
+
 	ComponentStorage storage;
 	Entity[3] entity_list;
 	struct C1
@@ -156,6 +166,8 @@ unittest
 	storage.append!(C1, C2);
 	storage.attach!(C1, C2)(entity_list);
 
+	assert(storage.has!(C1) == true);
+	assert(storage.has!(C2) == true);
 	assert(entity_list[].all!(entity => storage.has!C1(entity)));
 	assert(entity_list[].all!(entity => storage.has!C2(entity)));
 

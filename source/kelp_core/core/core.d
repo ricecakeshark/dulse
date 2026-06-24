@@ -2,8 +2,6 @@ module kelp_core.core.core;
 
 import kelp_core;
 
-//import kelp_api;
-
 final class Core
 {
 	SubsystemPool subsystem;
@@ -14,10 +12,13 @@ final class Core
 	{
 		this.bus = new MessageBus();
 		this.subsystem = new SubsystemPool();
-		subsystem.append(new LoggerSubsystem(this));
-		subsystem.append(new TimerSubsystem(this));
-		subsystem.append(new InputSubsystem(this));
-		subsystem.append(new DeviceSubsystem(this));
+		subsystem.append(
+			new LoggerSubsystem(this),
+			new TimerSubsystem(this),
+			new InputSubsystem(this),
+			new DeviceSubsystem(this),
+			new ObjectSubsystem(this),
+		);
 		return;
 	}
 

@@ -1,6 +1,6 @@
 module kelp_core.device.device_desc;
 
-import kelp_core.math;
+import kelp_core.math : Vector, Vec1, Vec2;
 
 struct ButtonState
 {

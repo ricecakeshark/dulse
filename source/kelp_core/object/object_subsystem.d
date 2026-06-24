@@ -6,7 +6,7 @@ import kelp_core.object;
 class ObjectSubsystem : Subsystem
 {
 	protected Core core;
-	//IObjectManager[] object_manager_list;
+	ObjectManager[] object_manager_list;
 
 	this(Core core)
 	{
@@ -14,12 +14,17 @@ class ObjectSubsystem : Subsystem
 		return;
 	}
 
+	invariant
+	{
+		assert(this !is null);
+	}
+
 	typeof(this) initialize()
 	{
-		/+foreach (manager; object_manager_list)
+		foreach (manager; object_manager_list)
 		{
 			manager.initialize();
-		}+/
+		}
 		return this;
 	}
 
@@ -30,10 +35,26 @@ class ObjectSubsystem : Subsystem
 
 	typeof(this) process()
 	{
-		/+foreach (manager; object_manager_list)
+		foreach (manager; object_manager_list)
 		{
 			manager.process();
-		}+/
+		}
+		return this;
+	}
+
+	typeof(this) create(out ObjectManager manager)
+	{
+		manager = new ObjectManager();
+		this.object_manager_list ~= manager;
+		return this;
+	}
+
+	typeof(this) create(ObjectManager[] manager_list...)
+	{
+		foreach (ref manager; manager_list)
+		{
+			this.create(manager);
+		}
 		return this;
 	}
 }

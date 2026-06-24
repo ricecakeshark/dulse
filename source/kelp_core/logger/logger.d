@@ -24,10 +24,7 @@ struct Logger
 		string log_text,
 		LogLevel log_level,
 		LogFlags log_flags = LogFlags.time,
-		string file = __FILE__,
-		size_t line = __LINE__,
-		string func = __FUNCTION__,
-		string mod = __MODULE__,
+		LogState state = LogState.here,
 	)
 	{
 		DateTime now = cast(DateTime) Clock.currTime();
@@ -49,7 +46,7 @@ struct Logger
 		{
 			Text(format!"%4s : "("file"))
 				.color(color_header, color_body)[].write();
-			Text(format!"%s(%d)"(file, line,))
+			Text(format!"%s(%d)"(state.file, state.line,))
 				.color(color_header, color_body)[].writeln();
 		}
 		// func
@@ -57,7 +54,7 @@ struct Logger
 		{
 			Text(format!"%4s : "("func"))
 				.color(color_header, color_body)[].write();
-			Text(format!"%s(%d)"(func, line,))
+			Text(format!"%s(%d)"(state.func, state.line,))
 				.color(color_header, color_body)[].writeln();
 		}
 		// module
@@ -65,14 +62,14 @@ struct Logger
 		{
 			Text(format!"%4s : "("mod"))
 				.color(color_header, color_body)[].write();
-			Text(format!"%s(%d)"(mod, line,))
+			Text(format!"%s(%d)"(state.mod, state.line,))
 				.color(color_header, color_body)[].writeln();
 		}
 		return this;
 	}
 }
 
-void write_colored_label(out string level_label, in LogLevel log_level) pure nothrow 
+void write_colored_label(out string level_label, in LogLevel log_level) pure nothrow
 {
 	switch (log_level)
 	{

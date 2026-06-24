@@ -3,6 +3,8 @@ module kelp_core.math.linalg.matrix;
 import kelp_core.math.linalg;
 import kelp_core.math.linalg.multiply;
 
+import std.conv : text;
+import std.format : format;
 import std.math;
 
 // Matrix(Row-Major) 
@@ -126,8 +128,6 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 
 	string to_string() const pure @safe
 	{
-		import std.format;
-
 		string return_str = "Matrix";
 		foreach (col; 0 .. Col)
 		{

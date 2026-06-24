@@ -1,6 +1,6 @@
 module kelp_core.math.geometry.box_axis;
 
-import kelp_core.math;
+import kelp_core.math.linalg;
 
 struct AxisBox
 {

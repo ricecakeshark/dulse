@@ -30,18 +30,14 @@ class LoggerSubsystem : Subsystem
 		return this;
 	}
 
-	void log(
+	typeof(this) log(
 		string log_text,
 		LogLevel level = LogLevel.info,
-		LogFlags flags = LogFlags.time,
-		string file = __FILE__,
-		size_t line = __LINE__,
-		string func = __FUNCTION__,
-		string mod = __MODULE__,
+		LogFlags flags = LogFlags.time | LogFlags.mod,
+		LogState state = LogState.here,
 	)
 	{
-		//std.logger.info(log_text, line, file, func);
-		this.logger.log(log_text, level, flags, file, line, func, mod);
-		return;
+		this.logger.log(log_text, level, flags, state);
+		return this;
 	}
 }

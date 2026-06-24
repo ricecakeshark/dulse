@@ -1,7 +1,7 @@
 module kelp_core.object.entity_store;
 
-import std.algorithm;
-import std.exception;
+import std.algorithm : all, any, canFind, countUntil, swapAt;
+import std.exception : enforce;
 
 struct Entity
 {
@@ -84,15 +84,14 @@ class EntityStore
 		return this;
 	}
 
-	typeof(this) release(Entity[] entity_list) pure nothrow @safe
+	typeof(this) release(Entity[] entity_list...) pure nothrow @safe
 	{
-		foreach (entity; entity_list)
+		foreach (ref entity; entity_list)
 		{
 			this.release(entity);
 		}
 		return this;
 	}
-
 }
 
 unittest
@@ -109,5 +108,4 @@ unittest
 	store.release(entity_list[0]);
 	assert(store.count == 2);
 	assert(store.has(entity_list[0]) == false);
-
 }

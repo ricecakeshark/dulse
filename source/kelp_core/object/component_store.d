@@ -18,9 +18,9 @@ interface IComponentStore
 
 	typeof(this) clear() pure nothrow @nogc @safe;
 
-	typeof(this) attach(Entity[] entity_list...) pure nothrow @safe;
+	typeof(this) attach(in Entity[] entity_list...) pure nothrow @safe;
 
-	typeof(this) detach(Entity[]...) pure nothrow @safe;
+	typeof(this) detach(in Entity[]...) pure nothrow @safe;
 }
 
 class ComponentStore(Component) : IComponentStore
@@ -29,7 +29,7 @@ class ComponentStore(Component) : IComponentStore
 	Component[] component_list;
 	Nullable!size_t[] lookup_list;
 
-	@property bool has(Entity entity) pure nothrow @nogc @safe
+	@property bool has(Entity entity) const pure nothrow @nogc @safe
 	{
 		if (entity.index >= lookup_list.length)
 		{
@@ -87,7 +87,7 @@ class ComponentStore(Component) : IComponentStore
 		return this;
 	}
 
-	typeof(this) attach(Entity entity) pure nothrow @safe
+	typeof(this) attach(in Entity entity) pure nothrow @safe
 	{
 		if (this.has(entity))
 		{
@@ -106,7 +106,7 @@ class ComponentStore(Component) : IComponentStore
 		return this;
 	}
 
-	typeof(this) attach(Entity[] entity_list...) pure nothrow @safe
+	typeof(this) attach(in Entity[] entity_list...) pure nothrow @safe
 	{
 		foreach (entity; entity_list)
 		{
@@ -115,7 +115,7 @@ class ComponentStore(Component) : IComponentStore
 		return this;
 	}
 
-	typeof(this) detach(Entity entity) pure nothrow @safe
+	typeof(this) detach(in Entity entity) pure nothrow @safe
 	{
 		if (this.has(entity) == false)
 		{
@@ -126,17 +126,17 @@ class ComponentStore(Component) : IComponentStore
 		{
 			// detach component_list
 			this.component_list.swapAt(lookup(entity), component_list.length - 1u);
-			this.component_list.length -= 1u;
+			this.component_list.length -= 1;
 			// detach lookup_list
 			this.lookup_list[entity.index].nullify();
 			// detach entity_list
 			this.entity_list.swapAt(count, entity_list.length - 1u);
-			this.entity_list.length -= 1u;
+			this.entity_list.length -= 1;
 		}
 		return this;
 	}
 
-	typeof(this) detach(Entity[] entity_list...) pure nothrow @safe
+	typeof(this) detach(in Entity[] entity_list...) pure nothrow @safe
 	{
 		foreach (entity; entity_list)
 		{
@@ -150,13 +150,22 @@ protected:
 	{
 		return lookup_list[cast(size_t) entity.index].get();
 	}
+
+	/+bool try_lookup(Entity entity, out size_t index) pure nothrow @nogc @safe
+	{
+		if (cast(size_t)entity.index !in lookup_list)
+		{
+			return false;
+		}
+		index = lookup_list[cast(size_t) entity.index].get();
+		return true;
+	}+/
 }
 
 unittest
 {
-	import std.algorithm;
-	import std.stdio;
-	import std.exception;
+	import std.algorithm : all;
+	import std.exception : collectException;
 
 	struct C
 	{

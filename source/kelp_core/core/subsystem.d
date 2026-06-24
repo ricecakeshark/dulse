@@ -1,6 +1,5 @@
 module kelp_core.core.subsystem;
 
-//import kelp_api;
 import kelp_core.core;
 import std.array, std.algorithm;
 
@@ -41,8 +40,6 @@ class SubsystemPool
 	{
 		foreach (ref subsystem; subsystem_list)
 		{
-			import std.stdio;
-			writeln("subsystem append");
 			subsystem.initialize();
 			this.pool.append(subsystem);
 		}

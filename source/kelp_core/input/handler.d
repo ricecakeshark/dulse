@@ -1,7 +1,7 @@
 module kelp_core.input.handler;
 
 import kelp_core.input;
-import std.algorithm;
+import std.algorithm : canFind;
 
 struct Handler
 {

@@ -5,11 +5,10 @@ import kelp_core.file;
 import kelp_core.graphics;
 import kelp_core.math;
 
-import std.algorithm;
-import std.array;
-import std.stdio;
-import std.format;
-import std.exception;
+import std.algorithm : startsWith;
+import std.array : split;
+import std.format : formattedRead;
+import std.exception : enforce;
 
 void load_obj(G : GfxGeometry!(V, I), V, I)(
 	FileHandler file,

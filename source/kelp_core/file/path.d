@@ -1,7 +1,7 @@
 module kelp_core.file.path;
 
-import std.array;
-import std.file;
+import std.array : split;
+import std.file : isDir, isFile;
 
 struct Path
 {

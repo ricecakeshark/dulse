@@ -9,8 +9,7 @@ struct DrawCommand
 	@property size_t size() const pure nothrow @nogc
 	{
 		return (DrawCommandIndexedIndirect.sizeof * draw_command_indexed.length)
-			+ (
-				DrawCommandIndirect.sizeof * draw_command.length);
+			+ (DrawCommandIndirect.sizeof * draw_command.length);
 	}
 
 	@property size_t size_command_indexed() const pure nothrow @nogc @safe

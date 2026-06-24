@@ -47,6 +47,11 @@ class ObjectManager
 		return this.component_storage;
 	}
 
+	bool has(Component)() pure nothrow @nogc @safe
+	{
+		return this.component_storage.has!Component();
+	}
+
 	bool has(Component)(Entity entity) pure nothrow @nogc @safe
 	{
 		if (!this.entity_store.has(entity))
@@ -182,6 +187,7 @@ template isStructType(T)
 unittest
 {
 	import std.algorithm;
+
 	ObjectManager manager;
 	Entity[3] entity_list;
 
@@ -200,6 +206,7 @@ unittest
 	assert(manager.component.count_component_store == 0);
 	manager.append_component!(Comp1, Comp2);
 	assert(manager.component.count_component_store == 2);
+	assert(manager.has!Comp1 && manager.has!Comp2);
 	manager.create(entity_list[]);
 	manager.component.attach!(Comp1, Comp2)(entity_list[]);
 	assert(manager.entity.count == 3);

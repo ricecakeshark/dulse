@@ -1,10 +1,10 @@
 module kelp_core.core.container.variant_pool;
 
 import kelp_core.core.container.pool;
-import std.array;
-import std.algorithm;
+import std.array : array;
+import std.algorithm : any, filter, map;
 import std.sumtype;
-import std.traits;
+import std.traits : isArray;
 
 struct VariantPool(TypeList)
 {

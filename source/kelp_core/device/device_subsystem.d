@@ -1,6 +1,6 @@
 module kelp_core.device.device_subsystem;
 
-import kelp_core.core;
+import kelp_core.core.core;
 import kelp_core.core.subsystem;
 import kelp_core.device;
 

@@ -1,6 +1,5 @@
 module kelp_core.input.input_subsystem;
 
-//import kelp_api;
 import kelp_core.core;
 import kelp_core.input;
 

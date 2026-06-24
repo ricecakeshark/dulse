@@ -1,9 +1,12 @@
 module kelp_core.math.linalg.vector;
 
 import kelp_core.math.linalg;
-import std.array;
-import std.algorithm, std.math, std.range;
-import std.range : zip;
+
+import std.algorithm : all, any, map, sum;
+import std.array : staticArray;
+import std.format : format;
+import std.range : iota, zip;
+import std.math : isClose, isNaN, pow, sqrt;
 
 alias Vec1 = Vector!(1, float);
 alias Vec2 = Vector!(2, float);
@@ -70,14 +73,14 @@ struct Vector(size_t Length, Type = float)
 	}
 	// Vector(Length) + Vector(Length)
 	typeof(this) opBinary(string op : "+", size_t Length2, Type2)(
-		in Vector!(Length2, Type2) rhs) inout pure nothrow @nogc @safe
+		in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
 	if (Length2 == Length)
 	{
 		return add(this, rhs);
 	}
 	// Vector(Length) - Vector(Length)
 	typeof(this) opBinary(string op : "-", size_t Length2, Type2)(
-		in Vector!(Length2, Type2) rhs) inout pure nothrow @nogc @safe
+		in Vector!(Length2, Type2) rhs) const pure nothrow @nogc @safe
 	if (Length2 == Length)
 	{
 		return subtract(this, rhs);
@@ -85,31 +88,31 @@ struct Vector(size_t Length, Type = float)
 	// Vector * Vector
 	typeof(this) opBinary(string op : "*", size_t Length2, Type2)(
 		in Vector!(Length2, Type2) rhs
-	) inout pure nothrow @nogc @safe
+	) const pure nothrow @nogc @safe
 	if (Length2 == Length)
 	{
 		return cross_product(this, rhs);
 	}
 
 	// Vector * Scalar
-	typeof(this) opBinary(string op : "*")(in Type scalar) inout pure nothrow @nogc @safe
+	typeof(this) opBinary(string op : "*")(in Type scalar) const pure nothrow @nogc @safe
 	{
 		return multiply(this, scalar);
 	}
 	// Scalar * Vector
-	typeof(this) opBinaryRight(string op : "*")(in Type scalar) inout pure nothrow @nogc @safe
+	typeof(this) opBinaryRight(string op : "*")(in Type scalar) const pure nothrow @nogc @safe
 	{
 		return multiply(this, scalar);
 	}
 	// Vector / Scalar
-	typeof(this) opBinary(string op : "/")(in Type scalar) inout pure nothrow @nogc @safe
+	typeof(this) opBinary(string op : "/")(in Type scalar) const pure nothrow @nogc @safe
 	{
 		return devide(this, scalar);
 	}
 
 	// Matrix * Vector
 	typeof(this) opBinaryRight(string op : "*", M:
-		Matrix!(Row, Col, MatT), size_t Row, size_t Col, MatT)(M mat) inout pure nothrow @nogc @safe
+		Matrix!(Row, Col, MatT), size_t Row, size_t Col, MatT)(M mat) const pure nothrow @nogc @safe
 	{
 		return kelp_core.math.linalg.multiply.multiply!(Matrix!(Row, Col, MatT), Vector!(Length, Type))(mat, this);
 	}
@@ -180,7 +183,6 @@ struct Vector(size_t Length, Type = float)
 
 	string to_string() const pure @safe
 	{
-		import std.format;
 
 		string result_str;
 		foreach (count; 0 .. Length)

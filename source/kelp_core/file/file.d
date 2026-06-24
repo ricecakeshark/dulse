@@ -1,14 +1,11 @@
 module kelp_core.file.file;
 
 import std.datetime : SysTime;
-import std.digest;
 import std.digest.murmurhash;
 import std.exception : enforce;
 import std.file : exists, isFile, isDir, timeLastModified;
 import std.path : baseName, dirName, isValidFilename, isValidPath;
 import std.stdio : File, LockType;
-
-//import std.string;
 
 static MurmurHash3!(128, 64) hasher_murmur;
 
