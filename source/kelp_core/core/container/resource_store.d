@@ -62,24 +62,16 @@ class ResourceStore(ResourceType)
 
 	void release(ResourceType resource)
 	{
-		import std.stdio;
-
 		resource.match!((ref res) { res.release; });
 		return;
 	}
 
 	typeof(this) release_all()
 	{
-		debug import std.stdio;
-
-		debug writeln("release_all begin");
 		foreach_reverse (Type; ResourceType.Types)
 		{
-			debug writefln("releasing : %s", typeid(Type));
-
 			this.release!Type();
 		}
-		debug writeln("release_all finish");
 		return this;
 	}
 }
