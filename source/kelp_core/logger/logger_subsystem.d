@@ -5,7 +5,6 @@ import kelp_core.logger;
 
 class LoggerSubsystem : Subsystem
 {
-	//protected Core core;
 	Logger logger;
 
 	this(Core core)

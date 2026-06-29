@@ -1,10 +1,12 @@
 module kelp_core.console.ansi;
 
 import kelp_core.core.data;
-import std.algorithm:map;
+import std.algorithm : map;
 import std.array : array, join;
 import std.conv : to, text;
-import std.array : RefAppender,appender;
+import std.array : RefAppender, Appender, appender;
+
+import std.stdio;
 
 enum EscapeSequence : string
 {
@@ -12,90 +14,100 @@ enum EscapeSequence : string
 	end = "m",
 }
 
-struct Text
+struct TextWriter
 {
-	string text;
-	string color_fg;
-	string color_bg;
+	RefAppender!string text_writer;
 
-	this(string text) pure nothrow
+	this(ref string text) pure nothrow
 	{
-		this.text = text;
+		//text_ref = appender(&text);
+		this.text_writer = RefAppender!string(&text);
 		return;
-	}
-
-	ref typeof(this) color(SGRCode color_fg, SGRCode color_bg) pure nothrow
-	{
-		this.color_fg = (cast(uint) color_fg).text();
-		this.color_bg = (cast(uint) color_bg).text();
-		return this;
 	}
 
 	string opSlice() pure nothrow
 	{
-		string buf;
-		return TextWriter(buf)
-			.seq(this.color_fg, this.color_bg)
-			.text(this.text)
-			.seq(SGRCode.reset)[].dup;
+		return this.text_writer[].dup;
+	}
+
+	typeof(this) text(string text) pure nothrow
+	{
+		text_writer ~= text;
+		return this;
+	}
+
+	typeof(this) reset() pure nothrow
+	{
+		this.write_seq(text_writer, SGRCode.reset);
+		return this;
+	}
+
+	typeof(this) seq(SGRCode[] sgr_list...) pure nothrow
+	{
+		write_seq(
+			text_writer,
+			sgr_list,
+		);
+		return this;
+	}
+
+	typeof(this) reset_color() pure nothrow
+	{
+		this.write_seq(
+			text_writer, SGRCode.fg_default, SGRCode.bg_default,
+		);
+		return this;
+	}
+
+protected:
+	typeof(this) write_seq(RefAppender!string text_ref, SGRCode[] code_list...) pure nothrow
+	{
+		text_ref ~= cast(string) EscapeSequence.begin;
+		text_ref ~= code_list.map!(seq => (cast(uint) seq).text).array().join(";");
+		text_ref ~= cast(string) EscapeSequence.end;
+		return this;
 	}
 }
 
-struct TextWriter
+struct Text
 {
-	RefAppender!string text_ref;
+	Appender!string text_buffer;
 
-	this(ref string text) pure nothrow
+	this(string text)
 	{
-		text_ref = appender(&text);
+		text_buffer = appender(text);
 		return;
 	}
 
-	string opSlice()() pure nothrow
+	string opIndex()
 	{
-		return text_ref[].dup;
+		return text_buffer[].dup;
 	}
 
-	ref typeof(this) text(string text) pure nothrow
+	typeof(this) reset() pure nothrow
 	{
-		text_ref ~= text;
+		this.write_seq(text_buffer, SGRCode.reset);
 		return this;
 	}
 
-	ref typeof(this) reset() pure nothrow
+	ref typeof(this) text(string[] str_list...)
 	{
-		text_ref ~= cast(string) EscapeSequence.begin;
-		text_ref ~= "0";
-		text_ref ~= cast(string) EscapeSequence.end;
+		this.text_buffer ~= str_list.join();
 		return this;
 	}
 
-	ref typeof(this) seq(string[] sequence_list...) pure nothrow
+	ref typeof(this) seq(SGRCode[] code_list...)
 	{
-		text_ref ~= cast(string) EscapeSequence.begin;
-		text_ref ~= sequence_list.join(";");
-		text_ref ~= cast(string) EscapeSequence.end;
+		this.write_seq(text_buffer, code_list);
 		return this;
 	}
 
-	ref typeof(this) seq(SGRCode[] sgr_list...) pure nothrow
+protected:
+	typeof(this) write_seq(Appender!string text_writer, SGRCode[] code_list...) pure nothrow
 	{
-		text_ref ~= cast(string) EscapeSequence.begin;
-		text_ref ~= sgr_list.map!(sequence => (cast(uint) sequence)
-				.to!string())
-			.array()
-			.join(";");
-		text_ref ~= cast(string) EscapeSequence.end;
-		return this;
-	}
-
-	ref typeof(this) reset_color() pure nothrow
-	{
-		text_ref ~= cast(string) EscapeSequence.begin;
-		text_ref ~= (cast(uint)SGRCode.fg_default).to!string();
-		text_ref ~= ";";
-		text_ref ~= (cast(uint)SGRCode.bg_default).to!string();
-		text_ref ~= cast(string) EscapeSequence.end;
+		text_writer ~= cast(string) EscapeSequence.begin;
+		text_writer ~= code_list.map!(seq => (cast(uint) seq).text).array().join(";");
+		text_writer ~= cast(string) EscapeSequence.end;
 		return this;
 	}
 }
