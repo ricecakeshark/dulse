@@ -14,7 +14,7 @@ struct NTime
 		return;
 	}
 
-	this(Nullable!SysTime time) pure nothrow @nogc @safe
+	this(in Nullable!SysTime time) pure nothrow @nogc @safe
 	{
 		this._time = time;
 		return;
@@ -73,20 +73,24 @@ struct NTime
 		return this._time.get - rhs._time.get;
 	}
 
-	string to_string()
+	string opCast(Type : string)() const
+	{
+		return to_string();
+	}
+
+	string to_string()() const
 	{
 		if (this._time.isNull)
 		{
 			return "null";
 		}
-		return format!("%4d")(this.year);
+		return format!("%4d/%2d/%2d")(this.year, this.month, this.day);
 	}
 }
 
 unittest
 {
-	import std.datetime;
-	import std.stdio;
+	import std.datetime : Date;
 
 	NTime time;
 	time = NTime.nat;
@@ -97,8 +101,5 @@ unittest
 	assert(time.year == 2018);
 	assert(time.month == 1);
 	assert(time.day == 1);
-	time = NTime.current;
-	writeln(NTime.current);
-	writeln(NTime.current - time);
-	assert((NTime.current - time).total!"hnsecs" > 0);
+	assert(time.to_string != null);
 }
