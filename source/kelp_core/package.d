@@ -10,4 +10,4 @@ public import kelp_core.logger;
 public import kelp_core.math;
 public import kelp_core.object;
 public import kelp_core.physics;
-public import kelp_core.timer;
+public import kelp_core.time;

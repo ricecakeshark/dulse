@@ -1,21 +1,17 @@
-module kelp_core.timer.timer;
+module kelp_core.time.time_subsystem;
 
 import kelp_core.core;
-
-//import kelp_api;
-import std.datetime;
+import kelp_core.time;
+import std.datetime : Duration;
 import core.thread;
 
 class TimerSubsystem : Subsystem
 {
 	protected Core core;
-	int target_frame_rate = 60;
-	int min_sleep_dur = 5;
-	int max_sleep_dur = 1000;
 
-	private SysTime begin;
-	protected Duration last_dur_active, last_dur_slept;
-	private SysTime begin_active, begin_sleep;
+	NTime time_start;
+	TimeMeasure measure_active, measure_sleep;
+	Duration dur_active, dur_sleep;
 
 	this(Core core)
 	{
@@ -25,9 +21,8 @@ class TimerSubsystem : Subsystem
 
 	typeof(this) initialize()
 	{
-		begin = Clock.currTime();
-		begin_active = Clock.currTime();
-		begin_sleep = Clock.currTime();
+		time_start = NTime.current;
+		measure_active.start;
 		return this;
 	}
 
@@ -44,27 +39,29 @@ class TimerSubsystem : Subsystem
 
 	@property inout(long) past() inout @safe
 	{
-		return (Clock.currTime() - begin).total!("msecs");
+		return (NTime.current - time_start).total!("msecs");
 	}
 
 	@property inout(long) delta() inout pure nothrow @nogc @safe
 	{
-		return (this.last_dur_active + this.last_dur_slept).total!"msecs";
+		return (this.dur_active + this.dur_sleep).total!"hnsecs";
 	}
 
-	typeof(this) setFrameRate(int target_frame_rate)
+	typeof(this) set_frame_rate(int target_frame_rate)
 	{
-		this.target_frame_rate = target_frame_rate;
+		//this.target_frame_rate = target_frame_rate;
 		return this;
 	}
 
 	typeof(this) sleep()
 	{
-		last_dur_active = Clock.currTime() - begin_active;
-		begin_sleep = Clock.currTime();
+		measure_active.stop;
+		dur_active = measure_active.peek;
+		measure_sleep.start;
 		Thread.sleep(dur!"usecs"(16_000));
-		last_dur_slept = Clock.currTime() - begin_sleep;
-		begin_active = Clock.currTime();
+		measure_sleep.stop;
+		dur_sleep = measure_sleep.peek;
+		measure_active.start;
 		return this;
 	}
 
