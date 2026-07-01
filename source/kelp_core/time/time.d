@@ -20,6 +20,12 @@ struct NTime
 		return;
 	}
 
+	this(string str) @safe
+	{
+		this._time = SysTime.fromISOString(str);
+		return;
+	}
+
 	static typeof(this) current() @safe
 	{
 		return NTime(Clock.currTime);

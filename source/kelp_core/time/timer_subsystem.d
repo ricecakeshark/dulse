@@ -37,14 +37,14 @@ class TimerSubsystem : Subsystem
 		return this;
 	}
 
-	@property inout(long) past() inout @safe
+	@property inout(long) past(string units = "usecs")() inout @safe
 	{
-		return (NTime.current - time_start).total!("msecs");
+		return (NTime.current - time_start).total!units;
 	}
 
-	@property inout(long) delta() inout pure nothrow @nogc @safe
+	@property inout(long) delta(string units = "usecs")() inout pure nothrow @nogc @safe
 	{
-		return (this.dur_active + this.dur_sleep).total!"hnsecs";
+		return (this.dur_active + this.dur_sleep).total!units;
 	}
 
 	typeof(this) set_frame_rate(int target_frame_rate)

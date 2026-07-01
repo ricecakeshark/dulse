@@ -744,13 +744,24 @@ Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_lis
 	return temp;
 }
 
-Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type value) pure nothrow @nogc @safe
+Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(in Type value) pure nothrow @nogc @safe
 {
 	Matrix!(Size, Size) temp;
 	temp.fill(0.0f);
 	foreach (count; 0 .. Size)
 	{
 		temp[count, count] = value;
+	}
+	return temp;
+}
+
+Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(in Vector!(Size, Type) vec) pure nothrow @nogc @safe
+{
+	Matrix!(Size, Size) temp;
+	temp.fill(0.0f);
+	foreach (count; 0 .. Size)
+	{
+		temp[count, count] = vec[count];
 	}
 	return temp;
 }
