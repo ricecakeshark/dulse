@@ -20,7 +20,6 @@ struct TextWriter
 
 	this(ref string text) pure nothrow
 	{
-		//text_ref = appender(&text);
 		this.text_writer = RefAppender!string(&text);
 		return;
 	}
@@ -103,7 +102,7 @@ struct Text
 	}
 
 protected:
-	typeof(this) write_seq(Appender!string text_writer, SGRCode[] code_list...) pure nothrow
+	typeof(this) write_seq(ref Appender!string text_writer, SGRCode[] code_list...) pure nothrow
 	{
 		text_writer ~= cast(string) EscapeSequence.begin;
 		text_writer ~= code_list.map!(seq => (cast(uint) seq).text).array().join(";");
@@ -114,12 +113,10 @@ protected:
 
 unittest
 {
-	//import std.stdio;
-	// fix later
-	/+assert(
-		TextWriter("text").color(SGRCode.bg_black, SGRCode.bg_white)[]
-		 == "\x1b[38;2;0;100;200;48;2;200;100;0mtext\x1b[39;49m"
-	);+/
+	assert(Text("").reset()[] == "\x1b[0m");
+	assert(Text("").seq(SGRCode.fg_default, SGRCode.bg_default)[] == "\x1b[39;49m");
+	assert(Text("").seq(SGRCode.fg_black_bright)[] == "\x1b[90m");
+	assert(Text("").seq(SGRCode.fg_black_bright).text("test").reset()[] == "\x1b[90mtest\x1b[0m");
 }
 
 // SelectGraphicRenditionCode

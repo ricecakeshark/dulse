@@ -33,39 +33,52 @@ struct Logger
 		// time
 		if (log_flags & LogFlags.time)
 		{
-			Text(format!"%4s : "("time"))
-				.seq(color_header, color_body)[]
+			Text()
+				.seq(color_header, color_body)
+				.text(format!"%4s : "("time"))[]
 				.write();
-			Text(Clock.currTime().toISOExtString)
-				.seq(color_header, color_body)[].writeln();
+			Text()
+				.seq(color_header, color_body)
+				.text(Clock.currTime().toISOExtString)[]
+				.writeln();
 		}
 
 		// file
 		if (log_flags & LogFlags.file)
 		{
-			Text(format!"%4s : "("file"))
-				.seq(color_header, color_body)[].write();
-			Text(format!"%s(%d)"(state.file, state.line,))
-				.seq(color_header, color_body)[].writeln();
+			Text()
+				.seq(color_header, color_body)
+				.text(format!"%4s : "("file"))[]
+				.write();
+			Text()
+				.seq(color_header, color_body)
+				.text(format!"%s(%d)"(state.file, state.line,))[]
+				.writeln();
 		}
 
 		// func
 		if (log_flags & LogFlags.func)
 		{
-			Text(format!"%4s : "("func"))
-				.seq(color_header, color_body)[]
+			Text()
+				.seq(color_header, color_body)
+				.text(format!"%4s : "("func"))[]
 				.write();
-			Text(format!"%s(%d)"(state.func, state.line,))
-				.seq(color_header, color_body)[]
+			Text()
+				.seq(color_header, color_body)
+				.text(format!"%s(%d)"(state.func, state.line,))[]
 				.writeln();
 		}
 		// module
 		if (log_flags & LogFlags.mod)
 		{
-			Text(format!"%4s : "("mod"))
-				.seq(color_header, color_body)[].write();
-			Text(format!"%s(%d)"(state.mod, state.line,))
-				.seq(color_header, color_body)[].writeln();
+			Text()
+				.seq(color_header, color_body)
+				.text(format!"%4s : "("mod"))[]
+				.write();
+			Text()
+				.seq(color_header, color_body)
+				.text(format!"%s(%d)"(state.mod, state.line,))[]
+				.writeln();
 		}
 		Text("").reset[].write();
 		return this;
@@ -77,17 +90,17 @@ string colored_label(in LogLevel log_level)
 	final switch (log_level)
 	{
 	case LogLevel.error:
-		return Text()
-			.seq(SGRCode.fg_red)
+		return Text("")
+			.seq(SGRCode.fg_red, SGRCode.bg_default)
 			.text("error")
-			.seq(SGRCode.fg_default)[];
+			.seq(SGRCode.reset)[];
 	case LogLevel.warning:
-		return Text()
+		return Text("")
 			.seq(SGRCode.fg_yellow)
 			.text("warn")
 			.seq(SGRCode.fg_default)[];
 	case LogLevel.success:
-		return Text()
+		return Text("")
 			.seq(SGRCode.fg_green)
 			.text("success")
 			.seq(SGRCode.fg_default)[];
@@ -95,9 +108,9 @@ string colored_label(in LogLevel log_level)
 		return Text("")
 			.seq(SGRCode.fg_cyan)
 			.text("info")
-			.seq(SGRCode.fg_default)[];
+			.seq(SGRCode.reset)[];
 	case LogLevel.none:
-		return Text()
+		return Text("")
 			.seq(SGRCode.fg_white)
 			.text("log")
 			.seq(SGRCode.fg_default)[];
