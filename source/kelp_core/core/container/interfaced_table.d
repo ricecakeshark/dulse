@@ -11,8 +11,8 @@ struct InterfacedTable(I)
 	size_t count() const pure nothrow @nogc @safe
 	{
 		return element_table.byValue
-			.map!(list => list.count())
-			.sum();
+			.joiner()
+			.count();
 	}
 
 	size_t count(Type)() const pure nothrow @nogc @safe
@@ -57,18 +57,16 @@ struct InterfacedTable(I)
 			(*list).any!(elem => elem is element) : false;
 	}
 
-	typeof(this) append(Type)(Type element) pure @safe
-	in (is(Type : I))
+	typeof(this) append(Type)(Type element) pure nothrow @safe
+	in ((cast(I) element) !is null)
 	{
-		assert(cast(I) element !is null);
 		this.element_table[typeid(Type)] ~= element;
 		return this;
 	}
 
 	typeof(this) remove(Type)(Type element)
-	in (is(Type : I))
+	in ((cast(I) element) !is null)
 	{
-		assert(cast(I) element !is null);
 		auto ref list = (*enforce(typeid(Type) in this.element_table));
 		list = std.algorithm.mutation.remove!(elem => elem is element)(list);
 		return this;
