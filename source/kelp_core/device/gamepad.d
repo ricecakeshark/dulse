@@ -121,6 +121,20 @@ enum GamepadAxis
 	right_trigger,
 }
 
+enum GamepadTrigger
+{
+	none = -1,
+	left,
+	right,
+}
+
+enum GamepadStick
+{
+	none = -1,
+	left,
+	right,
+}
+
 enum GamepadType
 {
 	unknown = 0,
