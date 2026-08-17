@@ -29,7 +29,7 @@ class SubsystemPool
 
 	typeof(this) process()
 	{
-		foreach (subsystem; this.pool.all)
+		foreach (ref subsystem; this.pool.all)
 		{
 			subsystem.process();
 		}

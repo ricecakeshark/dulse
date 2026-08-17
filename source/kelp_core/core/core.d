@@ -16,7 +16,6 @@ final class Core
 			new LoggerSubsystem(this),
 			new TimerSubsystem(this),
 			new InputSubsystem(this),
-			new DeviceSubsystem(this),
 			new ObjectSubsystem(this),
 		);
 		return;
