@@ -10,13 +10,16 @@ alias Poller = Event[]delegate();
 
 class InputSubsystem : Subsystem
 {
-	MonoPool!(Event) pool;
+	MonoPool!(Event) event_pool;
 	Event[]delegate() poll_dlg;
+	Keyboard keyboard;
+	GamepadState gamepad;
 	LoggerSubsystem logger;
 
 	this(Core core)
 	{
 		super(core);
+		this.keyboard = new Keyboard();
 		return;
 	}
 
@@ -35,9 +38,12 @@ class InputSubsystem : Subsystem
 	{
 		if (poll_dlg !is null)
 		{
-			this.pool.append(poll_dlg());
+			this.event_pool.append(poll_dlg());
 		}
-		foreach (event; pool.all)
+
+		this.keyboard.process();
+
+		foreach (event; event_pool.all)
 		{
 			switch (event.type.major)
 			{
@@ -46,14 +52,13 @@ class InputSubsystem : Subsystem
 				//core.bus.send(new QuitMessage());
 				break;
 			case EventTypeMajor.keyboard:
-				logger.log(
-					event.data.get!KeyboardKeyEvent().scancode.text()
-				);
+				this.keyboard.apply(event);
 				break;
 			default:
 				break;
 			}
 		}
+		event_pool.clear();
 		return this;
 	}
 

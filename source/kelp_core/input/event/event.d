@@ -7,12 +7,15 @@ import std.sumtype;
 import std.typecons : tuple, Tuple;
 import core.time : MonoTime;
 
-import std.meta:AliasSeq;
+import std.meta : AliasSeq;
 
 alias AnyEvent = SumType!(
 	QuitEvent,
-	WindowEvent,
-	MouseEvent,
+	WindowMaximizedEvent,
+	WindowMinimizedEvent,
+	MouseMotionEvent,
+	MouseButtonEvent,
+	MouseWheelEvent,
 	KeyboardKeyEvent,
 	GamepadEvent,
 );
@@ -23,7 +26,6 @@ alias AllEvent = AliasSeq!(
 	KeyboardKeyEvent,
 	GamepadEvent,
 );
-
 
 alias EventType = Tuple!(
 	EventTypeMajor, "major",
@@ -36,9 +38,14 @@ struct Event
 	EventType type;
 	AnyEvent data;
 
-	Type get(Type)()
+	bool has(Type)() const pure nothrow @nogc @safe
 	{
-		return this.data.get!Type();
+		return this.data.has!Type();
+	}
+
+	inout(Type) get(Type)() inout pure nothrow @nogc @safe
+	{
+		return this.data.get!(inout(Type))();
 	}
 }
 
