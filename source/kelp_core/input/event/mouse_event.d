@@ -1,12 +1,14 @@
 module kelp_core.input.event.mouse_event;
 
-import kelp_core.device;
+import kelp_core.input.device;
 import kelp_core.math.linalg.vector;
 import std.sumtype;
 
 struct MouseEvent
 {
+	uint mouse_id;
 	SumType!(
+		MouseMotionEvent,
 		MouseButtonEvent,
 		MouseWheelEvent,
 	) data;
@@ -14,13 +16,13 @@ struct MouseEvent
 
 struct MouseButtonEvent
 {
-	MouseButton type;
-	bool down;
+	MouseButtonType type;
+	bool downed;
 }
 
 struct MouseWheelEvent
 {
-	Vec1 move;
+	Vec2 move;
 }
 
 struct MouseMotionEvent

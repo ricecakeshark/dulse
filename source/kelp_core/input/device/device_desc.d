@@ -1,4 +1,4 @@
-module kelp_core.device.device_desc;
+module kelp_core.input.device.device_desc;
 
 import kelp_core.math : Vector, Vec1, Vec2;
 

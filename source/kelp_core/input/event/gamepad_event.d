@@ -1,6 +1,6 @@
 module kelp_core.input.event.gamepad_event;
 
-import kelp_core.device;
+import kelp_core.input.device;
 import kelp_core.math.linalg.vector;
 import std.sumtype;
 

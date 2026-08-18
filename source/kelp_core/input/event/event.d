@@ -1,6 +1,5 @@
 module kelp_core.input.event.event;
 
-import kelp_core.device;
 import kelp_core.input;
 import kelp_core.math.linalg.vector;
 import std.sumtype;
@@ -75,6 +74,37 @@ public Event event(Type)(ulong time, Type event_data)
 			AnyEvent(event_data),
 		);
 	}
+	else static if (event_type!(Type).major == EventTypeMajor.mouse)
+	{
+		static if (event_type!Type.minor == EventTypeMinor.mouse_motion)
+		{
+			return Event(
+				cast(MonoTime) time,
+				event_type!Type,
+				AnyEvent(event_data),
+			);
+		}
+		else static if (event_type!Type.minor == EventTypeMinor.mouse_button)
+		{
+			return Event(
+				cast(MonoTime) time,
+				event_type!Type,
+				AnyEvent(event_data),
+			);
+		}
+		else static if (event_type!Type.minor == EventTypeMinor.mouse_wheel)
+		{
+			return Event(
+				cast(MonoTime) time,
+				event_type!Type,
+				AnyEvent(event_data),
+			);
+		}
+		else
+		{
+			assert(false);
+		}
+	}
 	else
 	{
 		assert(false);
@@ -121,6 +151,18 @@ EventType event_type(Type)()
 	else static if (is(Type == KeyboardKeyEvent))
 	{
 		return EventType(EventTypeMajor.keyboard, EventTypeMinor.keyboard_key);
+	}
+	else static if (is(Type == MouseMotionEvent))
+	{
+		return EventType(EventTypeMajor.mouse, EventTypeMinor.mouse_motion);
+	}
+	else static if (is(Type == MouseButtonEvent))
+	{
+		return EventType(EventTypeMajor.mouse, EventTypeMinor.mouse_button);
+	}
+	else static if (is(Type == MouseWheelEvent))
+	{
+		return EventType(EventTypeMajor.mouse, EventTypeMinor.mouse_wheel);
 	}
 	else
 	{

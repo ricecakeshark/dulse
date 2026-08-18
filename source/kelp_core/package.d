@@ -2,7 +2,6 @@ module kelp_core;
 
 public import kelp_core.audio;
 public import kelp_core.core;
-public import kelp_core.device;
 public import kelp_core.file;
 public import kelp_core.graphics;
 public import kelp_core.input;

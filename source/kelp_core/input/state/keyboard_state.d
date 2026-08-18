@@ -1,6 +1,5 @@
 module kelp_core.input.state.keyboard_state;
 
-import kelp_core.device.keyboard;
 import kelp_core.input;
 import kelp_core.core.container.ring_buffer;
 

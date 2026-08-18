@@ -1,6 +1,6 @@
 module kelp_core.input.state.gamepad_state;
 
-import kelp_core.device.gamepad;
+import kelp_core.input;
 import kelp_core.math.linalg.vector;
 
 struct GamepadState

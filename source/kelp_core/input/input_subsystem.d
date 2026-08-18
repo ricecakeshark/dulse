@@ -13,6 +13,7 @@ class InputSubsystem : Subsystem
 	MonoPool!(Event) event_pool;
 	Event[]delegate() poll_dlg;
 	Keyboard keyboard;
+	Mouse mouse;
 	GamepadState gamepad;
 	LoggerSubsystem logger;
 
@@ -20,11 +21,14 @@ class InputSubsystem : Subsystem
 	{
 		super(core);
 		this.keyboard = new Keyboard();
+		this.mouse = new Mouse();
 		return;
 	}
 
 	typeof(this) initialize()
 	{
+		this.keyboard.initialize();
+		this.mouse.initialize();
 		core.subsystem.query(logger);
 		return this;
 	}
@@ -42,6 +46,8 @@ class InputSubsystem : Subsystem
 		}
 
 		this.keyboard.process();
+		this.mouse.process();
+		//this.gamepad.process();
 
 		foreach (event; event_pool.all)
 		{
@@ -53,6 +59,9 @@ class InputSubsystem : Subsystem
 				break;
 			case EventTypeMajor.keyboard:
 				this.keyboard.apply(event);
+				break;
+			case EventTypeMajor.mouse:
+				this.mouse.apply(event);
 				break;
 			default:
 				break;

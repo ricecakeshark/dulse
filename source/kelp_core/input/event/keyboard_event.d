@@ -1,6 +1,6 @@
 module kelp_core.input.event.keyboard_event;
 
-import kelp_core.device;
+import kelp_core.input.device;
 import std.sumtype;
 import core.time : MonoTime;
 
