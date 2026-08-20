@@ -46,8 +46,8 @@ enum GamepadAxis
 	left_y,
 	right_x,
 	right_y,
-	left_trigger,
-	right_trigger,
+	trigger_left,
+	trigger_right,
 }
 
 enum GamepadTrigger

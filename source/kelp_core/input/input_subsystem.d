@@ -11,17 +11,18 @@ alias Poller = Event[]delegate();
 class InputSubsystem : Subsystem
 {
 	MonoPool!(Event) event_pool;
-	Event[]delegate() poll_dlg;
-	Keyboard keyboard;
-	Mouse mouse;
-	GamepadState gamepad;
-	LoggerSubsystem logger;
+	protected Event[]delegate() poll_dlg;
+	public Keyboard keyboard;
+	public Mouse mouse;
+	public Gamepad gamepad;
+	private LoggerSubsystem logger;
 
 	this(Core core)
 	{
 		super(core);
 		this.keyboard = new Keyboard();
 		this.mouse = new Mouse();
+		this.gamepad = new Gamepad();
 		return;
 	}
 
@@ -29,6 +30,7 @@ class InputSubsystem : Subsystem
 	{
 		this.keyboard.initialize();
 		this.mouse.initialize();
+		this.gamepad.initialize();
 		core.subsystem.query(logger);
 		return this;
 	}
@@ -47,7 +49,7 @@ class InputSubsystem : Subsystem
 
 		this.keyboard.process();
 		this.mouse.process();
-		//this.gamepad.process();
+		this.gamepad.process();
 
 		foreach (event; event_pool.all)
 		{
@@ -62,6 +64,9 @@ class InputSubsystem : Subsystem
 				break;
 			case EventTypeMajor.mouse:
 				this.mouse.apply(event);
+				break;
+			case EventTypeMajor.gamepad:
+				this.gamepad.apply(event);
 				break;
 			default:
 				break;

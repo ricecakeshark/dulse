@@ -64,7 +64,8 @@ class Keyboard
 
 struct KeyboardState
 {
-	KeyboardKeyState[Scancode.max] state_dict;
+	uint id;
+	KeyboardKeyState[Scancode.max + 1] state_dict;
 
 	bool pressed(Scancode scancode)
 	{

@@ -48,22 +48,22 @@ class Mouse
 		}
 	}
 
-	bool pressed(MouseButtonType button_type)
+	bool pressed(MouseButton button_type)
 	{
 		return this.state_list.tail.button[button_type].downed;
 	}
 
-	bool pressed_just(MouseButtonType button_type)
+	bool pressed_just(MouseButton button_type)
 	{
 		return this.state_list.tail.button[button_type].downed_just;
 	}
 
-	bool released(MouseButtonType button_type)
+	bool released(MouseButton button_type)
 	{
 		return !this.state_list.tail.button[button_type].downed;
 	}
 
-	bool released_just(MouseButtonType button_type)
+	bool released_just(MouseButton button_type)
 	{
 		return this.state_list.tail.button[button_type].uponed_just;
 	}
@@ -71,7 +71,8 @@ class Mouse
 
 struct MouseState
 {
-	MouseButtonState[MouseButtonType.max + 1] button;
+	uint id;
+	MouseButtonState[MouseButton.max + 1] button;
 	Vector!(2, float) pos;
 	Vector!(2, float) rel_pos;
 }

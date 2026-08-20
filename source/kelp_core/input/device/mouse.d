@@ -1,6 +1,6 @@
 module kelp_core.input.device.mouse;
 
-enum MouseButtonType
+enum MouseButton
 {
 	left = 0,
 	middle = 1,

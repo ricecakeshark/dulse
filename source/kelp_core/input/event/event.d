@@ -16,7 +16,11 @@ alias AnyEvent = SumType!(
 	MouseButtonEvent,
 	MouseWheelEvent,
 	KeyboardKeyEvent,
-	GamepadEvent,
+	GamepadButtonEvent,
+	GamepadAxisEvent, //GamepadEvent,
+
+	
+
 );
 alias AllEvent = AliasSeq!(
 	QuitEvent,
@@ -105,6 +109,29 @@ public Event event(Type)(ulong time, Type event_data)
 			assert(false);
 		}
 	}
+	else static if (event_type!(Type).major == EventTypeMajor.gamepad)
+	{
+		static if (event_type!Type.minor == EventTypeMinor.gamepad_button)
+		{
+			return Event(
+				cast(MonoTime) time,
+				event_type!Type,
+				AnyEvent(event_data),
+			);
+		}
+		else static if (event_type!Type.minor == EventTypeMinor.gamepad_axis)
+		{
+			return Event(
+				cast(MonoTime) time,
+				event_type!Type,
+				AnyEvent(event_data),
+			);
+		}
+		else
+		{
+			assert(false);
+		}
+	}
 	else
 	{
 		assert(false);
@@ -163,6 +190,14 @@ EventType event_type(Type)()
 	else static if (is(Type == MouseWheelEvent))
 	{
 		return EventType(EventTypeMajor.mouse, EventTypeMinor.mouse_wheel);
+	}
+	else static if (is(Type == GamepadButtonEvent))
+	{
+		return EventType(EventTypeMajor.gamepad, EventTypeMinor.gamepad_button);
+	}
+	else static if (is(Type == GamepadAxisEvent))
+	{
+		return EventType(EventTypeMajor.gamepad, EventTypeMinor.gamepad_axis);
 	}
 	else
 	{

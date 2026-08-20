@@ -16,11 +16,11 @@ struct GamepadEvent
 struct GamepadButtonEvent
 {
 	GamepadButton type;
-	bool down;
+	bool downed;
 }
 
 struct GamepadAxisEvent
 {
-	GamepadTrigger type;
+	GamepadAxis type;
 	Vec1 value;
 }
