@@ -1,63 +1,9 @@
-module kelp_core.input.state.gamepad_state;
+module kelp_core.input.state.gamepad;
 
-import kelp_core.input;
+import kelp_core.input.device.gamepad;
+import kelp_core.input.event.event;
+import kelp_core.input.event.gamepad_event;
 import kelp_core.math.linalg.vector;
-import kelp_core.core.container.ring_buffer;
-
-class Gamepad
-{
-	RingBuffer!(GamepadState, 5) state_list;
-
-	invariant
-	{
-		assert(this !is null);
-	}
-
-	void initialize()
-	{
-		this.state_list.fill();
-		return;
-	}
-
-	void finalize()
-	{
-		return;
-	}
-
-	void process()
-	{
-		this.state_list.append(GamepadState.init);
-		return;
-	}
-
-	void apply(in Event[] event_list...) pure nothrow
-	{
-		this.state_list.tail.apply(event_list);
-		return;
-	}
-
-	bool pressed(GamepadButton button)
-	{
-		return this.state_list[$ - 1].pressed(button);
-	}
-
-	bool released(GamepadButton button)
-	{
-		return this.state_list[$ - 1].pressed(button);
-	}
-
-	bool pressed_just(GamepadButton button)
-	{
-		return (this.state_list[$ - 1].pressed(button) && !this.state_list[$ - 2].pressed(
-				button));
-	}
-
-	bool released_just(GamepadButton button)
-	{
-		return (!this.state_list[$ - 1].pressed(button) && this.state_list[$ - 2].pressed(
-				button));
-	}
-}
 
 struct GamepadState
 {
@@ -69,25 +15,34 @@ struct GamepadState
 
 	bool pressed(in GamepadButton button)
 	{
-		return this.button[button].downed;
+		return this.button[button].pressed;
 	}
 }
 
 struct GamepadButtonState
 {
-	bool downed;
+	bool pressed;
+	bool pressed_just;
+	bool released_just;
+
+	this(this) pure nothrow @nogc @safe
+	{
+		this.pressed_just = false;
+		this.released_just = false;
+		return;
+	}
 }
 
 struct GamepadTriggerState
 {
 	Vector!(1) value;
-	bool downed;
+	bool pressed;
 }
 
 struct GamepadStickState
 {
 	Vector!(2) value;
-	bool downed;
+	bool pressed;
 }
 
 GamepadState apply(ref GamepadState state, in Event[] event_list...) pure nothrow
@@ -131,9 +86,13 @@ GamepadState apply(ref GamepadState state, in Event event) pure nothrow
 
 GamepadState apply(ref GamepadState state, in GamepadButtonEvent button_event) pure nothrow
 {
-	if (state.button[button_event.type].downed != button_event.downed)
+	if (button_event.pressed == true)
 	{
-		state.button[button_event.type].downed = button_event.downed;
+		state.button[button_event.type].pressed_just = true;
+	}
+	else
+	{
+		state.button[button_event.type].released_just = true;
 	}
 	return state;
 }

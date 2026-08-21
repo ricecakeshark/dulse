@@ -4,8 +4,8 @@ import kelp_core;
 
 final class Core
 {
-	SubsystemPool subsystem;
-	protected MessageBus bus;
+	public SubsystemPool subsystem;
+	public MessageBus bus;
 	bool continuable = true;
 
 	this()
@@ -15,7 +15,6 @@ final class Core
 		subsystem.append(
 			new LoggerSubsystem(this),
 			new TimerSubsystem(this),
-			new InputSubsystem(this),
 			new ObjectSubsystem(this),
 		);
 		return;

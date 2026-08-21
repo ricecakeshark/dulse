@@ -16,7 +16,7 @@ struct GamepadEvent
 struct GamepadButtonEvent
 {
 	GamepadButton type;
-	bool downed;
+	bool pressed;
 }
 
 struct GamepadAxisEvent

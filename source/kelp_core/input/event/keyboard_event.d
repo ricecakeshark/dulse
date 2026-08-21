@@ -15,19 +15,19 @@ struct KeyboardKeyEvent
 {
 	MonoTime time;
 	Scancode scancode;
-	bool downed;
+	bool pressed;
 	bool repeated;
 
 	this(
 		MonoTime time,
 		Scancode scancode,
-		bool downed,
+		bool pressed,
 		bool repeated = false,
 	)
 	{
 		this.time = time;
 		this.scancode = scancode;
-		this.downed = downed;
+		this.pressed = pressed;
 		this.repeated = repeated;
 		return;
 	}

@@ -17,7 +17,7 @@ struct MouseEvent
 struct MouseButtonEvent
 {
 	MouseButton type;
-	bool downed;
+	bool pressed;
 }
 
 struct MouseWheelEvent
