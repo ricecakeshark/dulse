@@ -1,4 +1,4 @@
-module kelp_core.input.event.keyboard_event;
+module kelp_core.input.event.keyboard;
 
 import kelp_core.input.device;
 import std.sumtype;

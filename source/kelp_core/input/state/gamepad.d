@@ -2,7 +2,7 @@ module kelp_core.input.state.gamepad;
 
 import kelp_core.input.device.gamepad;
 import kelp_core.input.event.event;
-import kelp_core.input.event.gamepad_event;
+import kelp_core.input.event.gamepad;
 import kelp_core.math.linalg.vector;
 
 struct GamepadState

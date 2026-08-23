@@ -1,4 +1,4 @@
-module kelp_core.input.event.mouse_event;
+module kelp_core.input.event.mouse;
 
 import kelp_core.input.device;
 import kelp_core.math.linalg.vector;

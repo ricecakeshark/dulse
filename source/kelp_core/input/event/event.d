@@ -16,6 +16,9 @@ alias AnyEvent = SumType!(
 	MouseButtonEvent,
 	MouseWheelEvent,
 	KeyboardKeyEvent,
+	TextEditingEvent,
+	TextEditCandidateEvent,
+	TextInputEvent,
 	GamepadButtonEvent,
 	GamepadAxisEvent, //GamepadEvent,
 
@@ -71,6 +74,14 @@ public Event event(Type)(ulong time, Type event_data)
 		);
 	}
 	else static if (event_type!(Type).major == EventTypeMajor.keyboard)
+	{
+		return Event(
+			cast(MonoTime) time,
+			event_type!Type,
+			AnyEvent(event_data),
+		);
+	}
+	else static if (event_type!(Type).major == EventTypeMajor.text)
 	{
 		return Event(
 			cast(MonoTime) time,
@@ -144,6 +155,7 @@ enum EventTypeMajor
 	quit,
 	window,
 	keyboard,
+	text,
 	mouse,
 	gamepad,
 	other,
@@ -161,6 +173,9 @@ enum EventTypeMinor
 	window_moved,
 	window_resized,
 	keyboard_key,
+	text_editing,
+	text_input,
+	text_candidate,
 	mouse_motion,
 	mouse_button,
 	mouse_wheel,
@@ -178,6 +193,18 @@ EventType event_type(Type)()
 	else static if (is(Type == KeyboardKeyEvent))
 	{
 		return EventType(EventTypeMajor.keyboard, EventTypeMinor.keyboard_key);
+	}
+	else static if (is(Type == TextEditingEvent))
+	{
+		return EventType(EventTypeMajor.text, EventTypeMinor.text_editing);
+	}
+	else static if (is(Type == TextEditCandidateEvent))
+	{
+		return EventType(EventTypeMajor.text, EventTypeMinor.text_candidate);
+	}
+	else static if (is(Type == TextInputEvent))
+	{
+		return EventType(EventTypeMajor.text, EventTypeMinor.text_input);
 	}
 	else static if (is(Type == MouseMotionEvent))
 	{

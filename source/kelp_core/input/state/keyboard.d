@@ -2,7 +2,7 @@ module kelp_core.input.state.keyboard;
 
 import kelp_core.input.device.keyboard;
 import kelp_core.input.event.event;
-import kelp_core.input.event.keyboard_event;
+import kelp_core.input.event.keyboard;
 import core.time : MonoTime;
 
 struct KeyboardState

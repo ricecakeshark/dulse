@@ -1,4 +1,4 @@
-module kelp_core.input.event.window_event;
+module kelp_core.input.event.window;
 
 import std.sumtype;
 

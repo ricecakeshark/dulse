@@ -1,4 +1,4 @@
-module kelp_core.input.event.gamepad_event;
+module kelp_core.input.event.gamepad;
 
 import kelp_core.input.device;
 import kelp_core.math.linalg.vector;

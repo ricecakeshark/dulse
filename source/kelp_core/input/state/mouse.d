@@ -1,7 +1,7 @@
 module kelp_core.input.state.mouse;
 
 import kelp_core.input.event.event;
-import kelp_core.input.event.mouse_event;
+import kelp_core.input.event.mouse;
 import kelp_core.input.device.mouse;
 import kelp_core.math : Vector;
 
