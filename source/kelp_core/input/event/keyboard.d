@@ -23,7 +23,7 @@ struct KeyboardKeyEvent
 		Scancode scancode,
 		bool pressed,
 		bool repeated = false,
-	)
+	) pure nothrow @nogc @safe
 	{
 		this.time = time;
 		this.scancode = scancode;
