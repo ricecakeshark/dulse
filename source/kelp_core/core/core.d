@@ -35,7 +35,7 @@ final class Core
 	void process()
 	{
 		this.subsystem.process();
-		if (this.bus.pool.have!(QuitMessage))
+		if (this.bus.recieve!QuitMessage() !is null)
 		{
 			this.continuable = false;
 		}

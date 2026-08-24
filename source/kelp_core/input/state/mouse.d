@@ -19,7 +19,7 @@ struct MouseButtonState
 	bool pressed_just;
 	bool released_just;
 
-	this(this) pure nothrow @safe
+	this(this) pure nothrow @nogc @safe
 	{
 		this.pressed_just = false;
 		this.released_just = false;

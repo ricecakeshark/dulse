@@ -1,4 +1,4 @@
-module kelp_core.core.data._version;
+module kelp_core.core.data.version_;
 
 import std.format : format;
 
@@ -8,7 +8,7 @@ struct Version(size_t Length = 3)
 {
 	int[Length] ver_list;
 
-	this(int[Length] ver_list...)
+	this(int[Length] ver_list...) pure nothrow @nogc @safe
 	{
 		this.ver_list = ver_list;
 		return;
@@ -44,13 +44,10 @@ struct Version(size_t Length = 3)
 	{
 		return format!("[%(%2d,%)]")(this.ver_list);
 	}
-
 }
 
 unittest
 {
 	Version!3 ver;
 	ver.initialize(1, 2, 3);
-	//import std.stdio;
-	//ver.to_string.writeln();
 }

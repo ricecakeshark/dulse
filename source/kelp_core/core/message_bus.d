@@ -12,9 +12,9 @@ class MessageBus
 		return this;
 	}
 
-	Message[] recieve(Type)()
+	Type[] recieve(Type)()
 	{
-		return this.pool.query!(Type)();
+		return this.pool.query_all!(Type)();
 	}
 }
 

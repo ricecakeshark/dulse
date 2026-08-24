@@ -7,15 +7,16 @@ import core.time : MonoTime;
 
 struct KeyboardState
 {
-	uint id;
+	public uint id;
 	public KeyboardKeyState[Scancode.max + 1] key_list;
 
-	ref KeyboardKeyState opIndex(Scancode scancode) pure nothrow
+	ref KeyboardKeyState opIndex(in Scancode scancode) return pure nothrow @nogc @safe
+	in (scancode < key_list.length)
 	{
-		return key_list[scancode];
+		return this.key_list[scancode];
 	}
 
-	bool pressed(Scancode scancode)
+	bool pressed(in Scancode scancode) const pure nothrow @nogc @safe
 	{
 		return this.key_list[scancode].pressed;
 	}
@@ -34,7 +35,7 @@ struct KeyboardKeyState
 	}
 }
 
-KeyboardState apply(ref KeyboardState state, in Event[] event_list...) pure nothrow
+KeyboardState apply(ref KeyboardState state, in Event[] event_list...) pure nothrow @nogc @safe
 {
 	foreach (event; event_list)
 	{
@@ -46,7 +47,7 @@ KeyboardState apply(ref KeyboardState state, in Event[] event_list...) pure noth
 	return state;
 }
 
-KeyboardState apply(ref KeyboardState state, in Event event) pure nothrow
+KeyboardState apply(ref KeyboardState state, in Event event) pure nothrow @nogc @safe
 {
 	scope KeyboardKeyEvent key_event = event.get!KeyboardKeyEvent;
 	switch (event.type.minor)
@@ -56,12 +57,12 @@ KeyboardState apply(ref KeyboardState state, in Event event) pure nothrow
 		state.apply(event.get!KeyboardKeyEvent);
 		return state;
 	default:
-		return state;
+		assert(false, "invalid minor event");
 	}
 	return state;
 }
 
-KeyboardState apply(ref KeyboardState state, in KeyboardKeyEvent key_event) pure nothrow
+KeyboardState apply(ref KeyboardState state, in KeyboardKeyEvent key_event) pure nothrow @nogc @safe
 {
 	if (key_event.pressed)
 	{
