@@ -73,7 +73,7 @@ struct InterfacedPool(Interface)
 	Type query(Type)() pure nothrow @safe
 	in
 	{
-		assert(this.pool.any!(item => cast(Type) item !is null), "the Type not found");
+		assert(this.pool.any!(item => (cast(Type) item) !is null), "the Type not found");
 	}
 	do
 	{

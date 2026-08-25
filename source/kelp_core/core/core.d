@@ -11,11 +11,11 @@ final class Core
 	this()
 	{
 		this.bus = new MessageBus();
-		this.subsystem = new SubsystemPool();
-		subsystem.append(
-			new LoggerSubsystem(this),
-			new TimerSubsystem(this),
-			new ObjectSubsystem(this),
+		this.subsystem = new SubsystemPool(this);
+		subsystem.append!(
+			LoggerSubsystem,
+			TimerSubsystem,
+			ObjectSubsystem,
 		);
 		return;
 	}

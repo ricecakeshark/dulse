@@ -6,6 +6,13 @@ import std.array, std.algorithm;
 class SubsystemPool
 {
 	InterfacedPool!(ISubsystem) pool;
+	Core core;
+
+	this(Core core)
+	{
+		this.core = core;
+		return;
+	}
 
 	typeof(this) initialize()
 	{
@@ -36,12 +43,30 @@ class SubsystemPool
 		return this;
 	}
 
-	typeof(this) append(ISubsystem[] subsystem_list...)
+	typeof(this) append(TypeList...)(TypeList subsystem_list)
 	{
 		foreach (ref subsystem; subsystem_list)
 		{
+			assert(cast(ISubsystem) subsystem !is null);
+			this.pool.append(cast(ISubsystem) subsystem);
+		}
+		foreach (ref subsystem; subsystem_list)
+		{
 			subsystem.initialize();
-			this.pool.append(subsystem);
+		}
+		return this;
+	}
+
+	typeof(this) append(TypeList...)()
+	{
+		static foreach (Type; TypeList)
+		{
+			static assert(is(Type : ISubsystem));
+		}
+
+		foreach (Type; TypeList)
+		{
+			this.pool.append(new Type(core).initialize);
 		}
 		return this;
 	}
