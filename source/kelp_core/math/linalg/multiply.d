@@ -10,11 +10,11 @@ V:
 	size_t Row, size_t Col, Type,
 )(in M mat, in V vec) pure nothrow @nogc @safe
 {
-	Vector!(Row, Type) result_vec;
-	static foreach (row; 0 .. Row)
+	scope Vector!(Row, Type) result_vec;
+	foreach (row; 0 .. Row)
 	{
 		result_vec.data[row] = 0.0;
-		static foreach (col; 0 .. Col)
+		foreach (col; 0 .. Col)
 		{
 			result_vec.data[row] += mat[row, col] * vec[row];
 		}
@@ -29,11 +29,11 @@ V:
 	size_t Row, size_t Col, Type,
 )(in V vec, in M mat,) pure nothrow @nogc @safe
 {
-	Vector!(Col, Type) result_vec;
-	static foreach (col; 0 .. Col)
+	scope Vector!(Col, Type) result_vec;
+	foreach (col; 0 .. Col)
 	{
 		result_vec.data[col] = 0.0;
-		static foreach (row; 0 .. Row)
+		foreach (row; 0 .. Row)
 		{
 			result_vec.data[col] += vec[col] * mat[row, col];
 		}

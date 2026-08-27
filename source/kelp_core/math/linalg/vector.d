@@ -8,6 +8,7 @@ import std.format : format;
 import std.range : iota, zip;
 import std.math : isClose, isNaN, pow, sqrt;
 
+alias Vec = Vector;
 alias Vec1 = Vector!(1, float);
 alias Vec2 = Vector!(2, float);
 alias Vec3 = Vector!(3, float);
@@ -53,7 +54,7 @@ struct Vector(size_t Length, Type = float)
 	typeof(this) unit() const pure nothrow @nogc @safe
 	{
 		Vector!(Length) return_vec;
-		static foreach (i; 0 .. Length)
+		foreach (i; 0 .. Length)
 		{
 			return_vec.data[i] = this[i] / this.norm();
 		}
@@ -112,16 +113,21 @@ struct Vector(size_t Length, Type = float)
 
 	// Matrix * Vector
 	typeof(this) opBinaryRight(string op : "*", M:
-		Matrix!(Row, Col, MatT), size_t Row, size_t Col, MatT)(M mat) const pure nothrow @nogc @safe
+		Matrix!(Row, Col, MatT), size_t Row, size_t Col, MatT)(in M mat) const pure nothrow @nogc @safe
 	{
-		return kelp_core.math.linalg.multiply.multiply!(Matrix!(Row, Col, MatT), Vector!(Length, Type))(mat, this);
+		return multiply(mat, this);
 	}
 
 	bool opEquals(V : Vector!(RhsLength, RhsType), size_t RhsLength, RhsType)(in V rhs) const pure nothrow @nogc @safe
 	if (RhsLength == Length)
 	{
-		//return zip(this.data[], rhs.data[]).all!(elm => isClose(elm[0], elm[1], 1e-5, 1e-5));
-		return approxEqual(this, rhs);
+		return approx_equal(this, rhs);
+	}
+
+	ref inout(Type) index(in size_t index) inout pure nothrow @nogc @safe
+	in (index < Length)
+	{
+		return this.data[index];
 	}
 
 	ref inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
@@ -183,18 +189,17 @@ struct Vector(size_t Length, Type = float)
 
 	string to_string() const pure @safe
 	{
-
-		string result_str;
+		scope string result_str;
 		foreach (count; 0 .. Length)
 		{
-			result_str ~= format(" %2d [%2.2f]\n", count, this[count]);
+			result_str ~= format!" %2d [%2.2f]\n"(count, this[count]);
 		}
 		return result_str;
 	}
 
 	R opCast(R : Matrix!(Length, Length, Type))() inout pure nothrow @nogc @safe
 	{
-		R temp_matrix = Matrix!(Length, Length, Type);
+		scope R temp_matrix = Matrix!(Length, Length, Type);
 		foreach (count; 0 .. Length)
 		{
 			temp_matrix.data[count][count] = this.data[count];
@@ -204,17 +209,17 @@ struct Vector(size_t Length, Type = float)
 
 	Vector!(DstLength, Type) extend(size_t DstLength)() const pure nothrow @nogc @safe
 	{
-		Vector!(DstLength, Type) ret_vec;
-		foreach (index; 0 .. Length)
+		scope Vector!(DstLength, Type) ret_vec;
+		foreach (index; 0 .. DstLength)
 		{
-			ret_vec.data[index] = this[index];
+			ret_vec.data[index] = (index < Length) ? this[index] : 0.0;
 		}
 		return ret_vec;
 	}
 
 	Matrix!(Length, Length, Type) to_matrix_scale()() inout pure nothrow @nogc @safe
 	{
-		Matrix!(Length, Length, Type) temp_matrix;
+		scope Matrix!(Length, Length, Type) temp_matrix;
 		temp_matrix.indentify();
 		foreach (count; 0 .. Length)
 		{
@@ -225,7 +230,7 @@ struct Vector(size_t Length, Type = float)
 
 	Matrix!(Length, Length, Type) to_matrix_transport()() inout pure nothrow @nogc @safe
 	{
-		Matrix!(Length, Length, Type) temp_matrix;
+		scope Matrix!(Length, Length, Type) temp_matrix;
 		temp_matrix = matrix_identity();
 		foreach (count; 0 .. Length)
 		{
@@ -252,7 +257,7 @@ struct Vector(size_t Length, Type = float)
 	}
 }
 
-bool approxEqual(
+bool approx_equal(
 V1 : Vector!(Length, LhsType),
 V2:
 	Vector!(Length, RhsType),
@@ -333,7 +338,7 @@ V2:
 
 unittest
 {
-	Vec3 vec_test = Vec3(1.0f);
+	scope Vec3 vec_test = Vec3(1.0f);
 	assert(vec_test.x == 1.0f && vec_test.y == 1.0f && vec_test.z == 1.0f);
 
 	assert(Vec3(2.0, 3.0, 6.0).norm == 7.0);
@@ -358,8 +363,8 @@ Vector!(Length, Type) multiply(size_t Length, Type)(
 	in Type scalar,
 ) pure nothrow @nogc @safe
 {
-	Vector!(Length, Type) temp_vec;
-	static foreach (count; 0 .. Length)
+	scope Vector!(Length, Type) temp_vec;
+	foreach (count; 0 .. Length)
 	{
 		temp_vec[count] = vec[count] * scalar;
 	}
@@ -371,8 +376,8 @@ Vector!(Length, Type) devide(size_t Length, Type)(
 	in Type scalar,
 ) pure nothrow @nogc @safe
 {
-	Vector!(Length, Type) temp_vec;
-	static foreach (count; 0 .. Length)
+	scope Vector!(Length, Type) temp_vec;
+	foreach (count; 0 .. Length)
 	{
 		temp_vec[count] = vec[count] / scalar;
 	}

@@ -3,6 +3,7 @@ module kelp_core.math.linalg.matrix;
 import kelp_core.math.linalg;
 import kelp_core.math.linalg.multiply;
 
+import std.array : appender, Appender;
 import std.conv : text;
 import std.format : format;
 import std.math;
@@ -20,7 +21,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		{
 			foreach (col; 0 .. Col)
 			{
-				this.opIndex(row, col) = new_matrix[row][col];
+				this.index(row, col) = new_matrix[row][col];
 			}
 		}
 		return;
@@ -37,9 +38,24 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		this.fill(0.0f);
 		foreach (count; 0 .. Row)
 		{
-			this.opIndex(count, count) = new_vector[count];
+			this.index(count, count) = new_vector[count];
 		}
 		return;
+	}
+
+	@property bool is_normal() const pure nothrow @nogc @safe
+	{
+		foreach (row; 0 .. Row)
+		{
+			foreach (col; 0 .. Col)
+			{
+				if (!this.index(row, col).isNormal)
+				{
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	@property bool contain_nan() const pure nothrow @nogc @safe
@@ -48,7 +64,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		{
 			foreach (col; 0 .. Col)
 			{
-				if (this.opIndex(row, col).isNaN)
+				if (this.index(row, col).isNaN)
 				{
 					return true;
 				}
@@ -62,7 +78,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		Vector!(Row, Type) ret_vec;
 		foreach (row; 0 .. Row)
 		{
-			ret_vec.data[row] = this.opIndex(row, 0u);
+			ret_vec.data[row] = this.index(row, 0u);
 		}
 		return ret_vec;
 	}
@@ -72,7 +88,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		Vector!(Col, Type) ret_vec;
 		foreach (col; 0 .. Col)
 		{
-			ret_vec.data[col] = this.opIndex(0, col);
+			ret_vec.data[col] = this.index(0, col);
 		}
 		return ret_vec;
 	}
@@ -83,7 +99,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		Vector!(Row, Type) ret_vec;
 		foreach (index; 0 .. Row)
 		{
-			ret_vec[index] = this.opIndex(index, index);
+			ret_vec[index] = this.index(index, index);
 		}
 		return ret_vec;
 	}
@@ -94,6 +110,11 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return assign_matrix;
 	}
 
+	ref inout(Type) index(in size_t row, in size_t col) inout pure nothrow @nogc @safe
+	{
+		return this.data[row][col];
+	}
+
 	ref inout(Type) opIndex(in size_t row, in size_t col) inout pure nothrow @nogc @safe
 	{
 		return this.data[row][col];
@@ -101,7 +122,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 
 	Matrix!(R, C, Type) opCast(T : Matrix!(R, C, Type), size_t R, size_t C)() const pure nothrow @nogc @safe
 	{
-		Matrix!(R, C, Type) return_mat;
+		scope Matrix!(R, C, Type) return_mat;
 		foreach (col; 0 .. C)
 		{
 			foreach (row; 0 .. R)
@@ -112,15 +133,16 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return return_mat;
 	}
 
-	Matrix!(R, C, Type) extend(T : Matrix!(R, C, Type), size_t R, size_t C)() const pure nothrow @nogc @safe
+	Matrix!(R, C, Type) extend(size_t R, size_t C)() const pure nothrow @nogc @safe
 	{
-		Matrix!(R, C, Type) return_mat;
+		scope Matrix!(R, C, Type) return_mat;
 		foreach (col; 0 .. C)
 		{
 			foreach (row; 0 .. R)
 			{
-				return_mat[row, col] = (row < Row && col < Col) ? this[row, col] : (row == col) ? 1.0f
-					: 0.0f;
+				return_mat[row, col] = (row < Row && col < Col)
+					? this[row, col] : (row == col)
+					? 1.0f : 0.0f;
 			}
 		}
 		return return_mat;
@@ -128,7 +150,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 
 	string to_string() const pure @safe
 	{
-		string return_str = "Matrix";
+		scope Appender!string return_str = appender("Matrix");
 		foreach (col; 0 .. Col)
 		{
 			return_str ~= format(" col%2d", col);
@@ -139,40 +161,21 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 			return_str ~= format(" row%2d", row);
 			foreach (col; 0 .. Col)
 			{
-				return_str ~= format(" %+2.2f", this.opIndex(row, col));
+				return_str ~= format(" %+2.2f", this.index(row, col));
 			}
 			return_str ~= "\n";
 		}
-		return return_str;
+		return return_str[];
 	}
 
 	string to_string_raw() const pure @safe
 	{
-		import std.conv;
-
 		return text(this.data);
 	}
 
 	string opCast(T : string)() const pure @safe
 	{
-		string return_str;
-
-		return_str = "Matrix";
-		foreach (col; 0 .. Col)
-		{
-			return_str ~= format(" col%2d", col);
-		}
-		return_str ~= "\n";
-		foreach (row; 0 .. Row)
-		{
-			return_str ~= format(" row%2d", row);
-			foreach (col; 0 .. Col)
-			{
-				return_str ~= format(" %+2.2f", this.opIndex(row, col));
-			}
-			return_str ~= "\n";
-		}
-		return return_str;
+		return this.to_string();
 	}
 
 	bool opEquals(in Matrix!(Row, Col, Type) rhs) const pure nothrow @nogc @safe
@@ -249,7 +252,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	Vector!(Row, Type) opBinary(string op : "*")(
 		Vector!(Row, Type) rhs) pure nothrow @nogc @safe
 	{
-		return kelp_core.math.linalg.multiply.multiply!(typeof(this), typeof(rhs), Row, Col, Type)(this, rhs);
+		return multiply!(typeof(this), typeof(rhs), Row, Col, Type)(this, rhs);
 	}
 
 	typeof(this) fill(float value = 0.0) pure nothrow @nogc @safe
@@ -258,7 +261,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		{
 			foreach (row; 0 .. Row)
 			{
-				this.opIndex(row, col) = value;
+				this.index(row, col) = value;
 			}
 		}
 		return this;
@@ -270,7 +273,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		this.fill(0.0f);
 		foreach (count; 0 .. Col)
 		{
-			this.opIndex(count, count) = 1.0f;
+			this.index(count, count) = 1.0f;
 		}
 		return this;
 	}
@@ -288,9 +291,9 @@ M : Matrix!(Row, Col, Type),
 )(in M matrix) pure nothrow @nogc @safe
 {
 	Matrix!(Col, Row, Type) result_matrix = Matrix!(Col, Row, Type)(0.0);
-	static foreach (col; 0 .. Col)
+	foreach (col; 0 .. Col)
 	{
-		static foreach (row; 0 .. Row)
+		foreach (row; 0 .. Row)
 		{
 			result_matrix[col, row] = matrix[row, col];
 		}
@@ -690,7 +693,7 @@ M1 : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type
 
 unittest
 {
-	Matrix!(2, 2) mat_a, mat_b;
+	scope Matrix!(2, 2) mat_a, mat_b;
 	mat_a = [
 		[1.0f, 2.0f],
 		[3.0f, 4.0f],
@@ -724,9 +727,9 @@ unittest
 Matrix!(Size, Size, Type) matrix_identity(size_t Size, Type = float)() pure nothrow @nogc @safe
 in (Size != 0)
 {
-	Matrix!(4, 4, Type) temp_mat;
+	scope Matrix!(4, 4, Type) temp_mat;
 	temp_mat.fill(0.0f);
-	static foreach (count; 0 .. Size)
+	foreach (count; 0 .. Size)
 	{
 		temp_mat[count, count] = 1.0f;
 	}
@@ -735,7 +738,7 @@ in (Size != 0)
 // 
 Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_list...) pure nothrow @nogc @safe
 {
-	Matrix!(Size, Size) temp;
+	scope Matrix!(Size, Size) temp;
 	temp.fill(0.0f);
 	foreach (count; 0 .. Size)
 	{
@@ -746,7 +749,7 @@ Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_lis
 
 Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(in Type value) pure nothrow @nogc @safe
 {
-	Matrix!(Size, Size) temp;
+	scope Matrix!(Size, Size) temp;
 	temp.fill(0.0f);
 	foreach (count; 0 .. Size)
 	{
@@ -757,7 +760,7 @@ Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(in Type value) pure 
 
 Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(in Vector!(Size, Type) vec) pure nothrow @nogc @safe
 {
-	Matrix!(Size, Size) temp;
+	scope Matrix!(Size, Size) temp;
 	temp.fill(0.0f);
 	foreach (count; 0 .. Size)
 	{
@@ -768,7 +771,7 @@ Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(in Vector!(Size, Typ
 
 Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Type[Size] value_list) pure nothrow @nogc @safe
 {
-	Matrix!(Size, Size) temp;
+	scope Matrix!(Size, Size) temp;
 	temp.fill(0.0f);
 	foreach (index; 0 .. Size)
 	{
@@ -784,7 +787,7 @@ Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Vector!(Size, Ty
 
 unittest
 {
-	Matrix!(3, 3) mat_s, mat_t;
+	scope Matrix!(3, 3) mat_s, mat_t;
 	mat_s = matrix_scale([+1.0f, +2.0f, +3.0f]);
 	assert(mat_s == Matrix!(3, 3)(
 			[
@@ -799,7 +802,7 @@ Matrix!(Row, Col, Type) multiply_ltor(size_t Row, size_t Col, Type)(
 	Matrix!(Row, Col, Type)[] matrix_list...
 )
 {
-	Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
+	scope Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
 	temp.indentify();
 	foreach (count; 0 .. matrix_list.length)
 	{
@@ -812,7 +815,7 @@ Matrix!(Row, Col, Type) multiply_rtol(size_t Row, size_t Col, Type)(
 	Matrix!(Row, Col, Type)[] matrix_list...
 )
 {
-	Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
+	scope Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
 	temp.indentify();
 	foreach_reverse (count; 0 .. matrix_list.length)
 	{

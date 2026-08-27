@@ -1,38 +1,38 @@
 module kelp_core.math.linalg.quaternion;
 
 import kelp_core.math.linalg;
-import std.math;
+import std.math : cos, isClose, pow, PI, sin, sqrt;
 import std.conv : text;
 
 struct Quaternion(Type = float)
 {
 	Type[4] data;
 
-	this(in Type[3] xyzw...) pure nothrow @nogc @safe
+	this(in Type[3] xyz...) pure nothrow @nogc @safe
 	{
-		static foreach (index; 0 .. 3)
+		foreach (index; 0 .. 3)
 		{
-			this.opIndex(index) = xyz[index];
+			this.index(index) = xyz[index];
 		}
-		this.opIndex(3) = 1.0f;
+		this.index(3) = 1.0f;
 		return;
 	}
 
 	this(in Vector!(3, Type) vec) pure nothrow @nogc @safe
 	{
-		static foreach (index; 0 .. 3)
+		foreach (index; 0 .. 3)
 		{
-			this.opIndex(index) = vec[index];
+			this.index(index) = vec[index];
 		}
-		this.opIndex(3) = 0.0f;
+		this.index(3) = 0.0f;
 		return;
 	}
 
 	this(in Type[4] xyzw...) pure nothrow @nogc @safe
 	{
-		static foreach (index; 0 .. 4)
+		foreach (index; 0 .. 4)
 		{
-			this.opIndex(index) = xyzw[index];
+			this.index(index) = xyzw[index];
 		}
 		return;
 	}
@@ -44,11 +44,11 @@ struct Quaternion(Type = float)
 			this.identify();
 			return;
 		}
-		static foreach (index; 0 .. 3)
+		foreach (index; 0 .. 3)
 		{
-			this.opIndex(index) = axis.unit[index] * sin(angle / 2);
+			this.index(index) = axis.unit[index] * sin(angle / 2);
 		}
-		this.opIndex(3) = cos(angle / 2);
+		this.index(3) = cos(angle / 2);
 		return;
 	}
 
@@ -107,7 +107,12 @@ struct Quaternion(Type = float)
 		return equal(this, rhs);
 	}
 
-	ref inout(Type) opIndex(size_t index) inout pure nothrow @nogc @safe
+	ref inout(Type) index(in size_t index) inout pure nothrow @nogc @safe
+	{
+		return this.data[index];
+	}
+
+	ref inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
 	{
 		return this.data[index];
 	}
@@ -204,7 +209,7 @@ struct Quaternion(Type = float)
 
 			
 
-		]]
+		],]
 		);
 	}
 
