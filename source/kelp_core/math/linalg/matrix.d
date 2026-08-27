@@ -127,13 +127,14 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		{
 			foreach (row; 0 .. R)
 			{
-				return_mat[row, col] = (row < Row && col < Col) ? this[row, col] : 0.0f;
+				return_mat[row, col] = (row < Row && col < Col) ? this.index(row, col) : 0.0f;
 			}
 		}
 		return return_mat;
 	}
 
-	Matrix!(R, C, Type) extend(size_t R, size_t C)() const pure nothrow @nogc @safe
+	Matrix!(R, C, Type) resize(size_t R, size_t C)() const pure nothrow @nogc @safe
+	in (R >= 1 && C >= 1)
 	{
 		scope Matrix!(R, C, Type) return_mat;
 		foreach (col; 0 .. C)
@@ -141,7 +142,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 			foreach (row; 0 .. R)
 			{
 				return_mat[row, col] = (row < Row && col < Col)
-					? this[row, col] : (row == col)
+					? this.index(row, col) : (row == col)
 					? 1.0f : 0.0f;
 			}
 		}
@@ -199,7 +200,7 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		{
 			foreach (col; 0 .. Col)
 			{
-				if (isClose(this[row, col], rhs[row][col], 1e-10, 1e-6) == false)
+				if (isClose(this.index(row, col), rhs[row][col], 1e-10, 1e-6) == false)
 				{
 					return false;
 				}
