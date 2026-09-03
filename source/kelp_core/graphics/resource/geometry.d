@@ -79,17 +79,24 @@ struct GfxGeometry(V, I)
 		return (this.size_vertex == 0 && this.size_index == 0) ? true : false;
 	}
 
-	GfxGeometry!(V, I) opAssign(V, I)(GfxGeometry!(V, I) geometry) pure nothrow @nogc @safe
+	GfxGeometry!(V, I) opAssign(GfxGeometry!(V, I) geometry) pure nothrow @nogc @safe
 	{
 		this._vertex_list = geometry._vertex_list;
 		this._index_list = geometry._index_list;
 		return geometry;
 	}
 
-	typeof(this) set(V, I)(V[] vertices, I[] indices) pure nothrow @nogc @safe
+	ref typeof(this) set(V, I)(V[] vertices, I[] indices) pure nothrow @nogc @safe
 	{
 		this._vertex_list = vertices;
 		this._index_list = indices;
+		return this;
+	}
+
+	ref typeof(this) resize(size_t size_vertex, size_t size_index) pure nothrow @safe
+	{
+		this._vertex_list.length = size_vertex;
+		this._index_list.length = size_index;
 		return this;
 	}
 }
