@@ -1,0 +1,75 @@
+module dulse.core.container.mono_pool;
+
+//import dulse.core.container.pool;
+import std.array : array;
+import std.algorithm : all, any, canFind, filter;
+
+struct MonoPool(TItem)
+{
+	TItem[] item_list;
+
+	@property size_t count() const pure nothrow @nogc @safe
+	{
+		return this.item_list.length;
+	}
+
+	bool have(TItem search_item) const pure nothrow @nogc @safe
+	{
+		return item_list.canFind(search_item);
+	}
+
+	bool have_any(TItem[] search_list...) const pure nothrow @nogc @safe
+	{
+		return search_list.any!(item => item_list.canFind(item))();
+	}
+
+	bool have_all(TItem[] search_list...) const pure nothrow @nogc @safe
+	{
+		return search_list.all!(item => item_list.canFind(item))();
+	}
+
+	@property inout(TItem[]) all() inout pure nothrow @nogc @safe
+	{
+		return this.item_list;
+	}
+
+	typeof(this) clear() pure nothrow @safe
+	{
+		this.item_list = [];
+		return this;
+	}
+
+	typeof(this) append(TItem[] append_list...) pure nothrow @safe
+	{
+		this.item_list ~= append_list;
+		return this;
+	}
+
+	typeof(this) remove(TItem[] remove_list...) pure nothrow @safe
+	{
+		this.item_list = this.item_list
+			.filter!(item => !remove_list.canFind(item))
+			.array();
+		return this;
+	}
+}
+
+unittest
+{
+	enum E
+	{
+		a,
+		b,
+		c,
+		d,
+	}
+
+	MonoPool!(E) pool;
+
+	assert(pool.count == 0);
+	assert(!pool.have_any(E.a, E.b, E.c));
+	pool.append(E.a, E.b, E.c);
+	assert(pool.count == 3);
+	assert(!pool.have(E.d));
+	assert(pool.have_all(E.a, E.b, E.c));
+}

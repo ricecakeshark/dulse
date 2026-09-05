@@ -1,0 +1,56 @@
+module dulse.graphics.resource.vertex;
+
+import dulse.core.data.color;
+import dulse.math.linalg.vector;
+
+struct Vertex(Pos, Col)
+{
+	Pos position;
+	Col color;
+}
+
+struct VertexPC
+{
+	Vec3 pos;
+	ColorF color;
+}
+
+struct VertexPT
+{
+	Vec3 pos;
+	Vec2 uv;
+}
+
+/+struct VertexPTC
+{
+	Vec3 pos;
+	Vec2 uv;
+	ColorF color;
+}+/
+
+struct VertexPCT
+{
+	Vec3 pos;
+	ColorF color;
+	Vec2 uv;
+}
+
+struct VertexPNU
+{
+	Vec3 pos;
+	Vec3 normal;
+	Vec2 uv;
+}
+
+struct VertexPNC
+{
+	Vec3 pos;
+	Vec3 normal;
+	ColorF color;
+}
+
+unittest
+{
+	Vertex!(Vector!(3), ColorF) vertex;
+	assert(__traits(isPOD, typeof(vertex)));
+}
