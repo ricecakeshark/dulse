@@ -1,18 +1,20 @@
 
 build/
 
-# D
+.dub/
+dub.selections.json
+
+*.[oa]
+*.exp
+*.obj
+*.pdb
+
 *.exe
+*.so
+*.so.*
 *.dylib
 *.dll
 *.lib
-*.pdb
-*.exp
-*.o
-*.obj
-*.so
-*.a
-.dub/
 
 # VSCode
 .vscode/*
@@ -21,6 +23,6 @@ build/
 !.vscode/extensions.json
 
 # OS
+desktop.ini
 .DS_Store
 Thumbs.db
-desktop.ini

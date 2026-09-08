@@ -1,13 +1,12 @@
 name "dulse"
-description "dulse engine is general software engine."
+description "dulse engine is general-purpose software engine."
 authors "RiceShark"
-copyright "Copyright © 2025, RiceShark"
-license "proprietary"
+copyright "Copyright © 2025-2026, RiceShark"
+license "Mozilla Public License Version 2.0"
 
 targetType "sourceLibrary"
 targetName "dulse"
 targetPath "build"
-//sourcePaths "source"
-importPaths "source"
+importPaths "src"
 
 dflags "-preview=in"
