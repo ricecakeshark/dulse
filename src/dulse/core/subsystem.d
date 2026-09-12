@@ -50,10 +50,10 @@ class SubsystemPool
 			assert(cast(ISubsystem) subsystem !is null);
 			this.pool.append(cast(ISubsystem) subsystem);
 		}
-		foreach (ref subsystem; subsystem_list)
+		/+foreach (ref subsystem; subsystem_list)
 		{
 			subsystem.initialize();
-		}
+		}+/
 		return this;
 	}
 
@@ -66,7 +66,7 @@ class SubsystemPool
 
 		foreach (Type; TypeList)
 		{
-			this.pool.append(new Type(core).initialize);
+			this.pool.append(new Type(core));
 		}
 		return this;
 	}
