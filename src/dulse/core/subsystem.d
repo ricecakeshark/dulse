@@ -76,18 +76,18 @@ class SubsystemPool
 		return this.pool.query!Type();
 	}
 
-	typeof(this) query(Type)(out Type out_query)
-	{
-		this.pool.query(out_query);
-		return this;
-	}
-
 	typeof(this) query(TypeList...)(out TypeList query_list)
 	{
 		static foreach (query; query_list)
 		{
 			this.query(query);
 		}
+		return this;
+	}
+
+	typeof(this) query(Type)(out Type out_query)
+	{
+		this.pool.query(out_query);
 		return this;
 	}
 

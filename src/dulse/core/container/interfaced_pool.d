@@ -91,6 +91,15 @@ struct InterfacedPool(Interface)
 			.array();
 	}
 
+	typeof(this) query(TypeList...)(out TypeList query_list) pure nothrow @safe
+	{
+		static foreach (_query; query_list)
+		{
+			this.query(_query);
+		}
+		return this;
+	}
+
 	bool query(Type)(out Type query_buffer) pure nothrow @safe
 	{
 		if (!this.have!Type)
@@ -115,15 +124,6 @@ struct InterfacedPool(Interface)
 			.map!(item => cast(Type) item)()
 			.array();
 		return true;
-	}
-
-	typeof(this) query(TypeList...)(out TypeList query_list) pure nothrow @safe
-	{
-		static foreach (_query; query_list)
-		{
-			this.query(_query);
-		}
-		return this;
 	}
 }
 
