@@ -55,6 +55,15 @@ struct TypeTable(TypeList...)
 		return this.table[this.index_of!Type].canFind(target);
 	}
 
+	ref typeof(this) clear() pure nothrow @nogc @safe
+	{
+		foreach (ref list; this.table)
+		{
+			list = list.init;
+		}
+		return this;
+	}
+
 	ref typeof(this) append(Types...)(Types element_list) pure nothrow @safe
 	{
 		foreach (element; element_list)
@@ -178,4 +187,10 @@ unittest
 	//table.query!(function(elem) => elem.a == 5)(s_list);
 	table.query(s_list, (S3 elem) => elem.a == 5);
 	assert(s_list.length == 1);
+
+	table.clear();
+	assert(!table.has);
+	assert(!table.has!S1 && !table.has!S2 && !table.has!S3);
+	assert(table.count == 0);
+	assert(table.count!S1 == 0 && table.count!S2 == 0 && table.count!S3 == 0);
 }
