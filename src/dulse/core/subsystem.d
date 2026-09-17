@@ -16,7 +16,7 @@ class SubsystemPool
 
 	typeof(this) initialize()
 	{
-		foreach (subsystem; this.pool.all)
+		foreach (ref subsystem; this.pool.all)
 		{
 			subsystem.initialize();
 		}
@@ -101,7 +101,7 @@ interface ISubsystem
 	ISubsystem process();
 }
 
-abstract class Subsystem : ISubsystem
+abstract class Subsystem(ActualSubsystem) : ISubsystem
 {
 	protected Core core;
 
@@ -110,6 +110,10 @@ abstract class Subsystem : ISubsystem
 		this.core = core;
 		return;
 	}
+
+	abstract ActualSubsystem initialize();
+	abstract ActualSubsystem finalize();
+	abstract ActualSubsystem process();
 
 	invariant
 	{
