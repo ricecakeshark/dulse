@@ -3,7 +3,7 @@ module dulse.object.object_subsystem;
 import dulse.core;
 import dulse.object;
 
-class ObjectSubsystem : Subsystem
+class ObjectSubsystem : Subsystem!ObjectSubsystem
 {
 	protected Core core;
 	ObjectManager[] object_manager_list;
@@ -19,7 +19,7 @@ class ObjectSubsystem : Subsystem
 		assert(this !is null);
 	}
 
-	typeof(this) initialize()
+	override typeof(this) initialize()
 	{
 		foreach (manager; object_manager_list)
 		{
@@ -28,12 +28,12 @@ class ObjectSubsystem : Subsystem
 		return this;
 	}
 
-	typeof(this) finalize()
+	override typeof(this) finalize()
 	{
 		return this;
 	}
 
-	typeof(this) process()
+	override typeof(this) process()
 	{
 		foreach (manager; object_manager_list)
 		{

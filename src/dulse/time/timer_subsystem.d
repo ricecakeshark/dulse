@@ -5,7 +5,7 @@ import dulse.time;
 import std.datetime : Duration;
 import core.thread;
 
-class TimerSubsystem : Subsystem
+class TimerSubsystem : Subsystem!TimerSubsystem
 {
 	protected Core core;
 
@@ -19,19 +19,19 @@ class TimerSubsystem : Subsystem
 		return;
 	}
 
-	typeof(this) initialize()
+	override typeof(this) initialize()
 	{
 		time_start = NTime.current;
 		measure_active.start;
 		return this;
 	}
 
-	typeof(this) finalize()
+	override typeof(this) finalize()
 	{
 		return this;
 	}
 
-	typeof(this) process()
+	override typeof(this) process()
 	{
 		this.sleep();
 		return this;

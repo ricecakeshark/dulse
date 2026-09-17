@@ -3,7 +3,7 @@ module dulse.logger.logger_subsystem;
 import dulse.core;
 import dulse.logger;
 
-class LoggerSubsystem : Subsystem
+class LoggerSubsystem : Subsystem!LoggerSubsystem
 {
 	Logger logger;
 
@@ -13,18 +13,18 @@ class LoggerSubsystem : Subsystem
 		return;
 	}
 
-	typeof(this) initialize()
+	override typeof(this) initialize()
 	{
 		this.logger = Logger();
 		return this;
 	}
 
-	typeof(this) finalize()
+	override typeof(this) finalize()
 	{
 		return this;
 	}
 
-	typeof(this) process()
+	override typeof(this) process()
 	{
 		return this;
 	}
