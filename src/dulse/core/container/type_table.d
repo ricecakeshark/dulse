@@ -111,7 +111,7 @@ struct TypeTable(TypeList...)
 		return this;
 	}
 
-	Type[] query(Type)() pure nothrow @nogc @safe
+	inout(Type)[] query(Type)() inout pure nothrow @nogc @safe
 	{
 		return this.table[this.index_of!Type];
 	}
@@ -122,7 +122,7 @@ struct TypeTable(TypeList...)
 		return this;
 	}
 
-	typeof(this) query(alias pred, Type)(out Type[] out_buf)
+	ref typeof(this) query(alias pred, Type)(out Type[] out_buf)
 	{
 		out_buf = this.table[index_of!Type]
 			.filter!pred
@@ -130,7 +130,7 @@ struct TypeTable(TypeList...)
 		return this;
 	}
 
-	typeof(this) query(Type, Pred)(out Type[] out_buf, scope Pred pred)
+	ref typeof(this) query(Type, Pred)(out Type[] out_buf, scope Pred pred)
 	{
 		out_buf = this.table[index_of!Type]
 			.filter!(elem => pred(elem))
