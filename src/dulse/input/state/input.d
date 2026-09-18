@@ -5,7 +5,7 @@ import std.typecons;
 
 //alias InputState = SumType!(KeyboardState, MouseState, GamepadState);
 alias InputState = Tuple!(
-	KeyboardState,"keyboard",
-	MouseState,"mouse",
-	GamepadState,"gamepad",
+	KeyboardState, "keyboard",
+	MouseState, "mouse",
+	GamepadState, "gamepad",
 );

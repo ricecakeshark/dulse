@@ -5,9 +5,9 @@ import dulse.core.container;
 import dulse.math.linalg.vector;
 
 alias StateTable = TypeTable!(ActionState!Vec1, ActionState!Vec2);
-alias Handler = void delegate(ref InputState state_list, ref StateTable);
+alias Handler = void delegate(in InputState state_list, ref StateTable);
 
-struct ActionBinding(WriteState)
+struct ActionBinding
 {
 	Handler dlg;
 
@@ -17,7 +17,7 @@ struct ActionBinding(WriteState)
 		return;
 	}
 
-	ref typeof(this) handle(ref InputState input_state, ref StateTable action_state)
+	ref typeof(this) handle(in InputState input_state, ref StateTable action_state)
 	{
 		this.dlg(input_state, action_state);
 		return this;
