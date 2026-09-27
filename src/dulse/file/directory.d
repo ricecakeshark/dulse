@@ -1,12 +1,15 @@
 module dulse.file.directory;
 
 import dulse.file;
-import std.file : exists, isDir, dirEntries, SpanMode;
+import std.file;
 import std.path : isValidPath;
+import std.datetime : SysTime;
 
 struct Directory
 {
-	string path;
+	protected string _path;
+	protected SysTime _time_accessed;
+	protected SysTime _time_modified;
 
 	this(string path)
 	in
@@ -17,8 +20,24 @@ struct Directory
 	}
 	do
 	{
-		this.path = path;
+		this._path = path;
+		renew_property();
 		return;
+	}
+
+	@property string path() pure nothrow @nogc @safe
+	{
+		return this._path;
+	}
+
+	@property SysTime time_accesded()
+	{
+		return this._time_accessed;
+	}
+
+	@property SysTime time_modified()
+	{
+		return this._time_modified;
 	}
 
 	@property FileHandler[] entries()
@@ -33,6 +52,17 @@ struct Directory
 			file_list ~= FileHandler(entry);
 		}
 		return file_list;
+	}
+
+protected:
+	void renew_property()
+	{
+		getTimes(
+			this._path,
+			this._time_accessed,
+			this._time_modified,
+		);
+		return;
 	}
 }
 
