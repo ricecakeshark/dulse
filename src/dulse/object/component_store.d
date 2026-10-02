@@ -48,6 +48,11 @@ class ComponentStore(Component) : IComponentStore
 		return this.entity_list;
 	}
 
+	ref Component[] opSlice() pure nothrow @nogc @safe
+	{
+		return this.component_list;
+	}
+
 	@property ref Component[] components() pure nothrow @nogc
 	{
 		return this.component_list;

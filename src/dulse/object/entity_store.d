@@ -51,6 +51,24 @@ class EntityStore
 		return entity_list.any!(entity => this.has(entity));
 	}
 
+	typeof(this) create(TypeList...)(TypeList entity_list_list) pure nothrow @safe
+	{
+		foreach (ref entity_list; entity_list_list)
+		{
+			this.create(entity_list);
+		}
+		return this;
+	}
+
+	typeof(this) create(Entity[] out_entity_list) pure nothrow @safe
+	{
+		foreach (ref out_entity; out_entity_list)
+		{
+			this.create(out_entity);
+		}
+		return this;
+	}
+
 	typeof(this) create(out Entity out_entity) pure nothrow @safe
 	{
 		scope Entity entity;
@@ -59,15 +77,6 @@ class EntityStore
 		// internal
 		this.entity_list ~= entity;
 		next_id += 1;
-		return this;
-	}
-
-	typeof(this) create(Entity[] out_entity_list...) pure nothrow @safe
-	{
-		foreach (ref out_entity; out_entity_list)
-		{
-			this.create(out_entity);
-		}
 		return this;
 	}
 

@@ -61,6 +61,11 @@ class ObjectManager
 		return this.component_storage.has!Component(entity);
 	}
 
+	ComponentStore!Component get(Component)() pure @safe
+	{
+		return this.component_storage.get!Component();
+	}
+
 	ref Component get(Component)(Entity entity) pure @safe
 	{
 		enofrce(this.entity_store.has(entity));

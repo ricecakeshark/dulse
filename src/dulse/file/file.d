@@ -5,7 +5,7 @@ import std.digest.murmurhash;
 import std.exception : enforce;
 import std.file : exists, getSize, isFile, isDir, timeLastModified;
 import std.path : baseName, dirName, isValidFilename, isValidPath;
-import std.stdio : File, LockType;
+import std.stdio : chunks, File, LockType;
 import std.typecons : nullable, Nullable;
 
 static MurmurHash3!(128, 64) hasher_murmur;
@@ -61,7 +61,7 @@ struct FileHandler
 		return this._path.dirName();
 	}
 
-	@property string file_name() pure nothrow @nogc @safe
+	@property string name() pure nothrow @nogc @safe
 	{
 		return this._path.baseName();
 	}
@@ -69,6 +69,13 @@ struct FileHandler
 	@property SysTime last_modified()
 	{
 		return timeLastModified(this._path);
+	}
+
+	@property ubyte[] data_raw()
+	{
+		scope ubyte[] buffer;
+		get_data_dirty(buffer);
+		return buffer;
 	}
 
 	ref typeof(this) open(in string path)
@@ -95,7 +102,8 @@ protected:
 		if (!(path.isValidPath && path.exists && path.isFile))
 		{
 			debug import std.stdio;
-			debug stderr.writeln("canceled to open file",path);
+
+			debug stderr.writeln("canceled to open file", path);
 			return;
 		}
 		this.handle_substance.open(path, "r");
@@ -104,7 +112,7 @@ protected:
 		return;
 	}
 
-	ubyte[16] get_digest() 
+	ubyte[16] get_digest()
 	{
 		scope File temp_file = File(this._path);
 		hasher_murmur.start();
@@ -113,6 +121,15 @@ protected:
 			hasher_murmur.put(chunk);
 		}
 		return hasher_murmur.finish();
+	}
+
+	void get_data_dirty(out ubyte[] data)
+	{
+		foreach (ubyte[] chunk; chunks(this.handle_substance, 4096))
+		{
+			data ~= chunk;
+		}
+		return;
 	}
 }
 

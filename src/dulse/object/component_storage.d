@@ -36,7 +36,7 @@ class ComponentStorage
 			.has(entity);
 	}
 
-	ref ComponentStore!Component get(Component)() pure @safe
+	ComponentStore!Component get(Component)() pure @safe
 	{
 		enforce((typeid(Component) in component_store_list) !is null);
 		enforce((cast(ComponentStore!Component) component_store_list[typeid(Component)]) !is null);
@@ -91,7 +91,7 @@ class ComponentStorage
 	// attach Entity with Component
 	typeof(this) attach(Component)(Entity[] entity_list...) pure @safe
 	{
-		enforce(typeid(Component) in this.component_store_list);
+		enforce(typeid(Component) in this.component_store_list, "the component is not had by component storage.");
 		this.component_store_list[typeid(Component)]
 			.attach(entity_list);
 		/+(cast(ComponentStore!Component) this.component_store_list[typeid(Component)])
