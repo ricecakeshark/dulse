@@ -3,6 +3,7 @@ module dulse.core.container.interfaced_pool;
 import dulse.core.container.pool;
 import std.array : array;
 import std.algorithm : any, count, filter, map;
+import std.meta : anySatisfy;
 
 //import std.range;
 
@@ -43,6 +44,15 @@ struct InterfacedPool(Interface)
 	typeof(this) clear() pure nothrow @safe
 	{
 		this.pool = [];
+		return this;
+	}
+
+	typeof(this) append(TypeList...)() pure nothrow @safe
+	{
+		foreach (Type; TypeList)
+		{
+			this.pool ~= new Type();
+		}
 		return this;
 	}
 
@@ -89,6 +99,23 @@ struct InterfacedPool(Interface)
 			.filter!(item => cast(Type) item !is null)()
 			.map!(item => cast(Type) item)()
 			.array();
+	}
+
+	Interface[] query(TypeList...)() pure nothrow @safe
+	{
+		scope Interface[] temp_list;
+		outer: foreach (ref _item; this.pool)
+		{
+			foreach (Type; TypeList)
+			{
+				if (cast(Type) _item !is null)
+				{
+					temp_list ~= _item;
+					continue outer;
+				}
+			}
+		}
+		return temp_list.dup;
 	}
 
 	typeof(this) query(TypeList...)(out TypeList query_list) pure nothrow @safe
@@ -168,7 +195,7 @@ unittest
 	assert(pool.query_all!C2 == [b]);
 	assert(pool.have!C3 == false);
 	assert(pool.count!C3 == 0);
-
+	assert(pool.query!(C1, C2) == [a, b, c]);
 }
 
 bool isAnyTypeOf(Types...)(target) pure nothrow @safe
