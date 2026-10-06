@@ -4,9 +4,7 @@ import dulse.object;
 
 interface IObjectSystem
 {
-	void initialize(ObjectManager);
-	void finalize(ObjectManager);
-	void process(ObjectManager);
+	void initialize(ObjectManager) @safe;
+	void finalize(ObjectManager) @safe;
+	void process(ObjectManager) @safe;
 }
-
-

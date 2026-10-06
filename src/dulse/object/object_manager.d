@@ -2,24 +2,31 @@ module dulse.object.object_manager;
 
 import dulse.object;
 import std.exception;
-import std.meta : allSatisfy, staticIndexOf, staticMap;
-import std.traits : InterfacesTuple;
+
 import std.algorithm : remove;
 import std.conv : to;
+import std.meta : allSatisfy;
 
 class ObjectManager
 {
-	EntityStore entity_store;
-	ComponentStorage component_storage;
-	IObjectSystem[] system_list;
-	ResourceStore resource_store;
+	protected EntityStore entity_store;
+	protected ComponentStorage component_storage;
+	//IObjectSystem[] system_list;
+	protected SystemStore system_store;
+	protected ResourceStore resource_store;
 
 	this() pure nothrow @safe
 	{
 		this.entity_store = new EntityStore();
 		this.component_storage = new ComponentStorage();
+		this.system_store = new SystemStore(this);
 		this.resource_store = new ResourceStore();
 		return;
+	}
+
+	invariant
+	{
+		assert(this !is null, "this is null");
 	}
 
 	// EntityStore
@@ -100,32 +107,22 @@ class ObjectManager
 		return this;
 	}
 	// System
-	@property ref IObjectSystem[] system()() pure nothrow @nogc @safe
+	@property SystemStore system()() pure nothrow @nogc @safe
 	{
-		return this.system_list;
+		return this.system_store;
 	}
 
-	deprecated @property size_t count_system() pure nothrow @nogc @safe
+	typeof(this) register(SystemTypeList...)() @safe
+	if (allSatisfy!(isSystemType, SystemTypeList))
 	{
-		return this.system_list.length;
-	}
-
-	deprecated @property IObjectSystem[] list_system() pure nothrow @nogc @safe
-	{
-		return this.system_list;
-	}
-
-	typeof(this) register(SystemType)() pure nothrow @safe
-	if (isSystemType!SystemType)
-	{
-		system_list ~= new SystemType();
+		this.system_store.register!SystemTypeList();
 		return this;
 	}
 
-	typeof(this) remove(SystemType)(SystemType system) pure nothrow @nogc @safe
-	if (isSystemType!SystemType)
+	typeof(this) remove(SystemTypeList...)() @nogc @safe
+	if (allSatisfy!(isSystemType, SystemTypeList))
 	{
-		system_list.remove(system);
+		this.system_store.remove!SystemTypeList();
 		return this;
 	}
 	// Resouce
@@ -139,6 +136,12 @@ class ObjectManager
 		return this.resource_store.count;
 	}
 
+	typeof(this) append_resource(ResourceList...)() pure nothrow @safe
+	{
+		this.resource_store.append!(ResourceList);
+		return this;
+	}
+
 	typeof(this) append_resource(TypeList...)(TypeList resource_list) pure nothrow @safe
 	{
 		this.resource_store.append!TypeList(resource_list);
@@ -147,46 +150,22 @@ class ObjectManager
 	// general process
 	typeof(this) initialize()
 	{
-		foreach (system; this.system_list)
-		{
-			system.initialize(this);
-		}
+		this.system_store.initialize();
 		return this;
 	}
 
 	typeof(this) finalize()
 	{
-		foreach (system; this.system_list)
-		{
-			system.finalize(this);
-		}
+		this.system_store.finalize();
 		return this;
 	}
 
 	typeof(this) process()
 	{
-		foreach (system; this.system_list)
-		{
-			system.process(this);
-		}
+		this.system_store.process();
 		return this;
 	}
 
-}
-
-template isComponentType(T)
-{
-	enum bool isComponentType = is(T == struct) && staticIndexOf!(IComponentStore, InterfacesTuple!T) >= 0;
-}
-
-template isSystemType(T)
-{
-	enum bool isSystemType = is(T == class) && staticIndexOf!(IObjectSystem, InterfacesTuple!T) >= 0;
-}
-
-template isStructType(T)
-{
-	enum bool isStructType = is(T == struct);
 }
 
 unittest

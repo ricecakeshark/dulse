@@ -23,9 +23,9 @@ class ResourceStore
 		return this.resource_list.length;
 	}
 
-	ref Resource refer(Resource)() pure nothrow @nogc @safe
+	ref Resource query(Resource)() pure nothrow @nogc @safe
 	{
-		return (cast(ResourceBox!Resource)this.resource_list[typeid(Resource)]).get();
+		return (cast(ResourceBox!Resource) this.resource_list[typeid(Resource)]).get();
 	}
 
 	typeof(this) clear() pure nothrow @nogc @safe
@@ -34,9 +34,12 @@ class ResourceStore
 		return this;
 	}
 
-	typeof(this) append(Type)(Type resource) pure nothrow @safe
+	typeof(this) append(ResourceList...)() pure nothrow @safe
 	{
-		resource_list[typeid(Type)] = new ResourceBox!Type(resource);
+		foreach (Resource; ResourceList)
+		{
+			this.append(Resource());
+		}
 		return this;
 	}
 
@@ -49,9 +52,9 @@ class ResourceStore
 		return this;
 	}
 
-	typeof(this) remove(Type)() pure nothrow @safe
+	typeof(this) append(Type)(Type resource) pure nothrow @safe
 	{
-		resource_list.remove(typeid(Type));
+		resource_list[typeid(Type)] = new ResourceBox!Type(resource);
 		return this;
 	}
 
@@ -61,6 +64,12 @@ class ResourceStore
 		{
 			resource_list.remove(typeid(Type));
 		}
+		return this;
+	}
+
+	typeof(this) remove(Type)() pure nothrow @safe
+	{
+		resource_list.remove(typeid(Type));
 		return this;
 	}
 

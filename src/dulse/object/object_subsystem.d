@@ -35,7 +35,7 @@ class ObjectSubsystem : Subsystem!ObjectSubsystem
 
 	override typeof(this) process()
 	{
-		foreach (manager; object_manager_list)
+		foreach (ref manager; object_manager_list)
 		{
 			manager.process();
 		}
