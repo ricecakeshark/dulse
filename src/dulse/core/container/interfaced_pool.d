@@ -120,7 +120,7 @@ struct InterfacedPool(Interface)
 
 	typeof(this) query(TypeList...)(out TypeList query_list) pure nothrow @safe
 	{
-		static foreach (_query; query_list)
+		foreach (_query; query_list)
 		{
 			this.query(_query);
 		}
