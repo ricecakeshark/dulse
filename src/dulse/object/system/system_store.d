@@ -1,4 +1,4 @@
-module dulse.object.system_store;
+module dulse.object.system.system_store;
 
 import dulse.object;
 import dulse.core.container : InterfacedPool;

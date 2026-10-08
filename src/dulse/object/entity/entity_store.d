@@ -1,12 +1,8 @@
-module dulse.object.entity_store;
+module dulse.object.entity.entity_store;
 
+import dulse.object.entity;
 import std.algorithm : all, any, canFind, countUntil, swapAt;
 import std.exception : enforce;
-
-struct Entity
-{
-	uint index;
-}
 
 class EntityStore
 {

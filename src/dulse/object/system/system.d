@@ -1,4 +1,4 @@
-module dulse.object.system;
+module dulse.object.system.system;
 
 import dulse.object;
 

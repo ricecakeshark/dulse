@@ -1,7 +1,7 @@
-module dulse.object.resource_store;
+module dulse.object.resource.resource_store;
 
-import std.algorithm;
-import std.exception;
+import dulse.object.resource;
+import std.exception:enforce;
 
 class ResourceStore
 {
@@ -88,27 +88,6 @@ class ResourceStore
 		}
 		return this;
 	}
-}
-
-class ResourceBox(Type) : IResourceBox
-{
-	Type resource;
-
-	this(Type resource)
-	{
-		this.resource = resource;
-		return;
-	}
-
-	ref Type get() pure nothrow @nogc @safe
-	{
-		return resource;
-	}
-}
-
-interface IResourceBox
-{
-
 }
 
 unittest

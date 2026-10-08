@@ -1,27 +1,11 @@
-module dulse.object.component_store;
+module dulse.object.component.component_store;
 
 import dulse.object;
-import std.exception;
-import std.algorithm;
-import std.typecons;
-import std.traits;
+import std.algorithm : countUntil, swapAt;
+import std.exception : enforce;
+import std.typecons : Nullable;
 
-interface IComponentStore
-{
-	@property bool has(Entity entity) pure nothrow @nogc @safe;
-
-	@property size_t count() pure nothrow @nogc @safe;
-
-	@property Entity[] entities() pure nothrow @nogc;
-
-	@property TypeInfo type() pure nothrow @nogc @safe;
-
-	typeof(this) clear() pure nothrow @nogc @safe;
-
-	typeof(this) attach(in Entity[] entity_list...) pure nothrow @safe;
-
-	typeof(this) detach(in Entity[]...) pure nothrow @safe;
-}
+//import std.traits;
 
 class ComponentStore(Component) : IComponentStore
 {
@@ -61,6 +45,12 @@ class ComponentStore(Component) : IComponentStore
 	@property TypeInfo type() pure nothrow @nogc @safe
 	{
 		return typeid(Component);
+	}
+
+	ref Component opIndex(size_t index) pure @nogc @safe
+	in (index < component_list.length)
+	{
+		return this.component_list[index];
 	}
 
 	ref Component opIndex(Entity entity) pure @safe
