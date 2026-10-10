@@ -43,6 +43,22 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return;
 	}
 
+	static typeof(this) identity() pure nothrow @nogc @safe
+	{
+		scope typeof(this) temp;
+		temp.fill(0f);
+		foreach (count; 0 .. Col)
+		{
+			temp[count, count] = 1f;
+		}
+		return temp;
+	}
+
+	static typeof(this) scaling(bool Homogeneous : true)(in Vector!(Row - 1, Type) vec) pure nothrow @nogc @safe
+	{
+		return matrix_scaling!(Homogeneous)(vec);
+	}
+
 	@property bool is_normal() const pure nothrow @nogc @safe
 	{
 		foreach (row; 0 .. Row)
@@ -120,65 +136,6 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return this.data[row][col];
 	}
 
-	Matrix!(R, C, Type) opCast(T : Matrix!(R, C, Type), size_t R, size_t C)() const pure nothrow @nogc @safe
-	{
-		scope Matrix!(R, C, Type) return_mat;
-		foreach (col; 0 .. C)
-		{
-			foreach (row; 0 .. R)
-			{
-				return_mat[row, col] = (row < Row && col < Col) ? this.index(row, col) : 0.0f;
-			}
-		}
-		return return_mat;
-	}
-
-	Matrix!(R, C, Type) resize(size_t R, size_t C)() const pure nothrow @nogc @safe
-	in (R >= 1 && C >= 1)
-	{
-		scope Matrix!(R, C, Type) return_mat;
-		foreach (col; 0 .. C)
-		{
-			foreach (row; 0 .. R)
-			{
-				return_mat[row, col] = (row < Row && col < Col)
-					? this.index(row, col) : (row == col)
-					? 1.0f : 0.0f;
-			}
-		}
-		return return_mat;
-	}
-
-	string to_string() const pure @safe
-	{
-		scope Appender!string return_str = appender("Matrix");
-		foreach (col; 0 .. Col)
-		{
-			return_str ~= format(" col%2d", col);
-		}
-		return_str ~= "\n";
-		foreach (row; 0 .. Row)
-		{
-			return_str ~= format(" row%2d", row);
-			foreach (col; 0 .. Col)
-			{
-				return_str ~= format(" %+2.2f", this.index(row, col));
-			}
-			return_str ~= "\n";
-		}
-		return return_str[];
-	}
-
-	string to_string_raw() const pure @safe
-	{
-		return text(this.data);
-	}
-
-	string opCast(T : string)() const pure @safe
-	{
-		return this.to_string();
-	}
-
 	bool opEquals(in Matrix!(Row, Col, Type) rhs) const pure nothrow @nogc @safe
 	{
 		foreach (row; 0 .. Row)
@@ -208,27 +165,22 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		}
 		return true;
 	}
-	// Matrix + Matrix
+	// Matrix + Matrix, Matrix - Matrix 
 	Matrix!(Row, Col, Type) opBinary(
-		string op : "+", size_t RhsRow, size_t RhsCol, RhsType,
+		string op, size_t RhsRow, size_t RhsCol, RhsType,
 	)(
 		in Matrix!(RhsRow, RhsCol, RhsType) rhs,
 	) const pure nothrow @nogc @safe
-	in (RhsRow == Row)
-	in (RhsCol == Col)
+	in (RhsRow == Row && RhsCol == Col)
 	{
-		return add(this, rhs);
-	}
-	// Matrix - Matrix
-	Matrix!(Row, Col, Type) opBinary(
-		string op : "-", size_t RhsRow, size_t RhsCol, RhsType,
-	)(
-		in Matrix!(RhsRow, RhsCol, RhsType) rhs,
-	) const pure nothrow @nogc @safe
-	in (RhsRow == Row)
-	in (RhsCol == Col)
-	{
-		return subtract(this, rhs);
+		static if (op == "+")
+		{
+			return add(this, rhs);
+		}
+		else static if (op == "-")
+		{
+			return subtract(this, rhs);
+		}
 	}
 	// Matrix * Matrix
 	Matrix!(Row, Col2, Type) opBinary(string op : "*", size_t Row2, size_t Col2)(
@@ -242,6 +194,12 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 	{
 		return multiply!(Matrix!(Row, Col, Type))(this, rhs);
 	}
+	// Matrix * Vector
+	Vector!(Row, Type) opBinary(string op : "*")(
+		Vector!(Row, Type) rhs) pure nothrow @nogc @safe
+	{
+		return multiply!(typeof(this), typeof(rhs), Row, Col, Type)(this, rhs);
+	}
 	// Matrix / 2.0
 	Matrix!(Row, Col, Type) opBinary(string op : "/")(
 		in Type rhs) const pure nothrow @nogc @safe
@@ -250,13 +208,20 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return devide!(Matrix!(Row, Col, Type))(this, rhs);
 	}
 
-	Vector!(Row, Type) opBinary(string op : "*")(
-		Vector!(Row, Type) rhs) pure nothrow @nogc @safe
+	ref typeof(this) opOpAssign(string op)(in typeof(this) rhs) pure nothrow @nogc @safe
 	{
-		return multiply!(typeof(this), typeof(rhs), Row, Col, Type)(this, rhs);
+		static if (op == "+")
+		{
+			this = add(this, rhs);
+		}
+		else static if (op == "-")
+		{
+			this = subtract(this, rhs);
+		}
+		return this;
 	}
 
-	typeof(this) fill(float value = 0.0) pure nothrow @nogc @safe
+	ref typeof(this) fill(float value = 0.0) pure nothrow @nogc @safe
 	{
 		foreach (col; 0 .. Col)
 		{
@@ -268,21 +233,86 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return this;
 	}
 
-	typeof(this) indentify() pure nothrow @nogc @safe
-	in (Row == Col)
+	Matrix!(R, C, Type) resize(size_t R, size_t C)() const pure nothrow @nogc @safe
+	in (R >= 1 && C >= 1)
 	{
-		this.fill(0.0f);
-		foreach (count; 0 .. Col)
+		scope Matrix!(R, C, Type) return_mat;
+		foreach (col; 0 .. C)
 		{
-			this.index(count, count) = 1.0f;
+			foreach (row; 0 .. R)
+			{
+				return_mat[row, col] = (row < Row && col < Col)
+					? this.index(row, col) : (row == col)
+					? 1.0f : 0.0f;
+			}
 		}
-		return this;
+		return return_mat;
+	}
+
+	Matrix!(R, C, Type) opCast(T : Matrix!(R, C, Type), size_t R, size_t C)() const pure nothrow @nogc @safe
+	{
+		return this.resize!(R, C);
 	}
 
 	size_t toHash() const @nogc @safe pure nothrow
 	{
 		return hashOf(this.data);
 	}
+
+	string opCast(Type : string)() const pure @safe
+	{
+		return this.to_string();
+	}
+
+	string to_string() const pure @safe
+	{
+		scope Appender!string return_str = appender("Matrix");
+		foreach (col; 0 .. Col)
+		{
+			return_str ~= format(" col%2d", col);
+		}
+		return_str ~= "\n";
+		foreach (row; 0 .. Row)
+		{
+			return_str ~= format(" row%2d", row);
+			foreach (col; 0 .. Col)
+			{
+				return_str ~= format(" %+2.2f", this.index(row, col));
+			}
+			return_str ~= "\n";
+		}
+		return return_str[];
+	}
+
+	string to_string_raw() const pure @safe
+	{
+		return text(this.data);
+	}
+}
+
+// fill a scalar matrix
+ref M fill(M : Matrix!(Row, Col, Type), size_t Row, size_t Col, Type)(
+	return ref M mat, Type value = 0.0,
+) pure nothrow @nogc @safe
+{
+	foreach (col; 0 .. Col)
+	{
+		foreach (row; 0 .. Row)
+		{
+			this.index(row, col) = value;
+		}
+	}
+	return mat;
+}
+// identify matrix
+ref M identify(M : Matrix!(Size, Size, Type), size_t Size, Type)(return ref M mat) pure nothrow @nogc @safe
+{
+	mat.fill(0f);
+	foreach (count; 0 .. Size)
+	{
+		mat[count, count] = 1f;
+	}
+	return mat;
 }
 
 // transpose matrix
@@ -304,6 +334,16 @@ M : Matrix!(Row, Col, Type),
 
 unittest
 {
+	assert(
+		Matrix!(4, 4).identity() ==
+			[
+				[1f, 0f, 0f, 0f],
+				[0f, 1f, 0f, 0f],
+				[0f, 0f, 1f, 0f],
+				[0f, 0f, 0f, 1f],
+			]
+	);
+
 	Matrix!(2, 2) mat_a, mat_b;
 	mat_a = [
 		[1.0f, 2.0f],
@@ -736,91 +776,30 @@ in (Size != 0)
 	}
 	return temp_mat;
 }
-// 
-Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(Type[Size] value_list...) pure nothrow @nogc @safe
-{
-	scope Matrix!(Size, Size) temp;
-	temp.fill(0.0f);
-	foreach (count; 0 .. Size)
-	{
-		temp[count, count] = value_list[count];
-	}
-	return temp;
-}
 
-Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(in Type value) pure nothrow @nogc @safe
-{
-	scope Matrix!(Size, Size) temp;
-	temp.fill(0.0f);
-	foreach (count; 0 .. Size)
-	{
-		temp[count, count] = value;
-	}
-	return temp;
-}
-
-Matrix!(Size, Size) matrix_scale(size_t Size, Type = float)(in Vector!(Size, Type) vec) pure nothrow @nogc @safe
-{
-	scope Matrix!(Size, Size) temp;
-	temp.fill(0.0f);
-	foreach (count; 0 .. Size)
-	{
-		temp[count, count] = vec[count];
-	}
-	return temp;
-}
-
-Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Type[Size] value_list) pure nothrow @nogc @safe
-{
-	scope Matrix!(Size, Size) temp;
-	temp.fill(0.0f);
-	foreach (index; 0 .. Size)
-	{
-		temp[index, Size - 1] = value_list[index];
-	}
-	return temp;
-}
-
-Matrix!(Size, Size) matrix_translate(size_t Size, Type = float)(Vector!(Size, Type) vec) pure nothrow @nogc @safe
-{
-	return matrix_translate(vec.data);
-}
-
-unittest
-{
-	scope Matrix!(3, 3) mat_s, mat_t;
-	mat_s = matrix_scale([+1.0f, +2.0f, +3.0f]);
-	assert(mat_s == Matrix!(3, 3)(
-			[
-			[+1.0f, 0.0f, 0.0f,],
-			[0.0f, +2.0f, 0.0f,],
-			[0.0f, 0.0f, +3.0f,],
-		]
-	));
-}
 // matrix operation
-Matrix!(Row, Col, Type) multiply_ltor(size_t Row, size_t Col, Type)(
+Matrix!(Row, Col, Type) multiply(bool rtol = false, size_t Row, size_t Col, Type)(
 	Matrix!(Row, Col, Type)[] matrix_list...
 )
 {
 	scope Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
 	temp.indentify();
-	foreach (count; 0 .. matrix_list.length)
+	if (rtol == false)
 	{
-		temp = temp * matrix_list[count];
-	}
-	return temp;
-}
+		// left to right
+		foreach (count; 0 .. matrix_list.length)
+		{
+			temp = temp * matrix_list[count];
+		}
 
-Matrix!(Row, Col, Type) multiply_rtol(size_t Row, size_t Col, Type)(
-	Matrix!(Row, Col, Type)[] matrix_list...
-)
-{
-	scope Matrix!(Row, Col, Type) temp = Matrix!(Row, Col, Type)(0.0f);
-	temp.indentify();
-	foreach_reverse (count; 0 .. matrix_list.length)
+	}
+	else
 	{
-		temp = temp * matrix_list[count];
+		// right to left
+		foreach_reverse (count; 0 .. matrix_list.length)
+		{
+			temp = temp * matrix_list[count];
+		}
 	}
 	return temp;
 }

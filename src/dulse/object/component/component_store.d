@@ -116,7 +116,7 @@ class ComponentStore(Component) : IComponentStore
 		{
 			return this;
 		}
-		size_t count = this.entity_list.countUntil(entity);
+		scope size_t count = this.entity_list.countUntil(entity);
 		if (count >= 0)
 		{
 			// detach component_list
