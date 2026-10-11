@@ -59,6 +59,11 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return matrix_scaling!(Homogeneous)(vec);
 	}
 
+	static typeof(this) scaling(bool Homogeneous : false)(in Vector!(Row, Type) vec) pure nothrow @nogc @safe
+	{
+		return matrix_scaling!(Homogeneous)(vec);
+	}
+
 	@property bool is_normal() const pure nothrow @nogc @safe
 	{
 		foreach (row; 0 .. Row)
@@ -136,34 +141,14 @@ struct Matrix(size_t Row, size_t Col, Type = float)
 		return this.data[row][col];
 	}
 
-	bool opEquals(in Matrix!(Row, Col, Type) rhs) const pure nothrow @nogc @safe
+	bool opEquals(RhsType)(in Matrix!(Row, Col, RhsType) rhs) const pure nothrow @nogc @safe
 	{
-		foreach (row; 0 .. Row)
-		{
-			foreach (col; 0 .. Col)
-			{
-				if (isClose(this[row, col], rhs[row, col]) == false)
-				{
-					return false;
-				}
-			}
-		}
-		return true;
+		return approx_equal(this, rhs);
 	}
 
 	bool opEquals(in Type[Col][Row] rhs) const pure nothrow @nogc @safe
 	{
-		foreach (row; 0 .. Row)
-		{
-			foreach (col; 0 .. Col)
-			{
-				if (isClose(this.index(row, col), rhs[row][col], 1e-10, 1e-6) == false)
-				{
-					return false;
-				}
-			}
-		}
-		return true;
+		return approx_equal(this, Matrix!(Row, Col, Type)(rhs));
 	}
 	// Matrix + Matrix, Matrix - Matrix 
 	Matrix!(Row, Col, Type) opBinary(
@@ -619,6 +604,47 @@ unittest
 			[0.0, 0.0, 1.0 / 5, -2.0 / 5,],
 			[0.0, 0.0, 0.0, 1.0,],
 		]);
+}
+// return equality Matrices approximently (Mat == Mat)
+bool approx_equal(
+	size_t Row, size_t Col, LhsType, RhsType,
+)(
+	in Matrix!(Row, Col, LhsType) lhs,
+	in Matrix!(Row, Col, RhsType) rhs,
+) pure nothrow @nogc @safe
+{
+	enum error_margin = (is(LhsType == float) && is(RhsType == float)) ? 1e-5 : 1e-10;
+	foreach (row; 0 .. Row)
+	{
+		foreach (col; 0 .. Col)
+		{
+			if (!isClose(lhs[row, col], rhs[row, col], error_margin, error_margin))
+			{
+				return false;
+			}
+		}
+	}
+	return true;
+}
+// return quality Matrices strictly (Mat == Mat)
+bool strict_equal(
+	size_t Row, size_t Col, LhsType, RhsType,
+)(
+	in Matrix!(Row, Col, LhsType) lhs,
+	in Matrix!(Row, Col, RhsType) rhs,
+) pure nothrow @nogc @safe
+{
+	foreach (row; 0 .. Row)
+	{
+		foreach (col; 0 .. Col)
+		{
+			if (lhs[row, col] != rhs[row, col])
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 // add Matrix (Mat + Mat)

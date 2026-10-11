@@ -52,6 +52,11 @@ struct Quaternion(Type = float)
 		return;
 	}
 
+	static Quaternion!Type identity(Type)() const pure nothrow @nogc @safe
+	{
+		return Quaternion!Type(0.0f, 0.0f, 0.0f, 1.0f);
+	}
+
 	@property ref inout(Type) x() inout pure nothrow @nogc @safe
 	{
 		return this.data[0];
@@ -104,7 +109,7 @@ struct Quaternion(Type = float)
 
 	bool opEquals(RhsType)(in Quaternion!RhsType rhs) const pure nothrow @nogc @safe
 	{
-		return equal(this, rhs);
+		return approx_equal(this, rhs);
 	}
 
 	ref inout(Type) index(in size_t index) inout pure nothrow @nogc @safe
@@ -128,53 +133,81 @@ struct Quaternion(Type = float)
 			return Quaternion!Type(-this.x, -this.y, -this.z, -this.w);
 		}
 	}
-
+	// Quat + Quat
 	typeof(this) opBinary(string op : "+")(in Quaternion!Type rhs) const pure nothrow @nogc @safe
 	{
 		return add(this, rhs);
 	}
-
+	// Quat - Quat
 	typeof(this) opBinary(string op : "-")(in Quaternion!Type rhs) const pure nothrow @nogc @safe
 	{
 		return subtract(this, rhs);
 	}
-
+	// Quat * Quat
 	typeof(this) opBinary(string op : "*")(in Quaternion!Type rhs) const pure nothrow @nogc @safe
 	{
 		return multiply(this, rhs);
 	}
-
+	// Quat * 2.0
 	typeof(this) opBinary(string op : "*")(in Type rhs) const pure nothrow @nogc @safe
 	{
 		return multiply(this, rhs);
 	}
-	// 
+	// Quat * Vec4
 	typeof(this) opBinary(string op : "*")(in Vector!(4, Type) vec) const pure nothrow @nogc @safe
 	{
 		return vec.rotate_by(this);
 	}
-
+	// Quat / 2.0
 	typeof(this) opBinary(string op : "/")(in Type rhs) const pure nothrow @nogc @safe
 	{
 		return devide(this, rhs);
 	}
 
-	size_t toHash() const pure nothrow @nogc @safe
-	{
-		return hashOf(this.data);
-	}
-
-	static Quaternion!Type identity(Type)() const pure nothrow @nogc @safe
-	{
-		return Quaternion!Type(0.0f, 0.0f, 0.0f, 1.0f);
-	}
-
-	typeof(this) identify() pure nothrow @nogc @safe
+	ref typeof(this) identify() pure nothrow @nogc @safe
 	{
 		this.x = 0.0f;
 		this.y = 0.0f;
 		this.z = 0.0f;
 		this.w = 1.0f;
+		return this;
+	}
+	// Quat *= Quat , Quat += Quat , Quat -= Quat
+	ref typeof(this) opOpAssign(string op)(in typeof(this) rhs) pure nothrow @nogc @safe
+	{
+		static if (op == "+")
+		{
+			this = add(this, rhs);
+		}
+		else static if (op == "-")
+		{
+			this = subtract(this, rhs);
+		}
+		else static if (op == "*")
+		{
+			this = multiply(this, rhs);
+		}
+		else
+		{
+			assert(false, "the operator is not supported. '" ~ op ~ "=' " ~ typeid(Type));
+		}
+		return this;
+	}
+	// Quat *= 2.0, Quat /= 2.0
+	ref typeof(this) opOpAssign(string op)(in Type rhs) pure nothrow @nogc @safe
+	{
+		static if (op == "*")
+		{
+			this = multiply(this, rhs);
+		}
+		else static if (op == "/")
+		{
+			this = devide(this, rhs);
+		}
+		else
+		{
+			assert(false, "the operation is not supported. '" ~ op ~ "=' " ~ typeid(Type));
+		}
 		return this;
 	}
 
@@ -222,9 +255,14 @@ struct Quaternion(Type = float)
 	{
 		return text("float[4]: (", this, ")");
 	}
-}
 
-bool equal(
+	size_t toHash() const pure nothrow @nogc @safe
+	{
+		return hashOf(this.data);
+	}
+}
+// return equality of 2 approximently (Quat == Quat)
+bool approx_equal(
 Q1 : Quaternion!LhsType,
 Q2:
 	Quaternion!RhsType,
@@ -235,20 +273,28 @@ Q2:
 	in Q2 quat_rhs,
 ) pure nothrow @nogc @safe
 {
-	static if (is(LhsType == float) && is(RhsType == float))
-	{
-		return isClose(quat_lhs.x, quat_rhs.x, 1e-5, 1e-5)
-			&& isClose(quat_lhs.y, quat_rhs.y, 1e-5, 1e-5)
-			&& isClose(quat_lhs.z, quat_rhs.z, 1e-5, 1e-5)
-			&& isClose(quat_lhs.w, quat_rhs.w, 1e-5, 1e-5);
-	}
-	else
-	{
-		return isClose(quat_lhs.x, quat_rhs.x, 1e-10, 1e-10)
-			&& isClose(quat_lhs.y, quat_rhs.y, 1e-10, 1e-10)
-			&& isClose(quat_lhs.z, quat_rhs.z, 1e-10, 1e-10)
-			&& isClose(quat_lhs.w, quat_rhs.w, 1e-10, 1e-10);
-	}
+	enum permissible = (is(LhsType == float) && is(RhsType == float)) ? 1e-5 : 1e-10;
+	return isClose(quat_lhs.x, quat_rhs.x, permissible, permissible)
+		&& isClose(quat_lhs.y, quat_rhs.y, permissible, permissible)
+		&& isClose(quat_lhs.z, quat_rhs.z, permissible, permissible)
+		&& isClose(quat_lhs.w, quat_rhs.w, permissible, permissible);
+}
+// return equality of 2 strictly (Quat == Quat)
+bool strict_equal(
+Q1 : Quaternion!LhsType,
+Q2:
+	Quaternion!RhsType,
+	LhsType,
+	RhsType,
+)(
+	in Q1 quat_lhs,
+	in Q2 quat_rhs,
+) pure nothrow @nogc @safe
+{
+	return (quat_lhs.x == quat_rhs.x)
+		&& (quat_lhs.y == quat_rhs.y)
+		&& (quat_lhs.z == quat_rhs.z)
+		&& (quat_lhs.w == quat_rhs.w);
 }
 
 // Quat + Quat

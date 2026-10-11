@@ -30,15 +30,48 @@ struct Vector(size_t Length, Type = float)
 		return;
 	}
 
-	Type[Length] opAssign(in Type[Length] assign_array) pure nothrow @safe
-	in
+	ref inout(Type) index(in size_t index) inout pure nothrow @nogc @safe
+	in (index < Length)
 	{
-		assert(iota(0, Length).all!(i => assign_array[i].isNaN == false)());
+		return this.data[index];
 	}
-	do
+
+	ref inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
+	in (index < Length)
 	{
-		this.data = assign_array;
-		return assign_array;
+		return this.data[index];
+	}
+
+	static if (1 <= Length)
+	{
+		@property ref inout(Type) x() inout pure nothrow @nogc @safe
+		{
+			return this.data[0];
+		}
+	}
+
+	static if (2 <= Length)
+	{
+		@property ref inout(Type) y() inout pure nothrow @nogc @safe
+		{
+			return this.data[1];
+		}
+	}
+
+	static if (3 <= Length)
+	{
+		@property ref inout(Type) z() inout pure nothrow @nogc @safe
+		{
+			return this.data[2];
+		}
+	}
+
+	static if (4 <= Length)
+	{
+		@property ref inout(Type) w() inout pure nothrow @nogc @safe
+		{
+			return this.data[3];
+		}
 	}
 
 	@property bool contain_nan() const pure nothrow @nogc @safe
@@ -53,24 +86,32 @@ struct Vector(size_t Length, Type = float)
 
 	typeof(this) unit() const pure nothrow @nogc @safe
 	{
-		Vector!(Length) return_vec;
+		scope Vector!(Length) return_vec;
 		foreach (i; 0 .. Length)
 		{
 			return_vec.data[i] = this[i] / this.norm();
 		}
 		return return_vec;
 	}
-
-	typeof(this) opUnary(string op : "+")() const pure nothrow @nogc @safe
+	// Vec == Vec
+	bool opEquals(V : Vector!(RhsLength, RhsType), size_t RhsLength, RhsType)(in V rhs) const pure nothrow @nogc @safe
+	if (RhsLength == Length)
 	{
-		return Vector!(Length, Type)(this.data[].map!(x => +x)
-				.staticArray!(Type[Length]));
+		return approx_equal(this, rhs);
 	}
-
-	typeof(this) opUnary(string op : "-")() const pure nothrow @nogc @safe
+	// +Vec , -Vec
+	typeof(this) opUnary(string op)() const pure nothrow @nogc @safe
 	{
-		return Vector!(Length, Type)(this.data[].map!(x => -x)
-				.staticArray!(Type[Length]));
+		static if (op == "+")
+		{
+			return Vector!(Length, Type)(this.data[].map!(x => +x)
+					.staticArray!(Type[Length]));
+		}
+		else static if (op == "-")
+		{
+			return Vector!(Length, Type)(this.data[].map!(x => -x)
+					.staticArray!(Type[Length]));
+		}
 	}
 	// Vector(Length) + Vector(Length)
 	typeof(this) opBinary(string op : "+", size_t Length2, Type2)(
@@ -94,21 +135,26 @@ struct Vector(size_t Length, Type = float)
 	{
 		return cross_product(this, rhs);
 	}
-
-	// Vector * Scalar
-	typeof(this) opBinary(string op : "*")(in Type scalar) const pure nothrow @nogc @safe
+	// Vector * 2.0 , Vector / 2.0
+	typeof(this) opBinary(string op)(in Type scalar) const pure nothrow @nogc @safe
 	{
-		return multiply(this, scalar);
+		static if (op == "*")
+		{
+			return multiply(this, scalar);
+		}
+		else static if (op == "/")
+		{
+			return devide(this, scalar);
+		}
+		else
+		{
+			assert(false, "the operation is not supported. (Vec " ~ op ~ " Scalar)");
+		}
 	}
 	// Scalar * Vector
 	typeof(this) opBinaryRight(string op : "*")(in Type scalar) const pure nothrow @nogc @safe
 	{
 		return multiply(this, scalar);
-	}
-	// Vector / Scalar
-	typeof(this) opBinary(string op : "/")(in Type scalar) const pure nothrow @nogc @safe
-	{
-		return devide(this, scalar);
 	}
 
 	// Matrix * Vector
@@ -117,59 +163,33 @@ struct Vector(size_t Length, Type = float)
 	{
 		return multiply(mat, this);
 	}
-
-	bool opEquals(V : Vector!(RhsLength, RhsType), size_t RhsLength, RhsType)(in V rhs) const pure nothrow @nogc @safe
-	if (RhsLength == Length)
+	// Vec = [1.0, 2.0, 3.0]
+	Type[Length] opAssign(in Type[Length] assign_array) pure nothrow @nogc @safe
+	in
 	{
-		return approx_equal(this, rhs);
+		assert(iota(0, Length).all!(i => assign_array[i].isNaN == false)());
 	}
-
-	ref inout(Type) index(in size_t index) inout pure nothrow @nogc @safe
-	in (index < Length)
+	do
 	{
-		return this.data[index];
+		this.data = assign_array;
+		return assign_array;
 	}
-
-	ref inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
-	in (index < Length)
+	// Vec += Vec
+	ref typeof(this) opOpAssign(string op)(in typeof(this) rhs) pure nothrow @nogc @safe
 	{
-		return this.data[index];
-	}
-
-	static if (1 <= Length)
-	{
-		ref inout(Type) x() inout pure nothrow @nogc @safe
-		in (0 < Length)
+		static if (op == "+")
 		{
-			return this.data[0];
+			this = this.opBinary!("+")(rhs);
 		}
-	}
-
-	static if (2 <= Length)
-	{
-		ref inout(Type) y() inout pure nothrow @nogc @safe
-		in (1 < Length)
+		else static if (op == "-")
 		{
-			return this.data[1];
+			this = this.opBinary!("-")(rhs);
 		}
-	}
-
-	static if (3 <= Length)
-	{
-		ref inout(Type) z() inout pure nothrow @nogc @safe
-		in (2 < Length)
+		else
 		{
-			return this.data[2];
+			static assert(false, "the operator is not implemented. (" ~ op ~ "=)");
 		}
-	}
-
-	static if (4 <= Length)
-	{
-		ref inout(Type) w() inout pure nothrow @nogc @safe
-		in (3 < Length)
-		{
-			return this.data[3];
-		}
+		return this;
 	}
 
 	size_t toHash() const pure nothrow @nogc @safe
@@ -237,23 +257,6 @@ struct Vector(size_t Length, Type = float)
 			temp_matrix.data[count][$ - 1u] = this.data[count];
 		}
 		return temp_matrix;
-	}
-
-	ref typeof(this) opOpAssign(string op)(in typeof(this) rhs) pure nothrow @nogc @safe
-	{
-		static if (op == "+")
-		{
-			this = this.opBinary!("+")(rhs);
-		}
-		else static if (op == "-")
-		{
-			this = this.opBinary!("-")(rhs);
-		}
-		else
-		{
-			static assert(false, "the operator is not implemented.");
-		}
-		return this;
 	}
 }
 
