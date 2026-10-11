@@ -3,7 +3,7 @@ module dulse.math.transform.rotation;
 import dulse.math.linalg;
 import std.math;
 
-Matrix!(Size + (Homogeneous ? 1 : 0), Size + (Homogeneous ? 1 : 0), Type) matrix_rotate(
+/+Matrix!(Size + (Homogeneous ? 1 : 0), Size + (Homogeneous ? 1 : 0), Type) matrix_rotate(
 	bool Homogeneous = true,
 	size_t Size, Type,
 )(
@@ -12,12 +12,10 @@ Matrix!(Size + (Homogeneous ? 1 : 0), Size + (Homogeneous ? 1 : 0), Type) matrix
 {
 	Matrix!(Size + (Homogeneous ? 1 : 0), Size + (Homogeneous ? 1 : 0)) temp;
 
-
-
 	return temp;
-}
+}+/
 
-Matrix!(4, 4) transformer_rotate_x(bool Homogeneous = true)(in float rad) pure nothrow @nogc @safe
+Matrix!(4, 4) matrix_rotate_x(bool Homogeneous = true)(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
@@ -28,7 +26,7 @@ Matrix!(4, 4) transformer_rotate_x(bool Homogeneous = true)(in float rad) pure n
 	return temp;
 }
 
-Matrix!(4, 4) transformer_rotate_y(in float rad) pure nothrow @nogc @safe
+Matrix!(4, 4) matrix_rotate_y(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
@@ -39,7 +37,7 @@ Matrix!(4, 4) transformer_rotate_y(in float rad) pure nothrow @nogc @safe
 	return temp;
 }
 
-Matrix!(4, 4) transformer_rotate_z(in float rad) pure nothrow @nogc @safe
+Matrix!(4, 4) matrix_rotate_z(in float rad) pure nothrow @nogc @safe
 {
 	Matrix!(4, 4) temp;
 	temp = matrix_identity!(4, float)();
@@ -50,16 +48,16 @@ Matrix!(4, 4) transformer_rotate_z(in float rad) pure nothrow @nogc @safe
 	return temp;
 }
 
-Matrix!(4, 4) transformer_rotate(Type = float)(in Quaternion!Type quat) pure nothrow @nogc @safe
+Matrix!(4, 4) matrix_rotate(Type = float)(in Quaternion!Type quat) pure nothrow @nogc @safe
 {
-	return transformer_rotate_z(quat.z)
-		* transformer_rotate_y(quat.y)
-		* transformer_rotate_x(quat.x);
+	return matrix_rotate_z(quat.z)
+		* matrix_rotate_y(quat.y)
+		* matrix_rotate_x(quat.x);
 }
 
 unittest
 {
-	Matrix!(4, 4) mat_rot_x = transformer_rotate_x(PI_2);
+	Matrix!(4, 4) mat_rot_x = matrix_rotate_x(PI_2);
 	assert(mat_rot_x == [
 			[1.0f, 0.0f, 0.0f, 0.0f,],
 			[0.0f, 0.0f, -1.0f, 0.0f,],

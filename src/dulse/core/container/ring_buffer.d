@@ -22,32 +22,44 @@ struct RingBuffer(Type, size_t Length)
 		assert(this.index_first < Length);
 		assert(this._count <= Length);
 	}
-
-	bool is_empty() const pure nothrow @nogc @safe
+	// Ring.index(3) 
+	ref inout(Type) index(size_t _index) inout pure nothrow @nogc @safe
+	in (_index < this._count)
 	{
-		return (this._count == 0);
+		return this.data[(this.index_first + _index) % Length];
 	}
-
-	bool is_full() const pure nothrow @nogc @safe
+	// Ring[3]
+	ref inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
+	in (index < this._count)
 	{
-		return (this._count == Length);
+		return this.data[(this.index_first + index) % Length];
 	}
-
-	size_t index_head() const pure nothrow @nogc @safe
-	in (!this.is_empty)
+	// Ring.slice(0, 5)
+	Type[] slice(
+		in size_t index_1, in size_t index_2
+	) pure nothrow @safe
+	in (index_1 <= index_2)
+	in (index_2 <= this._count)
 	{
-		return this.index_first;
+		const size_t refer_first = (this.index_first + index_1) % Length;
+		const size_t _total_len = index_2 - index_1;
+		const size_t refer_len_1 = (_total_len < Length - refer_first)
+			? _total_len : Length - refer_first;
+		const size_t refer_len_2 = _total_len - refer_len_1;
+		return this.data[refer_first .. refer_first + refer_len_1]
+			~ this.data[0 .. refer_len_2];
 	}
-
-	size_t index_tail() const pure nothrow @nogc @safe
-	in (!this.is_empty)
+	// Ring[0 .. 5]
+	Type[] opSlice(
+		in size_t index_1, in size_t index_2
+	) pure nothrow @safe
 	{
-		return (this.index_first + this._count - 1) % Length;
+		return this.slice(index_1, index_2);
 	}
-
-	size_t count() pure nothrow @nogc @safe
+	// Ring[]
+	Type[] opSlice() pure nothrow @safe
 	{
-		return this._count;
+		return this.slice(0, this._count);
 	}
 
 	@property ref inout(Type) head() inout pure nothrow @nogc @safe
@@ -62,10 +74,9 @@ struct RingBuffer(Type, size_t Length)
 		return this.data[this.index_tail];
 	}
 
-	ref inout(Type) index(size_t _index) inout pure nothrow @nogc @safe
-	in (_index < this._count)
+	size_t count() pure nothrow @nogc @safe
 	{
-		return this.data[(this.index_first + _index) % Length];
+		return this._count;
 	}
 
 	size_t opDollar() pure nothrow @nogc @safe
@@ -73,36 +84,26 @@ struct RingBuffer(Type, size_t Length)
 		return this._count;
 	}
 
-	ref inout(Type) opIndex(in size_t index) inout pure nothrow @nogc @safe
-	in (index < this._count)
+	@property bool is_empty() const pure nothrow @nogc @safe
 	{
-		return this.data[(this.index_first + index) % Length];
+		return (this._count == 0);
 	}
 
-	Type[] opSlice(
-		in size_t index_1, in size_t index_2
-	) pure @safe
-	in
+	@property bool is_full() const pure nothrow @nogc @safe
 	{
-		import std.format;
-
-		assert(index_1 <= index_2);
-		assert(index_2 <= this._count, format("[%s, %s]", index_1, index_2));
-	}
-	do
-	{
-		const size_t refer_first = (this.index_first + index_1) % Length;
-		const size_t _total_len = index_2 - index_1;
-		const size_t refer_len_1 = (_total_len < Length - refer_first)
-			? _total_len : Length - refer_first;
-		const size_t refer_len_2 = _total_len - refer_len_1;
-		return this.data[refer_first .. refer_first + refer_len_1]
-			~ this.data[0 .. refer_len_2];
+		return (this._count == Length);
 	}
 
-	Type[] opSlice() pure @safe
+	@property size_t index_head() const pure nothrow @nogc @safe
+	in (!this.is_empty)
 	{
-		return this.opSlice(0, this._count);
+		return this.index_first;
+	}
+
+	@property size_t index_tail() const pure nothrow @nogc @safe
+	in (!this.is_empty)
+	{
+		return (this.index_first + this._count - 1) % Length;
 	}
 
 	ref typeof(this) clear() return pure nothrow @safe

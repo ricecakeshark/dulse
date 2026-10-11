@@ -5,8 +5,6 @@ import std.array : array;
 import std.algorithm : any, count, filter, map;
 import std.meta : anySatisfy;
 
-//import std.range;
-
 struct InterfacedPool(Interface)
 {
 	Interface[] pool;
@@ -41,13 +39,13 @@ struct InterfacedPool(Interface)
 			.any!(item => item is target);
 	}
 
-	typeof(this) clear() pure nothrow @safe
+	ref typeof(this) clear() pure nothrow @safe
 	{
 		this.pool = [];
 		return this;
 	}
 
-	typeof(this) append(TypeList...)() pure nothrow @safe
+	ref typeof(this) append(TypeList...)() pure nothrow @safe
 	{
 		foreach (Type; TypeList)
 		{
@@ -56,7 +54,7 @@ struct InterfacedPool(Interface)
 		return this;
 	}
 
-	typeof(this) append(Args...)(Args args) pure nothrow @safe
+	ref typeof(this) append(Args...)(Args args) pure nothrow @safe
 	{
 		foreach (item; args)
 		{
@@ -65,13 +63,13 @@ struct InterfacedPool(Interface)
 		return this;
 	}
 
-	typeof(this) remove(RemoveList...)(RemoveList remove_list) pure nothrow @safe
+	ref typeof(this) remove(RemoveList...)(RemoveList remove_list) pure nothrow @safe
 	{
 		this.pool.filter!(item => item.isAnyTypeOf!(RemoveList) == false);
 		return this;
 	}
 
-	typeof(this) apply()(void delegate(Interface) dlg)
+	ref typeof(this) apply()(void delegate(Interface) dlg)
 	{
 		foreach (item; this.pool)
 		{
@@ -80,7 +78,7 @@ struct InterfacedPool(Interface)
 		return this;
 	}
 
-	Type query(Type)() pure nothrow @safe
+	/+Type query(Type)() pure nothrow @safe
 	in
 	{
 		assert(this.pool.any!(item => (cast(Type) item) !is null), "the Type not found");
@@ -91,9 +89,9 @@ struct InterfacedPool(Interface)
 			.filter!(item => cast(Type) item !is null)()
 			.map!(item => cast(Type) item)()
 			.array()[0];
-	}
+	}+/
 
-	Type[] query_all(Type)() pure nothrow @safe
+	Type[] query(Type)() pure nothrow @safe
 	{
 		return this.pool
 			.filter!(item => cast(Type) item !is null)()
@@ -118,9 +116,9 @@ struct InterfacedPool(Interface)
 		return temp_list.dup;
 	}
 
-	typeof(this) query(TypeList...)(out TypeList query_list) pure nothrow @safe
+	ref typeof(this) query(TypeList...)(out TypeList query_list) pure nothrow @safe
 	{
-		foreach (_query; query_list)
+		foreach (ref _query; query_list)
 		{
 			this.query(_query);
 		}
@@ -189,10 +187,10 @@ unittest
 	pool.append(a, b, c);
 	assert(pool.have!C1 == true);
 	assert(pool.count!C1 == 2);
-	assert(pool.query_all!C1 == [a, c]);
+	assert(pool.query!C1 == [a, c]);
 	assert(pool.have!C2 == true);
 	assert(pool.count!C2 == 1);
-	assert(pool.query_all!C2 == [b]);
+	assert(pool.query!C2 == [b]);
 	assert(pool.have!C3 == false);
 	assert(pool.count!C3 == 0);
 	assert(pool.query!(C1, C2) == [a, b, c]);

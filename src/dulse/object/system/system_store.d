@@ -46,7 +46,7 @@ class SystemStore
 	{
 		assert(allSatisfy!(isSystemType, SystemTypeList));
 		this.system_list.append!SystemTypeList();
-		foreach (ref system; this.system_list.query!SystemTypeList())
+		foreach (system; this.system_list.query!SystemTypeList())
 		{
 			system.initialize(this.manager);
 		}

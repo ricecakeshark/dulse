@@ -71,9 +71,14 @@ class SubsystemPool
 		return this;
 	}
 
-	Type query(Type)()
+	Type[] query(Type)()
 	{
-		return this.pool.query!Type();
+		return this.pool.query!(Type);
+	}
+
+	ISubsystem[] query(TypeList...)()
+	{
+		return this.pool.query!(TypeList);
 	}
 
 	typeof(this) query(TypeList...)(out TypeList query_list)

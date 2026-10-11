@@ -28,6 +28,14 @@ Matrix!(Size, Size, Type) matrix_scaling(
 	return temp;
 }
 
+Matrix!(Size + (Homogeneous ? 1 : 0), Size + (Homogeneous ? 1 : 0), Type) matrix_scaling(
+	bool Homogeneous,
+	size_t Size, Type,)(
+	in Type[Size] vec_data...) pure nothrow @nogc @safe
+{
+	return matrix_scaling!Homogeneous(Vector!(Size, Type)(vec_data));
+}
+
 Matrix!(Size + 1, Size + 1, Type) matrix_scaling(
 	bool Homogeneous : true,
 	size_t Size, Type,)(

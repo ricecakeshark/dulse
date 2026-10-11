@@ -14,7 +14,7 @@ class MessageBus
 
 	Type[] recieve(Type)()
 	{
-		return this.pool.query_all!(Type)();
+		return this.pool.query!(Type)();
 	}
 }
 

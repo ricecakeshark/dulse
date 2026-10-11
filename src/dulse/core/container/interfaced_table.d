@@ -1,12 +1,22 @@
 module dulse.core.container.interfaced_table;
 
 import std.array : array;
-import std.algorithm;
-import std.exception;
+import std.algorithm : any, count, filter, joiner, std_remove = remove;
+import std.exception : enforce;
 
 struct InterfacedTable(I)
 {
 	I[][TypeInfo] element_table;
+
+	I[] index(Type)() pure nothrow @nogc @safe
+	{
+		auto ref list = (typeid(Type) in element_table);
+		if (list is null)
+		{
+			return null;
+		}
+		return (*list);
+	}
 
 	size_t count() const pure nothrow @nogc @safe
 	{
@@ -68,7 +78,8 @@ struct InterfacedTable(I)
 	in ((cast(I) element) !is null)
 	{
 		auto ref list = (*enforce(typeid(Type) in this.element_table));
-		list = std.algorithm.mutation.remove!(elem => elem is element)(list);
+		//list = std.algorithm.mutation.remove!(elem => elem is element)(list);
+		list = std_remove!(elem => elem is element)(list);
 		return this;
 	}
 
@@ -144,6 +155,7 @@ unittest
 	assert(table.count(c2_1) == 1 && table.count(c2_2) == 1);
 	assert(table.has!C1 && table.has!C2);
 	assert(table.has(c1) && table.has(c2_1) && table.has(c2_2));
+	assert(table.index!C1);
 	table.remove(c1);
 	assert(table.count == 2);
 	assert(table.count!C1 == 0);
