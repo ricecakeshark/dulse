@@ -1,6 +1,6 @@
 module dulse.object.object_subsystem;
 
-import dulse.core;
+import dulse.subsystem;
 import dulse.object;
 
 class ObjectSubsystem : Subsystem!ObjectSubsystem

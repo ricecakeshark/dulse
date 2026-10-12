@@ -9,4 +9,5 @@ public import dulse.logger;
 public import dulse.math;
 public import dulse.object;
 public import dulse.physics;
+public import dulse.subsystem;
 public import dulse.time;

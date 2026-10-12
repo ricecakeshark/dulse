@@ -1,7 +1,8 @@
-module dulse.core.subsystem;
+module dulse.subsystem.subsystem;
 
 import dulse.core;
-import std.array, std.algorithm;
+public import dulse.core : Core;
+import dulse.subsystem;
 
 class SubsystemPool
 {

@@ -4,6 +4,14 @@
 
 Dulse (dulse-core) aims to be general-purpose software engine.
 
+* Console (ANSI) 
+* Core ( Container(RingBuffer, TypeTable))
+* Logger (logger)
+* Math (Vector, Matrix, Quaternion)
+* Object (entity, component, system, resource)
+* Subsystem (Subsystem, MessageBus)
+* Time (timer)
+
 ## Lisence
 
 Mozilla Public License Version 2.0

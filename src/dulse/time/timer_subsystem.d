@@ -1,6 +1,6 @@
 module dulse.time.time_subsystem;
 
-import dulse.core;
+import dulse.subsystem;
 import dulse.time;
 import std.datetime : Duration;
 import core.thread;

@@ -1,6 +1,7 @@
 module dulse.logger.logger_subsystem;
 
-import dulse.core;
+import dulse.core.core;
+import dulse.subsystem;
 import dulse.logger;
 
 class LoggerSubsystem : Subsystem!LoggerSubsystem

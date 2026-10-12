@@ -1,4 +1,4 @@
-module dulse.core.message_bus;
+module dulse.subsystem.message_bus;
 
 import dulse.core.container;
 
