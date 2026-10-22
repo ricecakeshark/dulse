@@ -6,12 +6,19 @@ import std.algorithm;
 import std.typecons : Tuple;
 import std.meta;
 
-alias ToArray(Type) = Type[];
-
 struct TypeTable(TypeList...)
 {
 	alias ArrayTypeList = staticMap!(ToArray, TypeList);
 	Tuple!(ArrayTypeList) table;
+
+	this(Args...)(Args args)
+	{
+		static foreach (Type; TypeList)
+		{
+			table[index_of!Type] ~= [Filter!(ApplyLeft!(type_is, Type), args)];
+		}
+		return;
+	}
 
 	@property size_t count()() pure nothrow @nogc @safe
 	{
@@ -64,12 +71,30 @@ struct TypeTable(TypeList...)
 		return this;
 	}
 
+	/+ref typeof(this) append2(Types...)(Types element_list) pure nothrow @safe
+	{
+		foreach (Type; TypeList)
+		{
+			this.append(
+				Filter!(, element_list)
+			);
+			//this.append(element);
+		}
+		return this;
+	}+/
+
 	ref typeof(this) append(Types...)(Types element_list) pure nothrow @safe
 	{
 		foreach (element; element_list)
 		{
 			this.append(element);
 		}
+		return this;
+	}
+
+	ref typeof(this) append(Type)(Type[] element_list) pure nothrow @safe
+	{
+		this.table[this.index_of!Type] ~= element_list;
 		return this;
 	}
 
@@ -139,8 +164,15 @@ struct TypeTable(TypeList...)
 	}
 
 private:
+	alias ToArray(Type) = Type[];
 	enum has_index(Type) = staticIndexOf!(Type, TypeList) != -1;
 	enum index_of(Type) = staticIndexOf!(Type, TypeList);
+	template type_is(Type, alias a)
+	{
+		enum type_is = is(typeof(a) == Type);
+	}
+
+
 }
 
 unittest
@@ -193,4 +225,6 @@ unittest
 	assert(!table.has!S1 && !table.has!S2 && !table.has!S3);
 	assert(table.count == 0);
 	assert(table.count!S1 == 0 && table.count!S2 == 0 && table.count!S3 == 0);
+
+	TypeTable!(S1, S2, S3)(S1(1), S1(2));
 }
