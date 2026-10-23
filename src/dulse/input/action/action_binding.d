@@ -4,7 +4,7 @@ import dulse.input;
 import dulse.core.container;
 import dulse.math.linalg.vector;
 
-alias StateTable = TypeTable!(ActionState!Vec1, ActionState!Vec2);
+alias StateTable = TypedTable!(ActionState!Vec1, ActionState!Vec2);
 alias Handler = void delegate(in InputState state_list, ref StateTable);
 
 struct ActionBinding
