@@ -2,9 +2,9 @@ module dulse.core.container.typed_table;
 
 import std.array : array;
 import std.algorithm : count, equal, filter, range_remove = remove, SwapStrategy;
-
+import std.traits : ReturnType, TemplateArgsOf, Unqual;
 import std.typecons : Tuple;
-import std.meta : ApplyLeft, Filter, NoDuplicates, staticIndexOf, staticMap;
+import std.meta : AliasSeq, ApplyLeft, Filter, NoDuplicates, staticIndexOf, staticMap;
 
 struct TypedTable(TypeList...)
 {
@@ -14,6 +14,36 @@ struct TypedTable(TypeList...)
 	{
 		this.assign(args);
 		return;
+	}
+
+	inout(Type)[] index(Type)() inout pure nothrow @nogc @safe
+	{
+		static if (has_index!Type)
+		{
+			return this.table[this.index_of!Type];
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	ref Type[] refer(Type)() pure nothrow @nogc @safe
+	{
+		static assert(has_index!Type);
+		return this.table[this.index_of!Type];
+	}
+
+	bool is_empty() pure nothrow @nogc @safe
+	{
+		foreach (Type; TypeList)
+		{
+			if (this.table[index_of!Type].length >= 1)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	alias has_key(Type) = has_index!Type;
@@ -47,36 +77,15 @@ struct TypedTable(TypeList...)
 		return this.table[index_of!Type].count();
 	}
 
-	bool is_empty() pure nothrow @nogc @safe
-	{
-		foreach (Type; TypeList)
-		{
-			if (this.table[index_of!Type].length >= 1)
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
 	bool opEquals(in typeof(this) rhs) const pure nothrow @nogc @safe
 	{
 		return this.table == rhs.table;
 	}
 
-	ref inout(Type[]) index(Type)() inout pure nothrow @nogc @safe
-	in
+	TypedTable!(NoDuplicates!(TypeList, TemplateArgsOf!(Unqual!Rhs))) opBinary(string op : "~", Rhs)(
+		Rhs rhs) pure nothrow @safe
 	{
-		static assert(has_index!Type);
-	}
-	do
-	{
-		return this.table[this.index_of!Type];
-	}
-
-	typeof(this) opBinary(string op : "+")(in typeof(this) rhs) const pure
-	{
-		return this.add(rhs);
+		return join(this, rhs);
 	}
 
 	ref typeof(this) clear() pure nothrow @nogc @safe
@@ -151,22 +160,13 @@ struct TypedTable(TypeList...)
 		return this;
 	}
 
-	ref typeof(this) opOpAssign(string op : "~", Args...)(Args args)
+	ref typeof(this) opOpAssign(string op : "~", Args...)(Args args) pure nothrow @safe
 	{
 		this._append(args);
 		return this;
 	}
 
 protected:
-	typeof(this) add(in typeof(this) rhs) const pure nothrow @safe
-	{
-		scope TypedTable!(TypeList) new_table;
-		foreach (Type; TypeList)
-		{
-			new_table.index!Type = this.index!Type.dup ~ rhs.index!Type.dup;
-		}
-		return new_table;
-	}
 
 	void assign(Args...)(Args args) pure nothrow @safe
 	{
@@ -176,7 +176,7 @@ protected:
 		}
 		return;
 	}
-
+	// append this only TypeList by this
 	void _append(Args...)(Args args) pure nothrow @safe
 	{
 		foreach (Type; TypeList)
@@ -247,7 +247,7 @@ unittest
 		assert(!has!S1 && !has!S2 && has!S3);
 	}
 
-	table_3 = table_1 + table_2;
+	table_3 = table_1 ~ table_2;
 	with (table_3)
 	{
 		assert(count!S1 == 1 && count!S2 == 2 && count!S3 == 3);
@@ -264,26 +264,40 @@ unittest
 	S3[] s_list;
 	// deprecated: require dual-context
 	//table.query!(function(elem) => elem.a == 5)(s_list);
-	(table_1 + table_2).query(s_list, (S3 elem) => elem.a == 5);
+	(table_1 ~ table_2).query(s_list, (S3 elem) => elem.a == 5);
 	assert(s_list.length == 1);
 
 }
-
-TypedTable!(NoDuplicates!(LhsTypes, RhsTypes)) join(LhsTypes, RhsTypes,)(
-	in TypedTable!(LhsTypes) lhs, in TypedTable!(RhsTypes) rhs,
-) pure nothrow @safe
+// return added table with lhs types
+T_1 add(T_1, T_2,)(in T_1 lhs, in T_2 rhs,) pure nothrow @safe
 {
-	scope TypedTable!(NoDuplicates!(LhsTypes, RhsTypes)) result;
-	foreach (Type; NoDuplicates!(LhsTypes, RhsTypes))
+	alias LhsTypes = TemplateArgsOf!(Unqual!T_1);
+	alias RhsTypes = TemplateArgsOf!(Unqual!T_2);
+	scope TypedTable!(LhsTypes) new_table;
+	foreach (Type; LhsTypes)
+	{
+		new_table.refer!Type = lhs.index!Type.dup ~ rhs.index!Type.dup;
+	}
+	return new_table;
+}
+// return new table with sum types of both 
+auto join(T_1, T_2,)(in T_1 lhs, in T_2 rhs,) pure nothrow @safe
+{
+	alias LhsTypes = TemplateArgsOf!(Unqual!T_1);
+	alias RhsTypes = TemplateArgsOf!(Unqual!T_2);
+	alias _SumType = NoDuplicates!(LhsTypes, RhsTypes);
+	scope TypedTable!(_SumType) result;
+	static foreach (Type; _SumType)
 	{
 		static if (lhs.has_key!Type)
 		{
-			result.index!Type ~= lhs.index!Type;
+			result.refer!Type ~= lhs.index!Type.dup;
 		}
 		static if (rhs.has_key!Type)
 		{
-			result.index!Type ~= rhs.index!Type;
+			result.refer!Type ~= rhs.index!Type.dup;
 		}
+
 	}
 	return result;
 }
@@ -304,7 +318,7 @@ unittest
 		join(
 			TypedTable!(S1)(S1(1), S1(2)),
 			TypedTable!(S2)(S2(3), S2(4))
-	) == TypedTable!(S1,S2)(S1(1), S1(2), S2(3), S2(4))
+	) == TypedTable!(S1, S2)(S1(1), S1(2), S2(3), S2(4))
 	);
 
 }
