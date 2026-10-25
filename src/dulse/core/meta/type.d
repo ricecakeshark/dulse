@@ -12,7 +12,14 @@ template filter_by_type(Type, list...)
 	alias filter_by_type = Filter!(ApplyRight!(type_is, Type), list);
 }
 
+alias to_array(Type) = Type[];
+
 template type_is(alias symbol, Type)
 {
 	enum bool type_is = is(typeof(symbol) == Type);
+}
+
+template type_is_not(alias symbol, Type)
+{
+	enum bool type_is_not = !is(typeof(symbol) == Type);
 }

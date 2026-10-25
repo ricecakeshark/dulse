@@ -1,0 +1,94 @@
+module dulse.core.meta.type_list;
+
+import std.meta;
+
+struct TypeList(Types...)
+{
+	alias list = AliasSeq!(Types);
+	alias seq = AliasSeq!(Types);
+
+	enum is_sorted = staticIsSorted!(Comp2, Types);
+	enum count = Types.length;
+	enum size_t size = size_of();
+
+	// append, filter
+	alias append(Type) = TypeList!(Types, Type);
+	alias clear = TypeList!(AliasSeq!());
+	alias filter(alias Pred) = TypeList!(Filter!(Pred, Types));
+	alias remove(Type) = TypeList!(Erase!(Type, Types));
+	alias remove_all(Type) = TypeList!(EraseAll!(Type, Types));
+
+	// search
+	alias all(alias F) = allSatisfy!(F, Types);
+	alias any(alias F) = anySatisfy!(F, Types);
+	alias index_of(Type) = staticIndexOf!(Type, Types);
+
+	// transform
+	alias repeat(size_t n) = TypeList!(Repeat!(n, Types));
+	alias replace(T, U) = TypeList!(ReplaceAll!(T, U, Types));
+	alias reverse = TypeList!(Reverse!Types);
+	alias map(alias fun) = TypeList!(staticMap!(fun, Types));
+	alias sort(alias Compare = Comp2) = TypeList!(staticSort!(Compare, Types));
+
+	// operator
+	bool opEquals(RhsList : TypeList!(RhsTypes), RhsTypes...)(in RhsList rhs) const pure nothrow @nogc @safe
+	{
+		return is(Types == RhsList.seq);
+	}
+
+	size_t opDollar() const pure nothrow @nogc @safe
+	{
+		return Types.length;
+	}
+
+protected:
+	static size_t size_of() pure nothrow @nogc @safe
+	{
+		scope size_t _size = 0;
+		static foreach (Type; Types)
+		{
+			_size += Type.sizeof;
+		}
+		return _size;
+	}
+
+	size_t toHash() const nothrow @safe
+	{
+		return hashOf(typeid(Types));
+	}
+}
+
+enum Comp2(T1, T2) = cast(int)(T1.sizeof - T2.sizeof);
+
+unittest
+{
+	import std.traits;
+
+	alias TL_1 = TypeList!(int, byte, short,);
+	alias TL_2 = TypeList!(byte, short, int,);
+	TL_1 typelist_1;
+
+	static assert(is(TL_1.seq == AliasSeq!(int, byte, short)));
+	static assert(!is(TL_1 == TL_2));
+	// property
+	static assert(TL_1.is_sorted == false && TL_2.is_sorted == true);
+	static assert(typelist_1.count == 3);
+	static assert(typelist_1.size == 7);
+	// filter
+	static assert(is(TypeList!(int).append!byte == TypeList!(int, byte)));
+	static assert(is(TL_1.clear.seq == AliasSeq!()));
+	static assert(TL_1.filter!isIntegral.count == 3);
+	static assert(TL_1.filter!isFloatingPoint.count == 0);
+	static assert(is(TL_1.remove!byte == TypeList!(int, short)));
+	// search
+	static assert(TL_1.all!isBasicType && TL_2.all!isBasicType);
+	static assert(TL_1.index_of!int == 0 && TL_2.index_of!int == 2);
+	// transform
+	static assert(is(TypeList!(int, float).repeat!2 == TypeList!(int, float, int, float)));
+	static assert(is(TypeList!(int, float).replace!(float, real) == TypeList!(int, real)));
+	static assert(is(TL_1.reverse.seq == AliasSeq!(short, byte, int)));
+	alias ToArray(Type) = Type[];
+	static assert(is(TL_1.map!ToArray.seq == AliasSeq!(int[], byte[], short[])));
+	static assert(is(TL_1.sort!() == TL_2.sort!()));
+
+}

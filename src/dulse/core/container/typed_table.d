@@ -18,7 +18,7 @@ struct TypedTable(TypeList...)
 
 	inout(Type)[] index(Type)() inout pure nothrow @nogc @safe
 	{
-		static if (has_index!Type)
+		static if (contain_type!Type)
 		{
 			return this.table[this.index_of!Type];
 		}
@@ -30,7 +30,7 @@ struct TypedTable(TypeList...)
 
 	ref Type[] refer(Type)() pure nothrow @nogc @safe
 	{
-		static assert(has_index!Type);
+		static assert(contain_type!Type);
 		return this.table[this.index_of!Type];
 	}
 
@@ -46,11 +46,11 @@ struct TypedTable(TypeList...)
 		return true;
 	}
 
-	alias has_key(Type) = has_index!Type;
+	alias has_key(Type) = contain_type!Type;
 
 	bool has(Type)() pure nothrow @nogc @safe
 	{
-		return has_index!Type && (this.table[index_of!Type].count >= 1);
+		return contain_type!Type && (this.table[index_of!Type].count >= 1);
 	}
 
 	bool has(Type)(Type target) pure nothrow @nogc @safe
@@ -70,7 +70,7 @@ struct TypedTable(TypeList...)
 
 	@property size_t count(Type)() pure nothrow @nogc @safe
 	{
-		if (!has_index!Type)
+		if (!contain_type!Type)
 		{
 			return 0;
 		}
@@ -107,7 +107,7 @@ struct TypedTable(TypeList...)
 	{
 		foreach (Type; Types)
 		{
-			assert(this.has_index!Type);
+			assert(this.contain_type!Type);
 			this.table[this.index_of!Type] = [];
 		}
 		return this;
@@ -172,7 +172,7 @@ protected:
 	{
 		foreach (Type; TypeList)
 		{
-			table[index_of!Type] = [Filter!(ApplyLeft!(type_is, Type), args)];
+			this.table[index_of!Type] = [Filter!(ApplyLeft!(type_is, Type), args)];
 		}
 		return;
 	}
@@ -181,7 +181,7 @@ protected:
 	{
 		foreach (Type; TypeList)
 		{
-			table[index_of!Type] ~= [Filter!(ApplyLeft!(type_is, Type), args)];
+			this.table[index_of!Type] ~= [Filter!(ApplyLeft!(type_is, Type), args)];
 		}
 		return;
 	}
@@ -192,7 +192,7 @@ protected:
 	}
 
 	alias ToArray(Type) = Type[];
-	enum bool has_index(Type) = staticIndexOf!(Type, TypeList) != -1;
+	enum bool contain_type(Type) = staticIndexOf!(Type, TypeList) != -1;
 	enum int index_of(Type) = staticIndexOf!(Type, TypeList);
 	template type_is(Type, alias a)
 	{
