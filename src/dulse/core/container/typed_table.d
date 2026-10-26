@@ -1,14 +1,15 @@
 module dulse.core.container.typed_table;
 
+import dulse.core.meta;
 import std.array : array;
 import std.algorithm : count, equal, filter, range_remove = remove, SwapStrategy;
 import std.traits : ReturnType, TemplateArgsOf, Unqual;
 import std.typecons : Tuple;
-import std.meta : AliasSeq, ApplyLeft, Filter, NoDuplicates, staticIndexOf, staticMap;
+import std.meta : AliasSeq, ApplyRight, Filter, NoDuplicates, staticIndexOf, staticMap;
 
-struct TypedTable(TypeList...)
+struct TypedTable(Types...)
 {
-	Tuple!(staticMap!(ToArray, TypeList)) table;
+	Tuple!(staticMap!(ToArray, Types)) table;
 
 	this(Args...)(Args args) pure nothrow @safe
 	{
@@ -36,7 +37,7 @@ struct TypedTable(TypeList...)
 
 	bool is_empty() pure nothrow @nogc @safe
 	{
-		foreach (Type; TypeList)
+		foreach (Type; Types)
 		{
 			if (this.table[index_of!Type].length >= 1)
 			{
@@ -82,7 +83,7 @@ struct TypedTable(TypeList...)
 		return this.table == rhs.table;
 	}
 
-	TypedTable!(NoDuplicates!(TypeList, TemplateArgsOf!(Unqual!Rhs))) opBinary(string op : "~", Rhs)(
+	TypedTable!(NoDuplicates!(Types, TemplateArgsOf!(Unqual!Rhs))) opBinary(string op : "~", Rhs)(
 		Rhs rhs) pure nothrow @safe
 	{
 		return join(this, rhs);
@@ -97,15 +98,15 @@ struct TypedTable(TypeList...)
 		return this;
 	}
 
-	ref typeof(this) append(Types...)(Types element_list) pure nothrow @safe
+	ref typeof(this) append(TSeq...)(TSeq element_list) pure nothrow @safe
 	{
 		this._append(element_list);
 		return this;
 	}
 
-	ref typeof(this) remove(Types...)() pure nothrow @safe
+	ref typeof(this) remove(TSeq...)() pure nothrow @safe
 	{
-		foreach (Type; Types)
+		foreach (Type; NoDuplicates!TSeq)
 		{
 			assert(this.contain_type!Type);
 			this.table[this.index_of!Type] = [];
@@ -113,11 +114,11 @@ struct TypedTable(TypeList...)
 		return this;
 	}
 
-	ref typeof(this) remove(Types...)(Types element_list) pure nothrow @safe
+	ref typeof(this) remove(Args...)(Args element_list) pure nothrow @safe
 	{
-		foreach (Type; Types)
+		foreach (Type; NoDuplicates!Args)
 		{
-			this.remove([Filter!(ApplyLeft!(type_is, Type), element_list)]);
+			this.remove([Filter!(ApplyRight!(type_is, Type), element_list)]);
 		}
 		return this;
 	}
@@ -170,18 +171,18 @@ protected:
 
 	void assign(Args...)(Args args) pure nothrow @safe
 	{
-		foreach (Type; TypeList)
+		foreach (Type; NoDuplicates!Args)
 		{
-			this.table[index_of!Type] = [Filter!(ApplyLeft!(type_is, Type), args)];
+			this.table[index_of!Type] = [filter_by_type!(Type, args)];
 		}
 		return;
 	}
-	// append this only TypeList by this
+	// append this only Args(TypeTuple) by this
 	void _append(Args...)(Args args) pure nothrow @safe
 	{
-		foreach (Type; TypeList)
+		foreach (Type; NoDuplicates!Args)
 		{
-			this.table[index_of!Type] ~= [Filter!(ApplyLeft!(type_is, Type), args)];
+			this.table[index_of!Type] ~= [filter_by_type!(Type, args)];
 		}
 		return;
 	}
@@ -192,18 +193,8 @@ protected:
 	}
 
 	alias ToArray(Type) = Type[];
-	enum bool contain_type(Type) = staticIndexOf!(Type, TypeList) != -1;
-	enum int index_of(Type) = staticIndexOf!(Type, TypeList);
-	template type_is(Type, alias a)
-	{
-		enum type_is = is(typeof(a) == Type);
-	}
-
-	template type_is_not(Type, alias a)
-	{
-		enum type_is_not = !is(typeof(a) == Type);
-	}
-
+	enum bool contain_type(Type) = staticIndexOf!(Type, Types) != -1;
+	enum int index_of(Type) = staticIndexOf!(Type, Types);
 }
 
 unittest
@@ -229,6 +220,7 @@ unittest
 	assert(!table_1.has!S1 && !table_1.has!S2 && !table_1.has!S3);
 	assert(table_1.count == 0);
 	assert(table_1.count!S1 == 0 && table_1.count!S2 == 0 && table_1.count!S3 == 0);
+
 	table_1.append(
 		S1(1), S2(2), S2(3),
 	);
