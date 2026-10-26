@@ -7,9 +7,9 @@ import std.traits : ReturnType, TemplateArgsOf, Unqual;
 import std.typecons : Tuple;
 import std.meta : AliasSeq, ApplyRight, Filter, NoDuplicates, staticIndexOf, staticMap;
 
-struct TypedTable(Types...)
+struct TypedTable(TypeSeq...)
 {
-	Tuple!(staticMap!(ToArray, Types)) table;
+	Tuple!(staticMap!(ToArray, TypeSeq)) table;
 
 	this(Args...)(Args args) pure nothrow @safe
 	{
@@ -37,7 +37,7 @@ struct TypedTable(Types...)
 
 	bool is_empty() pure nothrow @nogc @safe
 	{
-		foreach (Type; Types)
+		foreach (Type; TypeSeq)
 		{
 			if (this.table[index_of!Type].length >= 1)
 			{
@@ -83,7 +83,7 @@ struct TypedTable(Types...)
 		return this.table == rhs.table;
 	}
 
-	TypedTable!(NoDuplicates!(Types, TemplateArgsOf!(Unqual!Rhs))) opBinary(string op : "~", Rhs)(
+	TypedTable!(NoDuplicates!(TypeSeq, TemplateArgsOf!(Unqual!Rhs))) opBinary(string op : "~", Rhs)(
 		Rhs rhs) pure nothrow @safe
 	{
 		return join(this, rhs);
@@ -193,8 +193,8 @@ protected:
 	}
 
 	alias ToArray(Type) = Type[];
-	enum bool contain_type(Type) = staticIndexOf!(Type, Types) != -1;
-	enum int index_of(Type) = staticIndexOf!(Type, Types);
+	enum bool contain_type(Type) = staticIndexOf!(Type, TypeSeq) != -1;
+	enum int index_of(Type) = staticIndexOf!(Type, TypeSeq);
 }
 
 unittest
@@ -263,10 +263,10 @@ unittest
 // return added table with lhs types
 T_1 add(T_1, T_2,)(in T_1 lhs, in T_2 rhs,) pure nothrow @safe
 {
-	alias LhsTypes = TemplateArgsOf!(Unqual!T_1);
-	alias RhsTypes = TemplateArgsOf!(Unqual!T_2);
-	scope TypedTable!(LhsTypes) new_table;
-	foreach (Type; LhsTypes)
+	alias LhsTypeSeq = TemplateArgsOf!(Unqual!T_1);
+	alias RhsTypeSeq = TemplateArgsOf!(Unqual!T_2);
+	scope TypedTable!(LhsTypeSeq) new_table;
+	foreach (Type; LhsTypeSeq)
 	{
 		new_table.refer!Type = lhs.index!Type.dup ~ rhs.index!Type.dup;
 	}
@@ -275,9 +275,9 @@ T_1 add(T_1, T_2,)(in T_1 lhs, in T_2 rhs,) pure nothrow @safe
 // return new table with sum types of both 
 auto join(T_1, T_2,)(in T_1 lhs, in T_2 rhs,) pure nothrow @safe
 {
-	alias LhsTypes = TemplateArgsOf!(Unqual!T_1);
-	alias RhsTypes = TemplateArgsOf!(Unqual!T_2);
-	alias _SumType = NoDuplicates!(LhsTypes, RhsTypes);
+	alias LhsTypeSeq = TemplateArgsOf!(Unqual!T_1);
+	alias RhsTypeSeq = TemplateArgsOf!(Unqual!T_2);
+	alias _SumType = NoDuplicates!(LhsTypeSeq, RhsTypeSeq);
 	scope TypedTable!(_SumType) result;
 	static foreach (Type; _SumType)
 	{

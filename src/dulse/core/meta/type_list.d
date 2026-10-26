@@ -2,50 +2,50 @@ module dulse.core.meta.type_list;
 
 import std.meta;
 
-struct TypeList(Types...)
+struct TypeList(TypeSeq...)
 {
-	alias list = AliasSeq!(Types);
-	alias seq = AliasSeq!(Types);
+	alias list = AliasSeq!(TypeSeq);
+	alias seq = AliasSeq!(TypeSeq);
 
-	enum is_sorted = staticIsSorted!(Comp2, Types);
-	enum count = Types.length;
+	enum is_sorted = staticIsSorted!(Comp2, TypeSeq);
+	enum count = TypeSeq.length;
 	enum size_t size = size_of();
 
 	// append, filter
-	alias append(Type) = TypeList!(Types, Type);
+	alias append(Type) = TypeList!(TypeSeq, Type);
 	alias clear = TypeList!(AliasSeq!());
-	alias filter(alias Pred) = TypeList!(Filter!(Pred, Types));
-	alias remove(Type) = TypeList!(Erase!(Type, Types));
-	alias remove_all(Type) = TypeList!(EraseAll!(Type, Types));
+	alias filter(alias Pred) = TypeList!(Filter!(Pred, TypeSeq));
+	alias remove(Type) = TypeList!(Erase!(Type, TypeSeq));
+	alias remove_all(Type) = TypeList!(EraseAll!(Type, TypeSeq));
 
 	// search
-	alias all(alias F) = allSatisfy!(F, Types);
-	alias any(alias F) = anySatisfy!(F, Types);
-	alias index_of(Type) = staticIndexOf!(Type, Types);
+	alias all(alias F) = allSatisfy!(F, TypeSeq);
+	alias any(alias F) = anySatisfy!(F, TypeSeq);
+	alias index_of(Type) = staticIndexOf!(Type, TypeSeq);
 
 	// transform
-	alias repeat(size_t n) = TypeList!(Repeat!(n, Types));
-	alias replace(T, U) = TypeList!(ReplaceAll!(T, U, Types));
-	alias reverse = TypeList!(Reverse!Types);
-	alias map(alias fun) = TypeList!(staticMap!(fun, Types));
-	alias sort(alias Compare = Comp2) = TypeList!(staticSort!(Compare, Types));
+	alias repeat(size_t n) = TypeList!(Repeat!(n, TypeSeq));
+	alias replace(T, U) = TypeList!(ReplaceAll!(T, U, TypeSeq));
+	alias reverse = TypeList!(Reverse!TypeSeq);
+	alias map(alias fun) = TypeList!(staticMap!(fun, TypeSeq));
+	alias sort(alias Compare = Comp2) = TypeList!(staticSort!(Compare, TypeSeq));
 
 	// operator
-	bool opEquals(RhsList : TypeList!(RhsTypes), RhsTypes...)(in RhsList rhs) const pure nothrow @nogc @safe
+	bool opEquals(RhsList : TypeList!(RhsTypeSeq), RhsTypeSeq...)(in RhsList rhs) const pure nothrow @nogc @safe
 	{
-		return is(Types == RhsList.seq);
+		return is(TypeSeq == RhsList.seq);
 	}
 
 	size_t opDollar() const pure nothrow @nogc @safe
 	{
-		return Types.length;
+		return TypeSeq.length;
 	}
 
 protected:
 	static size_t size_of() pure nothrow @nogc @safe
 	{
 		scope size_t _size = 0;
-		static foreach (Type; Types)
+		static foreach (Type; TypeSeq)
 		{
 			_size += Type.sizeof;
 		}
@@ -54,7 +54,7 @@ protected:
 
 	size_t toHash() const nothrow @safe
 	{
-		return hashOf(typeid(Types));
+		return hashOf(typeid(TypeSeq));
 	}
 }
 
