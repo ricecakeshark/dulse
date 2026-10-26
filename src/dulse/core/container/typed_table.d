@@ -2,7 +2,7 @@ module dulse.core.container.typed_table;
 
 import dulse.core.meta;
 import std.array : array;
-import std.algorithm : count, equal, filter, range_remove = remove, SwapStrategy;
+import std.algorithm : canFind, count, equal, filter, range_remove = remove, SwapStrategy;
 import std.traits : ReturnType, TemplateArgsOf, Unqual;
 import std.typecons : Tuple;
 import std.meta : AliasSeq, ApplyRight, Filter, NoDuplicates, staticIndexOf, staticMap;
@@ -125,12 +125,10 @@ struct TypedTable(TypeSeq...)
 
 	ref typeof(this) remove(Type)(Type[] element_list) pure nothrow @safe
 	{
-		foreach (element; element_list)
-		{
-			this.table[this.index_of!Type] =
-				this.table[this.index_of!Type]
-				.range_remove!(elem => elem == element, SwapStrategy.unstable);
-		}
+		this.table[this.index_of!Type] =
+			this.table[this.index_of!Type]
+			.filter!(elm => !canFind(element_list, elm))
+			.array;
 		return this;
 	}
 
