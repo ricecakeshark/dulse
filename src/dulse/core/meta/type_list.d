@@ -25,6 +25,10 @@ struct TypeList(TypeSeq...)
 	alias any(alias F) = anySatisfy!(F, TypeSeq);
 	alias index_of(Type) = staticIndexOf!(Type, TypeSeq);
 
+	template contain(Type){
+		enum bool contain = staticIndexOf!(Type, TypeSeq) != -1;
+	}	
+
 	// transform
 	alias repeat(size_t n) = TypeList!(Repeat!(n, TypeSeq));
 	alias replace(T, U) = TypeList!(ReplaceAll!(T, U, TypeSeq));
@@ -86,6 +90,7 @@ unittest
 	// search
 	static assert(TL_1.all!isBasicType && TL_2.all!isBasicType);
 	static assert(TL_1.index_of!int == 0 && TL_2.index_of!int == 2);
+	static assert(TL_1.contain!float == false);
 	// transform
 	static assert(is(TypeList!(int, float).repeat!2 == TypeList!(int, float, int, float)));
 	static assert(is(TypeList!(int, float).replace!(float, real) == TypeList!(int, real)));
