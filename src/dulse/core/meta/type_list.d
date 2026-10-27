@@ -1,5 +1,6 @@
 module dulse.core.meta.type_list;
 
+import dulse.core.meta;
 import std.meta;
 
 struct TypeList(TypeSeq...)
@@ -17,6 +18,7 @@ struct TypeList(TypeSeq...)
 	alias filter(alias Pred) = TypeList!(Filter!(Pred, TypeSeq));
 	alias remove(Type) = TypeList!(Erase!(Type, TypeSeq));
 	alias remove_all(Type) = TypeList!(EraseAll!(Type, TypeSeq));
+	alias uniq = TypeList!(NoDuplicates!TypeSeq);
 
 	// search
 	alias all(alias F) = allSatisfy!(F, TypeSeq);
@@ -80,6 +82,7 @@ unittest
 	static assert(TL_1.filter!isIntegral.count == 3);
 	static assert(TL_1.filter!isFloatingPoint.count == 0);
 	static assert(is(TL_1.remove!byte == TypeList!(int, short)));
+	static assert(is(TypeList!(int,int,float,float).uniq == TypeList!(int,float)));
 	// search
 	static assert(TL_1.all!isBasicType && TL_2.all!isBasicType);
 	static assert(TL_1.index_of!int == 0 && TL_2.index_of!int == 2);
@@ -87,8 +90,8 @@ unittest
 	static assert(is(TypeList!(int, float).repeat!2 == TypeList!(int, float, int, float)));
 	static assert(is(TypeList!(int, float).replace!(float, real) == TypeList!(int, real)));
 	static assert(is(TL_1.reverse.seq == AliasSeq!(short, byte, int)));
-	alias ToArray(Type) = Type[];
-	static assert(is(TL_1.map!ToArray.seq == AliasSeq!(int[], byte[], short[])));
+	//alias ToArray(Type) = Type[];
+	static assert(is(TL_1.map!to_array.seq == AliasSeq!(int[], byte[], short[])));
 	static assert(is(TL_1.sort!() == TL_2.sort!()));
 
 }
