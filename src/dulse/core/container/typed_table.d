@@ -185,7 +185,7 @@ protected:
 		return;
 	}
 
-	size_t toHash() const pure nothrow @nogc @safe
+	size_t toHash() const nothrow @safe
 	{
 		return hashOf(this.table);
 	}

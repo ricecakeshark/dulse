@@ -1,17 +1,14 @@
 module dulse.core.container.resource_store;
 
-import std.sumtype;
+import dulse.core.container.typed_table;
+import std.meta : NoDuplicates, Reverse;
 
-class ResourceStore(ResourceType)
+class ResourceStore(ResourceType...)
 {
-	protected ResourceType[][TypeInfo] resource_pool;
+	protected TypedTable!ResourceType pool;
 
 	this()
 	{
-		foreach (Type; ResourceType.Types)
-		{
-			this.resource_pool[typeid(Type)] = [];
-		}
 		return;
 	}
 
@@ -22,53 +19,31 @@ class ResourceStore(ResourceType)
 
 	typeof(this) register(TypeList...)(TypeList register_list)
 	{
-		foreach (target; register_list)
-		{
-			this.register(target);
-		}
-		return this;
-	}
-
-	typeof(this) register(Type)(Type register_target)
-	{
-		this.resource_pool[typeid(Type)] ~= ResourceType(register_target);
+		this.pool.append(register_list);
 		return this;
 	}
 
 	typeof(this) release(TypeList...)()
 	{
-		foreach (Type; TypeList)
+		foreach (Type; NoDuplicates!TypeList)
 		{
-			this.release!Type();
-		}
-		return this;
-	}
-
-	typeof(this) release(Type)()
-	{
-		foreach (ref resource; this.resource_pool[typeid(Type)])
-		{
-			if (resource.has!Type() == false)
+			if (!this.pool.has_key!Type)
 			{
-				assert(0);
+				continue;
 			}
-			//resource.get!Type.release();
-			release(resource);
-			destroy(resource);
+			foreach (ref res; this.pool.refer!Type)
+			{
+				res.release();
+				destroy(res);
+			}
 		}
-		this.resource_pool[typeid(Type)] = [];
+		this.pool.remove!TypeList;
 		return this;
-	}
-
-	void release(ResourceType resource)
-	{
-		resource.match!((ref res) { res.release; });
-		return;
 	}
 
 	typeof(this) release_all()
 	{
-		foreach_reverse (Type; ResourceType.Types)
+		foreach (Type; Reverse!ResourceType)
 		{
 			this.release!Type();
 		}
