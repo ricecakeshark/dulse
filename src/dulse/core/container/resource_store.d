@@ -17,15 +17,15 @@ class ResourceStore(ResourceType...)
 		return;
 	}
 
-	typeof(this) register(TypeList...)(TypeList register_list)
+	typeof(this) register(TypeSeq...)(TypeSeq register_list)
 	{
 		this.pool.append(register_list);
 		return this;
 	}
 
-	typeof(this) release(TypeList...)()
+	typeof(this) release(TypeSeq...)()
 	{
-		foreach (Type; NoDuplicates!TypeList)
+		foreach (Type; NoDuplicates!TypeSeq)
 		{
 			if (!this.pool.has_key!Type)
 			{
@@ -37,13 +37,13 @@ class ResourceStore(ResourceType...)
 				destroy(res);
 			}
 		}
-		this.pool.remove!TypeList;
+		this.pool.remove!TypeSeq;
 		return this;
 	}
 
 	typeof(this) release_all()
 	{
-		foreach (Type; Reverse!ResourceType)
+		foreach_reverse (Type; ResourceType)
 		{
 			this.release!Type();
 		}
