@@ -118,7 +118,7 @@ struct TypedTable(TypeSeq...)
 	{
 		foreach (Type; NoDuplicates!Args)
 		{
-			this.remove([Filter!(ApplyRight!(type_is, Type), element_list)]);
+			this.remove([filter_by_type!(Type, element_list)]);
 		}
 		return this;
 	}
