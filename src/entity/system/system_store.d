@@ -1,6 +1,6 @@
-module dulse.object.system.system_store;
+module dulse.entity.system.system_store;
 
-import dulse.object;
+import dulse.entity;
 import dulse.core.container : InterfacedPool;
 import std.exception : enforce;
 import std.meta;

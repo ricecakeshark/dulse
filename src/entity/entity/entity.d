@@ -1,4 +1,4 @@
-module dulse.object.entity.entity;
+module dulse.entity.entity.entity;
 
 struct Entity
 {

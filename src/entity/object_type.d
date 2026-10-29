@@ -1,6 +1,6 @@
-module dulse.object.object_type;
+module dulse.entity.object_type;
 
-import dulse.object;
+import dulse.entity;
 import std.meta : allSatisfy, staticIndexOf, staticMap;
 import std.traits : InterfacesTuple;
 

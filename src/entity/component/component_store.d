@@ -1,6 +1,6 @@
-module dulse.object.component.component_store;
+module dulse.entity.component.component_store;
 
-import dulse.object;
+import dulse.entity;
 import std.algorithm : countUntil, swapAt;
 import std.exception : enforce;
 import std.typecons : Nullable;

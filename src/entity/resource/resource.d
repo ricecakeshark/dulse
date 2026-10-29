@@ -1,4 +1,4 @@
-module dulse.object.resource.resource;
+module dulse.entity.resource.resource;
 
 class ResourceBox(Type) : IResourceBox
 {

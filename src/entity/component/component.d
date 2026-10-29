@@ -1,6 +1,6 @@
-module dulse.object.component.component;
+module dulse.entity.component.component;
 
-import dulse.object;
+import dulse.entity;
 
 interface IComponentStore
 {

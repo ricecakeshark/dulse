@@ -1,7 +1,7 @@
-module dulse.object.object_subsystem;
+module dulse.entity.object_subsystem;
 
 import dulse.subsystem;
-import dulse.object;
+import dulse.entity;
 
 class ObjectSubsystem : Subsystem!ObjectSubsystem
 {

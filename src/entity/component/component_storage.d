@@ -1,6 +1,6 @@
-module dulse.object.component.component_storage;
+module dulse.entity.component.component_storage;
 
-import dulse.object;
+import dulse.entity;
 import std.exception : enforce;
 import std.meta : staticMap;
 

@@ -1,6 +1,6 @@
-module dulse.object.resource.resource_store;
+module dulse.entity.resource.resource_store;
 
-import dulse.object.resource;
+import dulse.entity.resource;
 import std.exception:enforce;
 
 class ResourceStore

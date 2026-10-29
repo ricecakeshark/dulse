@@ -1,6 +1,6 @@
-module dulse.object.system.system;
+module dulse.entity.system.system;
 
-import dulse.object;
+import dulse.entity;
 
 interface IObjectSystem
 {

@@ -1,6 +1,6 @@
-module dulse.object.object_manager;
+module dulse.entity.object_manager;
 
-import dulse.object;
+import dulse.entity;
 import std.exception;
 
 import std.algorithm : remove;
