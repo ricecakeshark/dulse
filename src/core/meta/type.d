@@ -72,4 +72,8 @@ unittest
 	static assert(contain_type!(float, int, long, float, double));
 	static assert(!contain_type!(bool, int, long, float, double));
 	static assert(filter_by_type!(float, 1u, 2, 3.0f, 4.0) == AliasSeq!(3.0f));
+
+	static assert(
+		is(Filter!(ApplyRight!(contain_type, int, uint), byte, ubyte, short, ushort, int, uint) == AliasSeq!(int, uint))
+	);
 }

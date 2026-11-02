@@ -25,9 +25,20 @@ struct TypeList(TypeSeq...)
 	alias any(alias F) = anySatisfy!(F, TypeSeq);
 	alias index_of(Type) = staticIndexOf!(Type, TypeSeq);
 
-	template contain(Type){
+	template contain(Type)
+	{
 		enum bool contain = staticIndexOf!(Type, TypeSeq) != -1;
-	}	
+	}
+
+	template contain_all(List...)
+	{
+		enum bool contain_all = allSatisfy!(contain, staticMap!(type_of, List));
+	}
+
+	template contain_any(List...)
+	{
+		enum bool contain_all = anySatisfy!(contain, staticMap!(type_of, List));
+	}
 
 	// transform
 	alias repeat(size_t n) = TypeList!(Repeat!(n, TypeSeq));
@@ -37,10 +48,10 @@ struct TypeList(TypeSeq...)
 	alias sort(alias Compare = Comp2) = TypeList!(staticSort!(Compare, TypeSeq));
 
 	// operator
-	bool opEquals(RhsList : TypeList!(RhsTypeSeq), RhsTypeSeq...)(in RhsList rhs) const pure nothrow @nogc @safe
+	/+bool opEquals(RhsList : TypeList!(RhsTypeSeq), RhsTypeSeq...)(in RhsList rhs) const pure nothrow @nogc @safe
 	{
 		return is(TypeSeq == RhsList.seq);
-	}
+	}+/
 
 	size_t opDollar() const pure nothrow @nogc @safe
 	{
@@ -58,10 +69,10 @@ protected:
 		return _size;
 	}
 
-	size_t toHash() const nothrow @safe
+	/+	size_t toHash() const nothrow @safe
 	{
 		return hashOf(typeid(TypeSeq));
-	}
+	}+/
 }
 
 enum Comp2(T1, T2) = cast(int)(T1.sizeof - T2.sizeof);
@@ -75,6 +86,7 @@ unittest
 	TL_1 typelist_1;
 
 	static assert(is(TL_1.seq == AliasSeq!(int, byte, short)));
+	static assert(is(TL_1 == TL_1));
 	static assert(!is(TL_1 == TL_2));
 	// property
 	static assert(TL_1.is_sorted == false && TL_2.is_sorted == true);
@@ -86,11 +98,13 @@ unittest
 	static assert(TL_1.filter!isIntegral.count == 3);
 	static assert(TL_1.filter!isFloatingPoint.count == 0);
 	static assert(is(TL_1.remove!byte == TypeList!(int, short)));
-	static assert(is(TypeList!(int,int,float,float).uniq == TypeList!(int,float)));
+	static assert(is(TypeList!(int, int, float, float).uniq == TypeList!(int, float)));
 	// search
 	static assert(TL_1.all!isBasicType && TL_2.all!isBasicType);
 	static assert(TL_1.index_of!int == 0 && TL_2.index_of!int == 2);
 	static assert(TL_1.contain!float == false);
+	static assert(TL_1.contain_all!(TL_2.seq) && TL_2.contain_all!(TL_1.seq));
+	static assert(!TL_1.contain_all!(AliasSeq!(int, float)));
 	// transform
 	static assert(is(TypeList!(int, float).repeat!2 == TypeList!(int, float, int, float)));
 	static assert(is(TypeList!(int, float).replace!(float, real) == TypeList!(int, real)));
