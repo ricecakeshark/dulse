@@ -2,6 +2,7 @@ module dulse.core.meta.type_list;
 
 import dulse.core.meta;
 import std.meta;
+import std.traits;
 
 struct TypeList(TypeSeq...)
 {
@@ -28,6 +29,11 @@ struct TypeList(TypeSeq...)
 	template contain(Type)
 	{
 		enum bool contain = staticIndexOf!(Type, TypeSeq) != -1;
+	}
+
+	template contain_all(TypeList)
+	{
+		enum bool contain_all = allSatisfy!(contain, staticMap!(type_of, List));
 	}
 
 	template contain_all(List...)
@@ -77,6 +83,16 @@ protected:
 
 enum Comp2(T1, T2) = cast(int)(T1.sizeof - T2.sizeof);
 
+/+template is_type_list(T)
+{
+	enum bool is_type_list = isInstanceOf!(TypeList,T);
+}+/
+
+bool is_type_list(T)()
+{
+	return isInstanceOf!(TypeList, T);
+}
+
 unittest
 {
 	import std.traits;
@@ -88,6 +104,7 @@ unittest
 	static assert(is(TL_1.seq == AliasSeq!(int, byte, short)));
 	static assert(is(TL_1 == TL_1));
 	static assert(!is(TL_1 == TL_2));
+	static assert(is_type_list!TL_1 == true);
 	// property
 	static assert(TL_1.is_sorted == false && TL_2.is_sorted == true);
 	static assert(typelist_1.count == 3);
