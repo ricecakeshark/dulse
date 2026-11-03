@@ -31,11 +31,6 @@ struct TypeList(TypeSeq...)
 		enum bool contain = staticIndexOf!(Type, TypeSeq) != -1;
 	}
 
-	template contain_all(TypeList)
-	{
-		enum bool contain_all = allSatisfy!(contain, staticMap!(type_of, List));
-	}
-
 	template contain_all(List...)
 	{
 		enum bool contain_all = allSatisfy!(contain, staticMap!(type_of, List));
@@ -43,7 +38,7 @@ struct TypeList(TypeSeq...)
 
 	template contain_any(List...)
 	{
-		enum bool contain_all = anySatisfy!(contain, staticMap!(type_of, List));
+		enum bool contain_any = anySatisfy!(contain, staticMap!(type_of, List));
 	}
 
 	// transform
