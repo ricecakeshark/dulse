@@ -59,6 +59,16 @@ template type_is_not(alias lhs, alias rhs)
 
 unittest
 {
+	struct S
+	{
+		int a;
+	}
+
+	struct T
+	{
+		int a;
+	}
+
 	static assert(is(type_of!1.0f == float));
 	static assert(!is(type_of!1.0f == type_of!3.14L));
 	static assert(is(type_of!int == int));
@@ -72,6 +82,7 @@ unittest
 	static assert(contain_type!(float, int, long, float, double));
 	static assert(!contain_type!(bool, int, long, float, double));
 	static assert(filter_by_type!(float, 1u, 2, 3.0f, 4.0) == AliasSeq!(3.0f));
+	static assert(filter_by_type!(S, S(1), T(2), S(3), T(4)) == AliasSeq!(S(1), S(3)));
 
 	static assert(
 		is(Filter!(ApplyRight!(contain_type, int, uint), byte, ubyte, short, ushort, int, uint) == AliasSeq!(int, uint))
