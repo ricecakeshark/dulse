@@ -7,5 +7,6 @@ license "MPL-2.0"
 targetType "sourceLibrary"
 targetName "dulse"
 targetPath "build"
+importPaths "src"
 
 dflags "-preview=in"

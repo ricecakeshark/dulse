@@ -10,7 +10,12 @@ struct AliasList(Sequence...)
 {
 	alias list = AliasSeq!(Sequence);
 	alias seq = AliasSeq!(Sequence);
-	enum Type[] array(Type) = [AliasSeq!(Sequence)];
+	//enum Type[] array(Type) = [AliasSeq!(Sequence)];
+	enum Type[] array(Type) = _array!(Type);
+	static Type[] _array(Type)() pure
+	{
+		return [AliasSeq!(Sequence)];
+	}
 
 	enum size_t count = Sequence.length;
 	// is_type (int, float, struct S)
@@ -28,7 +33,7 @@ struct AliasList(Sequence...)
 	alias append(Type) = AliasList!(Sequence, Type);
 	alias clear = AliasList!(AliasSeq!());
 	alias filter(alias Pred) = AliasList!(Filter!(Pred, Sequence));
-	alias filter(Type) = AliasList!(Filter!(isType!Type, Sequence));
+	alias filter_by_type(Type) = AliasList!(Filter!(ApplyRight!(same_type, Type), Sequence));
 	alias remove(Type) = AliasList!(Erase!(Type, Sequence));
 	alias remove_all(Type) = AliasList!(EraseAll!(Type, Sequence));
 	alias uniq = AliasList!(NoDuplicates!Sequence);
@@ -39,7 +44,7 @@ struct AliasList(Sequence...)
 	alias index_of(Type) = staticIndexOf!(Type, Sequence);
 
 	// search 
-	enum bool all_same = allSatisfy!(allSameType, staticMap!(type_of,Sequence));
+	enum bool all_same = allSatisfy!(allSameType, staticMap!(type_of, Sequence));
 	enum bool contain(Type) = staticIndexOf!(Type, Sequence) != -1;
 	enum bool contain_all(List...) = allSatisfy!(contain, staticMap!(type_of, List));
 	enum bool contain_any(List...) = anySatisfy!(contain, staticMap!(type_of, List));
@@ -107,7 +112,8 @@ unittest
 		static assert(__traits(compiles, AL_2.size));
 		static assert(__traits(compiles, AL_3.size));
 		static assert(__traits(compiles, AL_3.array!int));
-		//AL_3.array!int;
+		static assert(AL_3.filter_by_type!int.seq == AliasSeq!(411, 12, 42));
+		static assert(AL_3.array!int == [411, 12, 42]);
 	}
 
 	{

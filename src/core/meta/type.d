@@ -10,16 +10,22 @@ template contain_type(Type, TypeList...)
 
 template filter_by_type(Type, list...)
 {
-	alias filter_by_type = Filter!(ApplyRight!(type_is, Type), list);
+	alias filter_by_type = Filter!(ApplyRight!(same_type, Type), list);
 }
 
 alias to_array(Type) = Type[];
+//enum Type[] to_array(Type, Sequence...) = [Sequence];
 
 template type_contained(alias lhs, Rhs...)
 {
 	enum bool type_contained = anySatisfy!(
-			ApplyRight!(type_is, type_of!lhs), Rhs,
+			ApplyRight!(same_type, type_of!lhs), Rhs,
 		);
+}
+
+Type[] array_of(Type,alias alias_list)() pure nothrow
+{
+	return [alias_list.seq];
 }
 
 template type_of(alias some)
@@ -38,12 +44,12 @@ template type_of(alias some)
 	}
 }
 
-template type_is(alias lhs, alias rhs)
+template same_type(alias lhs, alias rhs)
 {
-	enum bool type_is = _type_is!(lhs, rhs);
+	enum bool same_type = _same_type!(lhs, rhs);
 }
 
-static bool _type_is(alias lhs, alias rhs)()
+static bool _same_type(alias lhs, alias rhs)()
 {
 	static if (is(type_of!lhs == type_of!rhs))
 	{
@@ -52,9 +58,9 @@ static bool _type_is(alias lhs, alias rhs)()
 	return false;
 }
 
-template type_is_not(alias lhs, alias rhs)
+template not_same_type(alias lhs, alias rhs)
 {
-	enum bool type_is_not = !is(type_of!lhs == type_of!rhs);
+	enum bool not_same_type = !is(type_of!lhs == type_of!rhs);
 }
 
 unittest
@@ -73,11 +79,11 @@ unittest
 	static assert(!is(type_of!1.0f == type_of!3.14L));
 	static assert(is(type_of!int == int));
 
-	static assert(type_is!(int, int));
-	static assert(!type_is!(int, float));
-	static assert(!type_is!(int, int[]));
-	static assert(type_is!(411, int));
-	static assert(type_is!(12, 42));
+	static assert(same_type!(int, int));
+	static assert(!same_type!(int, float));
+	static assert(!same_type!(int, int[]));
+	static assert(same_type!(411, int));
+	static assert(same_type!(12, 42));
 
 	static assert(contain_type!(float, int, long, float, double));
 	static assert(!contain_type!(bool, int, long, float, double));
