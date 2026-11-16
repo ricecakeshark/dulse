@@ -31,7 +31,7 @@ struct FileHandler
 		return this.handle_substance.isOpen();
 	}
 
-	@property bool exsist() const nothrow @nogc @safe
+	@property bool exist() const nothrow @nogc @safe
 	{
 		return this._path.exists;
 	}
