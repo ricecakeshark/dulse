@@ -9,11 +9,11 @@ struct Vertex(Pos, Col)
 	Col color;
 }
 
-struct VertexPC
+/+struct VertexPC
 {
 	Vec3 pos;
 	ColorF color;
-}
+}+/
 
 struct VertexPT
 {
@@ -28,21 +28,21 @@ struct VertexPT
 	ColorF color;
 }+/
 
-struct VertexPCT
+/+struct VertexPCT
 {
 	Vec3 pos;
 	ColorF color;
 	Vec2 uv;
-}
+}+/
 
-struct VertexPNU
+struct VertexTex
 {
 	Vec3 pos;
 	Vec3 normal;
 	Vec2 uv;
 }
 
-struct VertexPNC
+struct VertexSolid
 {
 	Vec3 pos;
 	Vec3 normal;

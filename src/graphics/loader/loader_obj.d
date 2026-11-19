@@ -71,15 +71,15 @@ void load_obj(G : GfxGeometry!(V, I), V, I)(
 				enforce(v >= 1 && v - 1 < temp_pos_list.length);
 				enforce(v_uv >= 1 && v_uv - 1 < temp_uv_list.length);
 				enforce(v_n >= 1 && v_n - 1 < temp_normal_list.length);
-				static if (is(V == VertexPNU))
+				static if (is(V == VertexTex))
 				{
 					temp_vertex.pos = temp_pos_list[v - 1];
 					temp_vertex.normal = temp_normal_list[v_n - 1];
 					temp_vertex.uv = temp_uv_list[v_uv - 1];
 				}
-				else static if (is(V == VertexPNU))
+				else static if (is(V == VertexSolid))
 				{
-					temp_vertex.pos = temp_vertex_list[v - 1];
+					temp_vertex.pos = temp_pos_list[v - 1];
 					temp_vertex.normal = temp_normal_list[v_n - 1];
 					temp_vertex.color = ColorF(
 						temp_uv_list[v_uv - 1][0],
