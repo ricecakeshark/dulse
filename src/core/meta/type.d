@@ -3,6 +3,21 @@ module dulse.core.meta.type;
 import std.meta;
 import std.traits : isType;
 
+template size_of(Seq...)
+{
+	enum size_t size_of = total_size!(Seq)();
+}
+
+static size_t total_size(Seq...)()
+{
+	size_t size = 0;
+	static foreach (Elm; Seq)
+	{
+		size += Elm.sizeof;
+	}
+	return size;
+}
+
 template contain_type(Type, TypeList...)
 {
 	enum bool contain_type = staticIndexOf!(Type, TypeList) != -1;
@@ -23,7 +38,7 @@ template type_contained(alias lhs, Rhs...)
 		);
 }
 
-Type[] array_of(Type,alias alias_list)() pure nothrow
+Type[] array_of(Type, alias alias_list)() pure nothrow
 {
 	return [alias_list.seq];
 }
@@ -74,6 +89,8 @@ unittest
 	{
 		int a;
 	}
+
+	static assert(total_size!(S, T) == 8);
 
 	static assert(is(type_of!1.0f == float));
 	static assert(!is(type_of!1.0f == type_of!3.14L));
